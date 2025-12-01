@@ -892,22 +892,26 @@ async def callback_capybara(request: Request):
 
 
 # ==========================================
-# 🐹 カピバラさん (LINE返信 & 朝のニュース)
+# 🐹 カピバラさん (日付エラー修正版)
 # ==========================================
-
-
 @handler_capybara.add(MessageEvent, message=TextMessageContent)
 def handle_capybara_message(event):
     print(f"🐹 カピバラ受信: {event.message.text}")
     global search_model
 
-    # ★ 今日の日付を取得 (例: 2025年11月26日)
-    today = datetime.date.today().strftime("%Y年%m月%d日")
+    # ★ここが修正ポイント！
+    # 関数の中で import することで、確実に正しい日付機能を使います
+    import datetime
+
+    try:
+        # これなら絶対にエラーになりません
+        today = datetime.date.today().strftime("%Y年%m月%d日")
+    except:
+        today = "今日"  # 保険
 
     msg = ""
     try:
         if search_model:
-            # ★ プロンプトに「現在日時」を入れるのがコツです！
             prompt = f"""
             現在日時: {today}
             ユーザーの質問: {event.message.text}
@@ -922,7 +926,6 @@ def handle_capybara_message(event):
             msg = response.text
         else:
             msg = "検索機能が故障中だっぴ..."
-    # ... (以下同じ)
 
     except Exception as e:
         print(f"❌ カピバラエラー: {e}")
