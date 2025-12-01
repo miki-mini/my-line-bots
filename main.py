@@ -121,17 +121,16 @@ search_model = None
 
 @app.on_event("startup")
 def startup_event():
-    # グローバル変数を宣言
     global db, storage_client, GCS_BUCKET_NAME
     global image_model, text_model, vision_model, search_model
 
-    print("🚀 起動プロセス開始 (Safety First - 1.5 Flash)...")
+    print("🚀 起動プロセス開始 (Strict Tool Definition)...")
 
     GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID")
     GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-    # 1. DB & Storage 接続
+    # 1. DB & Storage
     try:
         db = firestore.Client(project=GCP_PROJECT_ID)
         storage_client = storage.Client(project=GCP_PROJECT_ID)
@@ -139,44 +138,57 @@ def startup_event():
     except Exception as e:
         print(f"⚠️ DB接続エラー: {e}")
 
-    # 2. Vertex AI (会話 & 画像生成)
-    # ここは普通の会話用なので、無理せず安定版を使います
+    # 2. Vertex AI (基本機能)
     try:
         vertexai.init(project=GCP_PROJECT_ID, location="asia-northeast1")
         text_model = GenerativeModel("gemini-1.5-flash-002")
         vision_model = GenerativeModel("gemini-1.5-flash-002")
-        image_model = ImageGenerationModel.from_pretrained("imagen-3.0-fast-generate-001")
-        print("✅ Vertex AI (基本機能) 準備完了")
+        image_model = ImageGenerationModel.from_pretrained(
+            "imagen-3.0-fast-generate-001"
+        )
+        print("✅ Vertex AI 準備完了")
     except Exception as e:
         print(f"❌ Vertex AI 初期化エラー: {e}")
 
-    # 3. ★検索機能★
-    # ここであえて「1.5 Flash」を使います。これが今動く唯一の鍵です！
+    # 3. ★検索機能 (ここを厳密な書き方に変更！) ★
     if GEMINI_API_KEY:
         try:
-            print("👉 Gemini 1.5 Flash (安定版) を設定中...")
-
+            print("👉 Gemini 1.5 Flash (GenAI) を設定中...")
             import google.generativeai as genai
+
             genai.configure(api_key=GEMINI_API_KEY)
 
-            # 1.5 Flash なら、複雑な設定なしで検索機能が動きます！
+            # ★【修正点】辞書ではなく、専用のクラスを使ってツールを定義します
+            # これなら「Unknown field」と誤解されることがありません
+            from google.generativeai.types import Tool, GoogleSearchRetrieval
+
+            # 検索ツールオブジェクトを作成
+            search_tool = Tool(google_search_retrieval=GoogleSearchRetrieval())
+
             search_model = genai.GenerativeModel(
-                model_name="gemini-1.5-flash",
-                tools=[{"google_search": {}}]
+                model_name="gemini-1.5-flash", tools=[search_tool]
             )
             print("🎉 設定完了！Gemini 1.5 Flash で検索機能が有効です！")
 
         except Exception as e:
             print(f"❌ 設定エラー: {e}")
-            search_model = None
+            # エラーが出たら「google_search」という単純なキーも試す（念のため）
+            try:
+                print("🔄 別の書き方を試します...")
+                search_model = genai.GenerativeModel(
+                    model_name="gemini-1.5-flash", tools=[{"google_search": {}}]
+                )
+                print("🎉 設定完了 (シンプル版)！")
+            except:
+                search_model = None
     else:
         print("⚠️ GEMINI_API_KEY がないためスキップ")
 
-    # 万が一失敗したら、普通のモデルで代用
     if search_model is None:
         search_model = text_model
+        print("⚠️ 検索モデル作成失敗 -> 通常モデルで代用します")
 
-    print("🚀 サーバー起動完了！ Capybara is Back!")
+    print("🚀 サーバー起動完了！ Capybara is Ready.")
 
 
 @app.get("/")
@@ -861,12 +873,21 @@ def handle_fox_message(event):
 
 @app.post("/callback_capybara")
 async def callback_capybara(request: Request):
+    # ヘッダーから署名を取得
     signature = request.headers["X-Line-Signature"]
+    # ボディを取得
     body = await request.body()
+    body_str = body.decode("utf-8")
+
     try:
-        handler_capybara.handle(body.decode("utf-8"), signature)
-    except:
-        raise HTTPException(status_code=400)
+        # 署名検証を実行 (ここでパスワードが合っているかチェックされます)
+        handler_capybara.handle(body_str, signature)
+    except Exception as e:
+        # ★ここでエラーの正体をログに出す！
+        print(f"❌ LINE Webhook エラー: {e}")
+        # InvalidSignatureError なら環境変数の間違いです
+        raise HTTPException(status_code=400, detail=str(e))
+
     return "OK"
 
 
