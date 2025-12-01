@@ -125,10 +125,11 @@ def startup_event():
     global db, storage_client, GCS_BUCKET_NAME
     global image_model, text_model, vision_model, search_model
 
-    print("🚀 起動プロセス開始 (Final Configuration V2)...")
+    print("🚀 起動プロセス開始 (Hybrid Final Version)...")
 
     GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID")
     GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
     # 1. DB & Storage 接続
     try:
@@ -138,57 +139,48 @@ def startup_event():
     except Exception as e:
         print(f"⚠️ DB接続エラー: {e}")
 
-    # 2. Vertex AI 初期化
+    # 2. Vertex AI (会話 & 画像生成用)
+    # ここは検索機能を使わないので、Vertex AIで安定稼働させます
     try:
         vertexai.init(project=GCP_PROJECT_ID, location="asia-northeast1")
-        print("✅ Vertex AI 初期化OK")
-    except Exception as e:
-        print(f"❌ Vertex AI 初期化エラー: {e}")
 
-    # 3. モデルの準備
-    try:
-        # (A) 基本の会話 & 画像認識モデル
+        # 通常会話用 (Gemini 1.5 Flash)
         text_model = GenerativeModel("gemini-2.5-flash")
-        vision_model = GenerativeModel("ggemini-2.5-flash")
+        vision_model = GenerativeModel("gemini-2.5-flash")
 
-        # (B) 画像生成モデル
+        # 画像生成用 (Imagen 3)
         image_model = ImageGenerationModel.from_pretrained(
             "imagen-3.0-fast-generate-001"
         )
-        print("✅ 基本モデル (Text/Vision/Image) 準備完了")
-
-        # (C) ★検索機能 (ここを強化しました！) ★
-        # 正式版になくても、Preview版から無理やり取ってくる処理を追加
-        try:
-            # まず正式な場所を探す
-            from vertexai.generative_models import Tool, GoogleSearchRetrieval
-        except ImportError:
-            print("⚠️ 正式版に検索機能が見つかりません。Preview版を探します...")
-            try:
-                # なければPreview版(実験室)から探す
-                from vertexai.preview.generative_models import (
-                    Tool,
-                    GoogleSearchRetrieval,
-                )
-
-                print("✅ Preview版の検索機能を発見しました！")
-            except ImportError:
-                print("❌ 検索機能がどうしても見つかりません。検索なしで進めます。")
-                search_model = text_model
-                return
-
-        print("👉 Vertex AI Search (Google検索) を設定中...")
-
-        # 検索ツールを作成
-        search_tool = Tool.from_google_search_retrieval(GoogleSearchRetrieval())
-
-        # 検索ツールを持ったモデルを作成
-        search_model = GenerativeModel("gemini-2.5-flash", tools=[search_tool])
-        print("🎉 設定完了！Vertex AI Search が有効です！")
-
+        print("✅ Vertex AI (会話/画像生成) 準備完了")
     except Exception as e:
-        print(f"❌ モデル設定エラー: {e}")
-        # エラー時は検索なしのモデルを代入してサーバーを落とさない
+        print(f"❌ Vertex AI 初期化エラー: {e}")
+
+    # 3. ★検索機能 (ここだけ genai を使う！) ★
+    # Vertex AIのライブラリが古くても、genaiは最新なので動きます！
+    if GEMINI_API_KEY:
+        try:
+            print("👉 Gemini 2.0 Flash Exp (genai版) を設定中...")
+
+            import google.generativeai as genai
+
+            genai.configure(api_key=GEMINI_API_KEY)
+
+            # ★この書き方は genai 0.8.3以上なら確実に動きます
+            search_model = genai.GenerativeModel(
+                model_name="gemini-2.0-flash-exp", tools=[{"google_search": {}}]
+            )
+            print("🎉 設定完了！Gemini 2.0 で検索機能が有効です！")
+
+        except Exception as e:
+            print(f"❌ Gemini 2.0 設定エラー: {e}")
+            search_model = None
+    else:
+        print("⚠️ GEMINI_API_KEY がないため、検索機能はスキップします")
+
+    # 万が一 search_model が作れなかったら、text_model を代わりに入れる
+    if search_model is None:
+        print("⚠️ 検索モデルの作成に失敗したため、検索なしモデルで代用します")
         search_model = text_model
 
     print("🚀 サーバー起動完了！ Capybara System is Ready.")
