@@ -148,8 +148,8 @@ def startup_event():
     # 3. モデルの準備
     try:
         # (A) 基本の会話 & 画像認識モデル
-        text_model = GenerativeModel("gemini-2.0-flash")
-        vision_model = GenerativeModel("ggemini-2.0-flash")
+        text_model = GenerativeModel("gemini-2.5-flash")
+        vision_model = GenerativeModel("ggemini-2.5-flash")
 
         # (B) 画像生成モデル
         image_model = ImageGenerationModel.from_pretrained(
@@ -183,7 +183,7 @@ def startup_event():
         search_tool = Tool.from_google_search_retrieval(GoogleSearchRetrieval())
 
         # 検索ツールを持ったモデルを作成
-        search_model = GenerativeModel("gemini-2.0-flash", tools=[search_tool])
+        search_model = GenerativeModel("gemini-2.5-flash", tools=[search_tool])
         print("🎉 設定完了！Vertex AI Search が有効です！")
 
     except Exception as e:
@@ -237,7 +237,7 @@ def handle_image_message(event):
         else:
             print("🔍 画像タイプ: JPEG")
 
-        model_name = "gemini-2.0-flash"
+        model_name = "gemini-2.5-flash"
         print(f"🤖 2. {model_name} に送信...")
         model_flash = genai.GenerativeModel(model_name)
 
@@ -419,7 +419,7 @@ def handle_message(event):
             # 🌤️ 3. 天気予報（カエル）
             elif "天気" in user_text or "てんき" in user_text:
                 try:
-                    chat_model = genai.GenerativeModel("gemini-2.0-flash")
+                    chat_model = genai.GenerativeModel("gemini-2.5-flash")
                     prompt = f"次の内容について楽しく答えて: {user_text}\n役割: カエルのケロくん。天気と服装のアドバイス。語尾はケロ。"
                     res = chat_model.generate_content(prompt)
                     reply_text = res.text
@@ -429,7 +429,7 @@ def handle_message(event):
             # 📰 4. ニュース（カピバラ）
             elif "ニュース" in user_text:
                 try:
-                    chat_model = genai.GenerativeModel("gemini-2.0-flash")
+                    chat_model = genai.GenerativeModel("gemini-2.5-flash")
                     prompt = f"次の話題について教えて: {user_text}\n役割: カピバラさん。3行要約。語尾はだっぴ。"
                     res = chat_model.generate_content(prompt)
                     reply_text = res.text
@@ -489,7 +489,7 @@ def handle_message(event):
                 }}
                 """
 
-                model = genai.GenerativeModel("gemini-2.0-flash")
+                model = genai.GenerativeModel("gemini-2.5-flash")
                 response = model.generate_content(prompt)
                 cleaned_text = (
                     response.text.replace("```json", "").replace("```", "").strip()
@@ -543,7 +543,7 @@ def handle_message(event):
 
 def call_gemini_to_clean_email(raw_subject, raw_body):
     try:
-        model = genai.GenerativeModel("gemini-2.0-flash")
+        model = genai.GenerativeModel("gemini-2.5-flash")
         prompt = f"ビジネスメールに修正して。JSON形式 {{'subject': '...', 'body': '...'}} で出力。\n件名:{raw_subject}\n本文:{raw_body}"
         response = model.generate_content(prompt)
         text = response.text.replace("```json", "").replace("```", "").strip()
@@ -650,7 +650,7 @@ def get_current_calendar():
 def handle_train_message(event):
     user_text = event.message.text
     try:
-        res = genai.GenerativeModel("gemini-2.0-flash").generate_content(
+        res = genai.GenerativeModel("gemini-2.5-flash").generate_content(
             f"駅名だけ抜き出して。「{user_text}」 -> 出力:"
         )
         extracted = (
@@ -756,7 +756,7 @@ async def callback_voidoll(request: Request):
 def handle_voidoll_audio(event):
     try:
         content = line_bot_blob_api_voidoll.get_message_content(event.message.id)
-        res = genai.GenerativeModel("gemini-2.0-flash").generate_content(
+        res = genai.GenerativeModel("gemini-2.5-flash").generate_content(
             [
                 "文字起こしして返答。性格:知的女性AI。",
                 {"mime_type": "audio/mp4", "data": content},
@@ -860,7 +860,7 @@ async def callback_fox(request: Request):
 @handler_fox.add(MessageEvent, message=TextMessageContent)
 def handle_fox_message(event):
     try:
-        res = genai.GenerativeModel("gemini-2.0-flash").generate_content(
+        res = genai.GenerativeModel("gemini-2.5-flash").generate_content(
             f"動画情報: {event.message.text}\n役割:キツネ先生。語尾コン。"
         )
         msg = res.text
@@ -974,7 +974,7 @@ class GenerateRequest(BaseModel):
 @app.post("/generate")
 def generate_text_endpoint(req: GenerateRequest):
     try:
-        res = genai.GenerativeModel("gemini-2.0-flash").generate_content(req.prompt)
+        res = genai.GenerativeModel("gemini-2.5-flash").generate_content(req.prompt)
         return {"response_text": res.text}
     except Exception as e:
         raise HTTPException(500, detail=str(e))
@@ -1261,7 +1261,7 @@ async def analyze_image(image_file: UploadFile = File(...)):
         """
 
         # 3. Gemini (Flash) で分析
-        model = GenerativeModel("gemini-2.0-flash")
+        model = GenerativeModel("gemini-2.5-flash")
         response = model.generate_content([image_part, prompt])
         text_response = response.text
         print(f"AI Response Raw: {text_response}")  # ログで確認用
