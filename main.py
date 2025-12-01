@@ -148,11 +148,13 @@ def startup_event():
     # 3. モデルの準備
     try:
         # (A) 基本の会話 & 画像認識モデル
-        text_model = GenerativeModel("gemini-1.5-flash-002")
-        vision_model = GenerativeModel("gemini-1.5-flash-002")
+        text_model = GenerativeModel("gemini-2.0-flash")
+        vision_model = GenerativeModel("ggemini-2.0-flash")
 
         # (B) 画像生成モデル
-        image_model = ImageGenerationModel.from_pretrained("imagen-3.0-fast-generate-001")
+        image_model = ImageGenerationModel.from_pretrained(
+            "imagen-3.0-fast-generate-001"
+        )
         print("✅ 基本モデル (Text/Vision/Image) 準備完了")
 
         # (C) ★検索機能 (ここを強化しました！) ★
@@ -164,7 +166,11 @@ def startup_event():
             print("⚠️ 正式版に検索機能が見つかりません。Preview版を探します...")
             try:
                 # なければPreview版(実験室)から探す
-                from vertexai.preview.generative_models import Tool, GoogleSearchRetrieval
+                from vertexai.preview.generative_models import (
+                    Tool,
+                    GoogleSearchRetrieval,
+                )
+
                 print("✅ Preview版の検索機能を発見しました！")
             except ImportError:
                 print("❌ 検索機能がどうしても見つかりません。検索なしで進めます。")
@@ -177,10 +183,7 @@ def startup_event():
         search_tool = Tool.from_google_search_retrieval(GoogleSearchRetrieval())
 
         # 検索ツールを持ったモデルを作成
-        search_model = GenerativeModel(
-            "gemini-1.5-flash-002",
-            tools=[search_tool]
-        )
+        search_model = GenerativeModel("gemini-2.0-flash", tools=[search_tool])
         print("🎉 設定完了！Vertex AI Search が有効です！")
 
     except Exception as e:
