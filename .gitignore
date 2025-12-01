@@ -1,0 +1,20 @@
+# --- 重要な秘密の鍵 ---
+.env
+
+# --- Pythonのシステムファイル (アップロード不要) ---
+.conda/
+conda-meta/
+DLLs/
+Lib/
+Library/
+libs/
+Scripts/
+share/
+Tools/
+etc/
+include/
+__pycache__/
+*.pyc
+
+# --- VS Codeの設定 ---
+.vscode/

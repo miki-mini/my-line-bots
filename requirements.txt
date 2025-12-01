@@ -1,0 +1,18 @@
+fastapi==0.121.0
+uvicorn==0.38.0
+line-bot-sdk
+googlemaps
+Pillow
+google-generativeai>=0.8.3
+python-dotenv
+gunicorn
+python-multipart
+google-cloud-firestore
+google-cloud-storage
+google-cloud-aiplatform>=1.71.0
+requests  # 👈 これをビーバー君のために復活！
+
+matplotlib  # 👈 グラフ用
+japanize-matplotlib
+pandas
+
