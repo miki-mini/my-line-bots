@@ -121,16 +121,17 @@ search_model = None
 
 @app.on_event("startup")
 def startup_event():
+    # グローバル変数を宣言
     global db, storage_client, GCS_BUCKET_NAME
     global image_model, text_model, vision_model, search_model
 
-    print("🚀 起動プロセス開始 (Strict Tool Definition)...")
+    print("🚀 起動プロセス開始 (Correct Model Name)...")
 
     GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID")
     GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-    # 1. DB & Storage
+    # 1. DB & Storage 接続
     try:
         db = firestore.Client(project=GCP_PROJECT_ID)
         storage_client = storage.Client(project=GCP_PROJECT_ID)
@@ -138,19 +139,23 @@ def startup_event():
     except Exception as e:
         print(f"⚠️ DB接続エラー: {e}")
 
-    # 2. Vertex AI (基本機能)
+    # 2. Vertex AI (会話 & 画像生成)
     try:
         vertexai.init(project=GCP_PROJECT_ID, location="asia-northeast1")
-        text_model = GenerativeModel("gemini-1.5-flash-002")
-        vision_model = GenerativeModel("gemini-1.5-flash-002")
+
+        # ★ここ修正！「-002」を消して、普通の「gemini-1.5-flash」にします
+        # これなら東京リージョンでも確実に動きます！
+        text_model = GenerativeModel("gemini-1.5-flash")
+        vision_model = GenerativeModel("gemini-1.5-flash")
+
         image_model = ImageGenerationModel.from_pretrained(
             "imagen-3.0-fast-generate-001"
         )
-        print("✅ Vertex AI 準備完了")
+        print("✅ Vertex AI (基本機能) 準備完了")
     except Exception as e:
         print(f"❌ Vertex AI 初期化エラー: {e}")
 
-    # 3. ★検索機能 (ここを厳密な書き方に変更！) ★
+    # 3. ★検索機能 (GenAI)★
     if GEMINI_API_KEY:
         try:
             print("👉 Gemini 1.5 Flash (GenAI) を設定中...")
@@ -158,37 +163,23 @@ def startup_event():
 
             genai.configure(api_key=GEMINI_API_KEY)
 
-            # ★【修正点】辞書ではなく、専用のクラスを使ってツールを定義します
-            # これなら「Unknown field」と誤解されることがありません
-            from google.generativeai.types import Tool, GoogleSearchRetrieval
-
-            # 検索ツールオブジェクトを作成
-            search_tool = Tool(google_search_retrieval=GoogleSearchRetrieval())
-
+            # こっちはGenAI(グローバル)なので、バージョン指定なしでOK
             search_model = genai.GenerativeModel(
-                model_name="gemini-1.5-flash", tools=[search_tool]
+                model_name="gemini-1.5-flash", tools=[{"google_search": {}}]
             )
             print("🎉 設定完了！Gemini 1.5 Flash で検索機能が有効です！")
 
         except Exception as e:
             print(f"❌ 設定エラー: {e}")
-            # エラーが出たら「google_search」という単純なキーも試す（念のため）
-            try:
-                print("🔄 別の書き方を試します...")
-                search_model = genai.GenerativeModel(
-                    model_name="gemini-1.5-flash", tools=[{"google_search": {}}]
-                )
-                print("🎉 設定完了 (シンプル版)！")
-            except:
-                search_model = None
+            search_model = None
     else:
         print("⚠️ GEMINI_API_KEY がないためスキップ")
 
+    # 万が一失敗したら、Vertex AIのモデルで代用
     if search_model is None:
         search_model = text_model
-        print("⚠️ 検索モデル作成失敗 -> 通常モデルで代用します")
 
-    print("🚀 サーバー起動完了！ Capybara is Ready.")
+    print("🚀 サーバー起動完了！ Final Capybara is Ready.")
 
 
 @app.get("/")
@@ -936,8 +927,7 @@ def handle_capybara_message(event):
         line_bot_api = MessagingApi(api_client)
         line_bot_api.reply_message(
             ReplyMessageRequest(
-                reply_token=event.reply_token,
-                messages=[TextMessage(text=msg)]
+                reply_token=event.reply_token, messages=[TextMessage(text=msg)]
             )
         )
 
