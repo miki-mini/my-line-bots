@@ -125,7 +125,7 @@ def startup_event():
     global db, storage_client, GCS_BUCKET_NAME
     global image_model, text_model, vision_model, search_model
 
-    print("🚀 起動プロセス開始 (Hybrid Final Version)...")
+    print("🚀 起動プロセス開始 (Safety First - 1.5 Flash)...")
 
     GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID")
     GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
@@ -139,51 +139,44 @@ def startup_event():
     except Exception as e:
         print(f"⚠️ DB接続エラー: {e}")
 
-    # 2. Vertex AI (会話 & 画像生成用)
-    # ここは検索機能を使わないので、Vertex AIで安定稼働させます
+    # 2. Vertex AI (会話 & 画像生成)
+    # ここは普通の会話用なので、無理せず安定版を使います
     try:
         vertexai.init(project=GCP_PROJECT_ID, location="asia-northeast1")
-
-        # 通常会話用 (Gemini 1.5 Flash)
-        text_model = GenerativeModel("gemini-2.5-flash")
-        vision_model = GenerativeModel("gemini-2.5-flash")
-
-        # 画像生成用 (Imagen 3)
-        image_model = ImageGenerationModel.from_pretrained(
-            "imagen-3.0-fast-generate-001"
-        )
-        print("✅ Vertex AI (会話/画像生成) 準備完了")
+        text_model = GenerativeModel("gemini-1.5-flash-002")
+        vision_model = GenerativeModel("gemini-1.5-flash-002")
+        image_model = ImageGenerationModel.from_pretrained("imagen-3.0-fast-generate-001")
+        print("✅ Vertex AI (基本機能) 準備完了")
     except Exception as e:
         print(f"❌ Vertex AI 初期化エラー: {e}")
 
-    # 3. ★検索機能 (ここだけ genai を使う！) ★
-    # Vertex AIのライブラリが古くても、genaiは最新なので動きます！
+    # 3. ★検索機能★
+    # ここであえて「1.5 Flash」を使います。これが今動く唯一の鍵です！
     if GEMINI_API_KEY:
         try:
-            print("👉 Gemini 2.0 Flash Exp (genai版) を設定中...")
+            print("👉 Gemini 1.5 Flash (安定版) を設定中...")
 
             import google.generativeai as genai
-
             genai.configure(api_key=GEMINI_API_KEY)
 
-            # ★この書き方は genai 0.8.3以上なら確実に動きます
+            # 1.5 Flash なら、複雑な設定なしで検索機能が動きます！
             search_model = genai.GenerativeModel(
-                model_name="gemini-2.0-flash-exp", tools=[{"google_search": {}}]
+                model_name="gemini-1.5-flash",
+                tools=[{"google_search": {}}]
             )
-            print("🎉 設定完了！Gemini 2.0 で検索機能が有効です！")
+            print("🎉 設定完了！Gemini 1.5 Flash で検索機能が有効です！")
 
         except Exception as e:
-            print(f"❌ Gemini 2.0 設定エラー: {e}")
+            print(f"❌ 設定エラー: {e}")
             search_model = None
     else:
-        print("⚠️ GEMINI_API_KEY がないため、検索機能はスキップします")
+        print("⚠️ GEMINI_API_KEY がないためスキップ")
 
-    # 万が一 search_model が作れなかったら、text_model を代わりに入れる
+    # 万が一失敗したら、普通のモデルで代用
     if search_model is None:
-        print("⚠️ 検索モデルの作成に失敗したため、検索なしモデルで代用します")
         search_model = text_model
 
-    print("🚀 サーバー起動完了！ Capybara System is Ready.")
+    print("🚀 サーバー起動完了！ Capybara is Back!")
 
 
 @app.get("/")
