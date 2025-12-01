@@ -892,22 +892,22 @@ async def callback_capybara(request: Request):
 
 
 # ==========================================
-# 🐹 カピバラさん (日付エラー修正版)
+# 🐹 カピバラさん (日付エラー完全修正版)
 # ==========================================
 @handler_capybara.add(MessageEvent, message=TextMessageContent)
 def handle_capybara_message(event):
     print(f"🐹 カピバラ受信: {event.message.text}")
     global search_model
 
-    # ★ここが修正ポイント！
-    # 関数の中で import することで、確実に正しい日付機能を使います
-    import datetime
+    # ★ここが修正ポイント！「dt」というあだ名をつけました
+    import datetime as dt
 
     try:
-        # これなら絶対にエラーになりません
-        today = datetime.date.today().strftime("%Y年%m月%d日")
-    except:
-        today = "今日"  # 保険
+        # datetime.date ではなく dt.date と書くことで、衝突を回避！
+        today = dt.date.today().strftime("%Y年%m月%d日")
+    except Exception as e:
+        print(f"⚠️ 日付取得エラー: {e}")
+        today = "今日"
 
     msg = ""
     try:
@@ -936,7 +936,8 @@ def handle_capybara_message(event):
         line_bot_api = MessagingApi(api_client)
         line_bot_api.reply_message(
             ReplyMessageRequest(
-                reply_token=event.reply_token, messages=[TextMessage(text=msg)]
+                reply_token=event.reply_token,
+                messages=[TextMessage(text=msg)]
             )
         )
 
