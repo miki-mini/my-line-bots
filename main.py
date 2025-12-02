@@ -18,6 +18,7 @@ import vertexai
 from vertexai.generative_models import GenerativeModel, Part, Image, Tool, grounding
 from vertexai.vision_models import ImageGenerationModel
 from vertexai.generative_models import grounding
+from vertexai.preview.vision_models import ImageGenerationModel
 
 # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
@@ -119,9 +120,9 @@ if GEMINI_API_KEY:
 def startup_event():
     global db, storage_client, GCS_BUCKET_NAME
     global image_model, text_model, vision_model, search_model
-    global startup_errors  # エラー記録用
+    global startup_errors
 
-    startup_errors = []  # 初期化
+    startup_errors.clear()  # エラーリストをクリア
 
     print("🚀 起動プロセス開始 (Gemini 2.5 Flash - Vertex AI)...")
 
@@ -867,7 +868,7 @@ def handle_frog_message(event):
     print(f"🐸 reply_token: {event.reply_token}")
 
     # グローバル変数を呼び出す
-    global search_model
+    global search_model, text_model
 
     # ★ モデルの状態チェック
     print(f"🧐 search_model の状態: {search_model is not None}")
