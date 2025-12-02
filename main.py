@@ -65,7 +65,7 @@ image_model = None
 text_model = None
 vision_model = None
 search_model = None
-
+startup_errors = []
 app = FastAPI()
 storage_client = None
 
