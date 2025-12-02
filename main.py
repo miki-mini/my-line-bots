@@ -125,7 +125,7 @@ def startup_event():
     global db, storage_client, GCS_BUCKET_NAME
     global image_model, text_model, vision_model, search_model
 
-    print("🚀 起動プロセス開始 (Correct Model Name)...")
+    print("🚀 起動プロセス開始 (US Region Strategy)...")
 
     GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID")
     GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
@@ -139,19 +139,21 @@ def startup_event():
     except Exception as e:
         print(f"⚠️ DB接続エラー: {e}")
 
-    # 2. Vertex AI (会話 & 画像生成)
+    # 2. Vertex AI (基本の会話 & 画像生成)
     try:
-        vertexai.init(project=GCP_PROJECT_ID, location="asia-northeast1")
+        # ★★★ ここ！ location="us-central1" に変更！ ★★★
+        # これで他のボットも含めて、全員がアメリカの最新サーバーを使います
+        vertexai.init(project=GCP_PROJECT_ID, location="us-central1")
 
-        # ★ここ修正！「-002」を消して、普通の「gemini-1.5-flash」にします
-        # これなら東京リージョンでも確実に動きます！
-        text_model = GenerativeModel("gemini-1.5-flash")
-        vision_model = GenerativeModel("gemini-1.5-flash")
+        # 最新モデルを指定してもエラーになりません
+        text_model = GenerativeModel("gemini-1.5-flash-002")
+        vision_model = GenerativeModel("gemini-1.5-flash-002")
 
+        # 画像生成もUSなら安心
         image_model = ImageGenerationModel.from_pretrained(
             "imagen-3.0-fast-generate-001"
         )
-        print("✅ Vertex AI (基本機能) 準備完了")
+        print("✅ Vertex AI (USリージョン) 準備完了")
     except Exception as e:
         print(f"❌ Vertex AI 初期化エラー: {e}")
 
@@ -163,7 +165,7 @@ def startup_event():
 
             genai.configure(api_key=GEMINI_API_KEY)
 
-            # こっちはGenAI(グローバル)なので、バージョン指定なしでOK
+            # 検索機能付きモデル
             search_model = genai.GenerativeModel(
                 model_name="gemini-1.5-flash", tools=[{"google_search": {}}]
             )
@@ -179,7 +181,7 @@ def startup_event():
     if search_model is None:
         search_model = text_model
 
-    print("🚀 サーバー起動完了！ Final Capybara is Ready.")
+    print("🚀 サーバー起動完了！ Global Capybara is Ready.")
 
 
 @app.get("/")
