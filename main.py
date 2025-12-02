@@ -15,13 +15,16 @@ import re
 
 # 【絶対に落ちないインポート】
 import vertexai
-from vertexai.generative_models import GenerativeModel, Part, Image, Tool
+from vertexai.generative_models import GenerativeModel, Part, Image, Tool, grounding
 from vertexai.vision_models import ImageGenerationModel
+from vertexai.generative_models import grounding
 
 # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 from google import genai
+from google.genai.types import GenerateContentConfig, GoogleSearch, Tool
 import google.generativeai as genai
+from google.genai import types
 from PIL import Image
 
 import googlemaps
@@ -55,15 +58,19 @@ from fastapi.responses import StreamingResponse
 import pandas as pd
 from datetime import datetime
 
-
 # --- グローバル変数 ---
+# モデルたち
+image_model = None
+text_model = None
+vision_model = None
+search_model = None
+
 app = FastAPI()
 storage_client = None
-image_model = None
+
 GCS_BUCKET_NAME = None
 db = None
 model = None
-
 load_dotenv()
 
 GAS_MAIL_WEB_APP_URL = os.environ.get("GAS_MAIL_WEB_APP_URL")
@@ -108,28 +115,18 @@ if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
 
-# --- グローバル変数 ---
-db = None
-storage_client = None
-GCS_BUCKET_NAME = None
-# モデルたち
-image_model = None
-text_model = None
-vision_model = None
-search_model = None
-
-
 @app.on_event("startup")
 def startup_event():
-    # グローバル変数を宣言
     global db, storage_client, GCS_BUCKET_NAME
     global image_model, text_model, vision_model, search_model
+    global startup_errors  # エラー記録用
 
-    print("🚀 起動プロセス開始 (US Region Strategy)...")
+    startup_errors = []  # 初期化
+
+    print("🚀 起動プロセス開始 (Gemini 2.5 Flash - Vertex AI)...")
 
     GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID")
     GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
-    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
     # 1. DB & Storage 接続
     try:
@@ -139,54 +136,117 @@ def startup_event():
     except Exception as e:
         print(f"⚠️ DB接続エラー: {e}")
 
-    # 2. Vertex AI (基本の会話 & 画像生成)
+    # 2. Vertex AI 初期化
     try:
-        # ★★★ ここ！ location="us-central1" に変更！ ★★★
-        # これで他のボットも含めて、全員がアメリカの最新サーバーを使います
-        vertexai.init(project=GCP_PROJECT_ID, location="us-central1")
-
-        # 最新モデルを指定してもエラーになりません
-        text_model = GenerativeModel("gemini-1.5-flash-002")
-        vision_model = GenerativeModel("gemini-1.5-flash-002")
-
-        # 画像生成もUSなら安心
-        image_model = ImageGenerationModel.from_pretrained(
-            "imagen-3.0-fast-generate-001"
-        )
-        print("✅ Vertex AI (USリージョン) 準備完了")
+        vertexai.init(project=GCP_PROJECT_ID, location="asia-northeast1")
+        print("✅ Vertex AI 初期化OK")
     except Exception as e:
         print(f"❌ Vertex AI 初期化エラー: {e}")
+        return
 
-    # 3. ★検索機能 (GenAI)★
-    if GEMINI_API_KEY:
+    # 3. モデルの準備
+    try:
+        # (A) 基本の会話 & 画像認識
+        text_model = GenerativeModel("gemini-2.5-flash")
+        vision_model = GenerativeModel("gemini-2.5-flash")
+
+        # (B) 画像生成
         try:
-            print("👉 Gemini 1.5 Flash (GenAI) を設定中...")
-            import google.generativeai as genai
-
-            genai.configure(api_key=GEMINI_API_KEY)
-
-            # 検索機能付きモデル
-            search_model = genai.GenerativeModel(
-                model_name="gemini-1.5-flash", tools=[{"google_search": {}}]
+            image_model = ImageGenerationModel.from_pretrained(
+                "imagen-3.0-fast-generate-001"
             )
-            print("🎉 設定完了！Gemini 1.5 Flash で検索機能が有効です！")
+            print("✅ 基本モデル (2.5 Flash & Imagen) 準備完了")
+        except:
+            image_model = None
+            print("✅ 基本モデル (2.5 Flash) 準備完了")
 
-        except Exception as e:
-            print(f"❌ 設定エラー: {e}")
-            search_model = None
-    else:
-        print("⚠️ GEMINI_API_KEY がないためスキップ")
+    except Exception as e:
+        print(f"❌ 基本モデル設定エラー: {e}")
 
-    # 万が一失敗したら、Vertex AIのモデルで代用
-    if search_model is None:
+    # (C) ★検索機能 - 2025年最新の正しい書き方★
+    try:
+        print("👉 Google Search 機能を設定中...")
+
+        # まず grounding が使えるか確認
+        print(f"   grounding モジュール: {grounding}")
+        print(
+            f"   GoogleSearchRetrieval: {hasattr(grounding, 'GoogleSearchRetrieval')}"
+        )
+
+        # ✅ 正しいインポートと使い方
+        search_retrieval = grounding.GoogleSearchRetrieval()
+        print(
+            f"   GoogleSearchRetrieval インスタンス作成成功: {type(search_retrieval)}"
+        )
+
+        search_tool = Tool.from_google_search_retrieval(search_retrieval)
+        print(f"   Tool 作成成功: {type(search_tool)}")
+
+        # 検索対応モデルの作成
+        search_model = GenerativeModel("gemini-2.5-flash", tools=[search_tool])
+
+        print("🎉 Gemini 2.5 Flash + Google Search 設定完了！")
+        print(f"   search_model._tools: {len(search_model._tools)} tools")
+
+    except AttributeError as e:
+        error_msg = f"AttributeError: {str(e)}"
+        print(f"❌ 検索モデル設定エラー: {error_msg}")
+        startup_errors.append(error_msg)
         search_model = text_model
+        print("⚠️ 検索機能なしで起動します（通常モデルで代替）")
 
-    print("🚀 サーバー起動完了！ Global Capybara is Ready.")
+    except Exception as e:
+        error_msg = f"{type(e).__name__}: {str(e)}"
+        print(f"❌ 検索モデル設定エラー: {error_msg}")
+        startup_errors.append(error_msg)
+        # フォールバック：検索なしで動作
+        search_model = text_model
+        print("⚠️ 検索機能なしで起動します（通常モデルで代替）")
+
+    print("🚀 サーバー起動完了！ Super Capybara (2.5) is Ready.")
+
+
+# ========================================
 
 
 @app.get("/")
 def read_root():
     return {"status": "All Bots Operational 🤖✨"}
+
+
+# ========================================
+# デバッグ：起動後にモデル確認
+# ========================================
+
+
+@app.get("/health")
+def health_check():
+    """ヘルスチェック＆モデル状態確認"""
+    try:
+        return {
+            "status": "ok",
+            "models": {
+                "text_model": text_model is not None,
+                "vision_model": vision_model is not None,
+                "search_model": search_model is not None,
+                "image_model": image_model is not None,
+            },
+            "search_enabled": (
+                search_model is not None
+                and text_model is not None
+                and id(search_model) != id(text_model)
+            ),
+            "search_model_type": type(search_model).__name__ if search_model else None,
+            "text_model_type": type(text_model).__name__ if text_model else None,
+            "startup_errors": startup_errors if startup_errors else [],
+            "has_tools": hasattr(search_model, "_tools") if search_model else False,
+            "tools_count": (
+                len(getattr(search_model, "_tools", [])) if search_model else 0
+            ),
+        }
+    except Exception as e:
+        # エラーが起きても最低限の情報を返す
+        return {"status": "error", "error": str(e), "error_type": type(e).__name__}
 
 
 # ==========================================
@@ -793,47 +853,115 @@ async def callback_frog(request: Request):
     return "OK"
 
 
-# ファイルの一番上に import datetime があるか確認してください！
+# ========================================
+# カエルのメッセージハンドラー
+# ========================================
 
 
 @handler_frog.add(MessageEvent, message=TextMessageContent)
 def handle_frog_message(event):
     print(f"🐸 カエル受信: {event.message.text}")
+    print(
+        f"🐸 ユーザーID: {event.source.user_id if hasattr(event.source, 'user_id') else 'unknown'}"
+    )
+    print(f"🐸 reply_token: {event.reply_token}")
+
+    # グローバル変数を呼び出す
     global search_model
 
-    # ★ 日付を取得 (これで「明日」がいつか分かるようになります)
+    # ★ モデルの状態チェック
+    print(f"🧐 search_model の状態: {search_model is not None}")
+    print(f"🧐 text_model の状態: {text_model is not None}")
+
     today = datetime.date.today().strftime("%Y年%m月%d日")
-
     msg = ""
-    try:
-        if search_model:
-            # ★ プロンプトに日付を埋め込みます
-            prompt = f"""
-            現在日時: {today}
-            ユーザーの質問: {event.message.text}
 
-            役割: あなたは天気予報が得意なカエルです。
-            ルール:
-            1. 上記の「現在日時」を基準にして、Google検索で最新の気象情報を調べてください。
-            2. 「明日」と言われたら、現在日時の翌日の天気を検索してください。
-            3. 語尾は「ケロ」をつけて、雨なら傘を勧めるなど気遣ってください。
-            """
-            res = search_model.generate_content(prompt)
-            msg = res.text
+    try:
+        print("🐸 ステップ1: 検索判定開始")
+
+        # 検索が必要か判定
+        search_keywords = ["天気", "最新", "今", "現在", "ニュース", "調べて"]
+        needs_search = any(keyword in event.message.text for keyword in search_keywords)
+
+        print(f"🐸 ステップ2: 検索必要? {needs_search}")
+
+        # 使用するモデルを選択
+        if needs_search and search_model:
+            print("🔍 検索モードで実行中...")
+            model = search_model
+        elif text_model:
+            print("💬 通常モードで実行中...")
+            model = text_model
         else:
-            msg = "今は天気が見られないケロ..."
+            print("❌ 使えるモデルがありません！")
+            msg = "今は答えられないケロ...（システムエラー）"
+            raise Exception("モデルが初期化されていません")
+
+        print(f"🐸 ステップ3: 使用モデル = {type(model).__name__}")
+
+        # プロンプト作成
+        prompt = f"""
+現在日時: {today}
+ユーザーの質問: {event.message.text}
+
+あなたは明るく元気な天気予報カエルです。
+必要に応じて最新情報を検索して、簡潔に答えてください。
+語尾に「ケロ」をつけて親しみやすく回答してください。
+"""
+
+        print("🐸 ステップ4: プロンプト作成完了")
+        print(f"   プロンプト長: {len(prompt)} 文字")
+
+        # 生成実行
+        print(f"⏳ 生成開始...")
+        response = model.generate_content(
+            prompt,
+            generation_config={
+                "temperature": 0.7,
+                "max_output_tokens": 1024,
+            },
+        )
+
+        print("🐸 ステップ5: 生成完了")
+
+        # レスポンス取得
+        if response and hasattr(response, "text") and response.text:
+            msg = response.text.strip()
+            print(f"✅ 生成成功！ (文字数: {len(msg)})")
+            print(f"   返信内容プレビュー: {msg[:100]}...")
+        else:
+            print("⚠️ 空の応答を受信")
+            msg = "答えが見つからなかったケロ..."
 
     except Exception as e:
-        print(f"❌ カエルエラー: {e}")
-        msg = "エラーだケロ。場所を変えて聞いてみてほしいケロ。"
+        print(f"❌ カエル生成エラー: {e}")
+        print(f"   エラータイプ: {type(e).__name__}")
+        import traceback
+
+        print(f"   スタックトレース:\n{traceback.format_exc()}")
+        msg = f"エラーが起きたケロ...💦"
 
     # LINEに返信
-    with ApiClient(configuration_frog) as c:
-        MessagingApi(c).reply_message(
-            ReplyMessageRequest(
-                reply_token=event.reply_token, messages=[TextMessage(text=msg)]
+    try:
+        print("🐸 ステップ6: LINE返信開始")
+        print(f"   返信先token: {event.reply_token}")
+        print(f"   メッセージ: {msg[:50]}...")
+
+        with ApiClient(configuration_frog) as c:
+            api = MessagingApi(c)
+            api.reply_message(
+                ReplyMessageRequest(
+                    reply_token=event.reply_token, messages=[TextMessage(text=msg)]
+                )
             )
-        )
+        print("📨 カエル返信送信完了！")
+
+    except Exception as e:
+        print(f"❌ 返信送信エラー: {e}")
+        print(f"   エラータイプ: {type(e).__name__}")
+        import traceback
+
+        print(f"   スタックトレース:\n{traceback.format_exc()}")
 
 
 @app.post("/callback_fox")
@@ -885,18 +1013,19 @@ async def callback_capybara(request: Request):
 
 
 # ==========================================
-# 🐹 カピバラさん (日付エラー完全修正版)
+# 🐹 カピバラさん (日付エラー完全修正・最終版)
 # ==========================================
 @handler_capybara.add(MessageEvent, message=TextMessageContent)
 def handle_capybara_message(event):
     print(f"🐹 カピバラ受信: {event.message.text}")
     global search_model
 
-    # ★ここが修正ポイント！「dt」というあだ名をつけました
+    # ★重要！ここで「dt」というあだ名でインポートします
+    # これなら外でどんな設定になっていても絶対に干渉しません！
     import datetime as dt
 
     try:
-        # datetime.date ではなく dt.date と書くことで、衝突を回避！
+        # dt.date.today() なら確実に動きます
         today = dt.date.today().strftime("%Y年%m月%d日")
     except Exception as e:
         print(f"⚠️ 日付取得エラー: {e}")
@@ -904,6 +1033,7 @@ def handle_capybara_message(event):
 
     msg = ""
     try:
+        # 検索モデルがあるか確認
         if search_model:
             prompt = f"""
             現在日時: {today}
@@ -918,20 +1048,23 @@ def handle_capybara_message(event):
             response = search_model.generate_content(prompt)
             msg = response.text
         else:
-            msg = "検索機能が故障中だっぴ..."
+            msg = "検索機能がちょっと調子悪いっぴ...ごめんっぴ。"
 
     except Exception as e:
-        print(f"❌ カピバラエラー: {e}")
+        print(f"❌ カピバラ生成エラー: {e}")
         msg = "エラーが出ちゃったっぴ。もう一回言ってほしいっぴ。"
 
     # LINEに返信
-    with ApiClient(configuration_capybara) as api_client:
-        line_bot_api = MessagingApi(api_client)
-        line_bot_api.reply_message(
-            ReplyMessageRequest(
-                reply_token=event.reply_token, messages=[TextMessage(text=msg)]
+    try:
+        with ApiClient(configuration_capybara) as api_client:
+            line_bot_api = MessagingApi(api_client)
+            line_bot_api.reply_message(
+                ReplyMessageRequest(
+                    reply_token=event.reply_token, messages=[TextMessage(text=msg)]
+                )
             )
-        )
+    except Exception as e:
+        print(f"❌ LINE返信エラー: {e}")
 
 
 # --- ☀️ 朝のニュース配信 (検索機能付き) ---
@@ -944,7 +1077,7 @@ def trigger_morning_news():
         if search_model:
             # ★ここで「今日のニュース」を検索させる！
             prompt = """
-            今の日本や世界の重要なニュースを3つピックアップして検索してください。
+            今の日本や世界のAIニュースを3つピックアップして検索してください。
             それをカピバラの口調（語尾っぴ）で、分かりやすく解説してください。
             最後に「今日も一日がんばるっぴ！」と元気づけてください。
             """

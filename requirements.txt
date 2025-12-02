@@ -4,12 +4,15 @@ line-bot-sdk
 googlemaps
 Pillow
 google-generativeai>=0.8.3
+# ★最新のGoogle Gen AI SDK（必須）★
+google-genai>=1.52.0
 python-dotenv
 gunicorn
 python-multipart
 google-cloud-firestore
 google-cloud-storage
-google-cloud-aiplatform>=1.71.0
+google-cloud-aiplatform>=1.114.0
+
 requests  # 👈 これをビーバー君のために復活！
 
 matplotlib  # 👈 グラフ用
