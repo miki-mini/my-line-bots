@@ -845,13 +845,23 @@ def handle_voidoll_audio(event):
 
 @app.post("/callback_frog")
 async def callback_frog(request: Request):
-    signature = request.headers["X-Line-Signature"]
+    print("🐸🐸🐸 カエルWebhook受信！！！")
+
+    signature = request.headers.get("X-Line-Signature")
     body = await request.body()
+
+    print(f"🐸 Body: {body.decode('utf-8')[:200]}...")
+
     try:
         handler_frog.handle(body.decode("utf-8"), signature)
-    except:
-        raise HTTPException(status_code=400)
-    return "OK"
+        print("🐸 handler_frog.handle() 完了")
+    except Exception as e:
+        print(f"🐸❌ handler エラー: {e}")
+        import traceback
+
+        print(traceback.format_exc())
+
+    return {"status": "ok"}
 
 
 # ========================================
@@ -963,6 +973,11 @@ def handle_frog_message(event):
         import traceback
 
         print(f"   スタックトレース:\n{traceback.format_exc()}")
+
+
+# ========================================
+# きつね🦊のメッセージハンドラー
+# ========================================
 
 
 @app.post("/callback_fox")
