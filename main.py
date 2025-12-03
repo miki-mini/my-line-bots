@@ -1,7 +1,7 @@
 import logging
 import os
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import requests
 import json
 import time
@@ -884,7 +884,7 @@ def handle_frog_message(event):
     print(f"🧐 search_model の状態: {search_model is not None}")
     print(f"🧐 text_model の状態: {text_model is not None}")
 
-    today = datetime.date.today().strftime("%Y年%m月%d日")
+    today = date.today().strftime("%Y年%m月%d日")
     msg = ""
 
     try:
