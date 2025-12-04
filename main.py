@@ -61,7 +61,7 @@ from datetime import datetime
 
 # ========================================
 # きつね🦊
-from fox import register_fox_handler
+from animals.fox import register_fox_handler
 
 # ========================================
 
