@@ -60,8 +60,9 @@ import pandas as pd
 from datetime import datetime
 
 # ========================================
-# きつね🦊
+# きつね🦊カエル
 from animals.fox import register_fox_handler
+from animals.frog import register_frog_handler
 
 # ========================================
 
@@ -103,7 +104,9 @@ handler_frog = WebhookHandler(os.getenv("FROG_CHANNEL_SECRET"))
 
 LINE_TOKEN_FOX = os.getenv("FOX_ACCESS_TOKEN")
 LINE_SECRET_FOX = os.getenv("FOX_CHANNEL_SECRET")
-configuration_fox = Configuration(access_token=LINE_TOKEN_FOX) if LINE_TOKEN_FOX else None
+configuration_fox = (
+    Configuration(access_token=LINE_TOKEN_FOX) if LINE_TOKEN_FOX else None
+)
 handler_fox = WebhookHandler(LINE_SECRET_FOX) if LINE_SECRET_FOX else None
 
 configuration_capybara = Configuration(access_token=os.getenv("CAPYBARA_ACCESS_TOKEN"))
@@ -221,6 +224,16 @@ def startup_event():
             app, handler_fox, configuration_fox, search_model, text_model
         )
         print("✅ キツネハンドラー登録完了")
+
+        # 🐸 カエルハンドラー登録（追加）
+    if handler_frog and configuration_frog:
+        print("🐸 カエルハンドラー登録中...")
+        register_frog_handler(
+            app, handler_frog, configuration_frog, search_model, text_model
+        )
+        print("✅ カエルハンドラー登録完了")
+
+    print("🚀 サーバー起動完了！")
 
 
 # ========================================
@@ -857,138 +870,6 @@ def handle_voidoll_audio(event):
                 reply_token=event.reply_token, messages=[TextMessage(text=str(e))]
             )
         )
-
-
-@app.post("/callback_frog")
-async def callback_frog(request: Request):
-    print("🐸🐸🐸 カエルWebhook受信！！！")
-
-    signature = request.headers.get("X-Line-Signature")
-    body = await request.body()
-
-    print(f"🐸 Body: {body.decode('utf-8')[:200]}...")
-
-    try:
-        handler_frog.handle(body.decode("utf-8"), signature)
-        print("🐸 handler_frog.handle() 完了")
-    except Exception as e:
-        print(f"🐸❌ handler エラー: {e}")
-        import traceback
-
-        print(traceback.format_exc())
-
-    return {"status": "ok"}
-
-
-# ========================================
-# カエルのメッセージハンドラー
-# ========================================
-
-
-@handler_frog.add(MessageEvent, message=TextMessageContent)
-def handle_frog_message(event):
-    print(f"🐸 カエル受信: {event.message.text}")
-    print(
-        f"🐸 ユーザーID: {event.source.user_id if hasattr(event.source, 'user_id') else 'unknown'}"
-    )
-    print(f"🐸 reply_token: {event.reply_token}")
-
-    # グローバル変数を呼び出す
-    global search_model, text_model
-
-    # ★ モデルの状態チェック
-    print(f"🧐 search_model の状態: {search_model is not None}")
-    print(f"🧐 text_model の状態: {text_model is not None}")
-
-    today = date.today().strftime("%Y年%m月%d日")
-    msg = ""
-
-    try:
-        print("🐸 ステップ1: 検索判定開始")
-
-        # 検索が必要か判定
-        search_keywords = ["天気", "最新", "今", "現在", "ニュース", "調べて"]
-        needs_search = any(keyword in event.message.text for keyword in search_keywords)
-
-        print(f"🐸 ステップ2: 検索必要? {needs_search}")
-
-        # 使用するモデルを選択
-        if needs_search and search_model:
-            print("🔍 検索モードで実行中...")
-            model = search_model
-        elif text_model:
-            print("💬 通常モードで実行中...")
-            model = text_model
-        else:
-            print("❌ 使えるモデルがありません！")
-            msg = "今は答えられないケロ...（システムエラー）"
-            raise Exception("モデルが初期化されていません")
-
-        print(f"🐸 ステップ3: 使用モデル = {type(model).__name__}")
-
-        # プロンプト作成
-        prompt = f"""
-現在日時: {today}
-ユーザーの質問: {event.message.text}
-
-あなたは明るく元気な天気予報カエルです。
-必要に応じて最新情報を検索して、簡潔に答えてください。
-語尾に「ケロ」をつけて親しみやすく回答してください。
-"""
-
-        print("🐸 ステップ4: プロンプト作成完了")
-        print(f"   プロンプト長: {len(prompt)} 文字")
-
-        # 生成実行
-        print(f"⏳ 生成開始...")
-        response = model.generate_content(
-            prompt,
-            generation_config={
-                "temperature": 0.7,
-                "max_output_tokens": 1024,
-            },
-        )
-
-        print("🐸 ステップ5: 生成完了")
-
-        # レスポンス取得
-        if response and hasattr(response, "text") and response.text:
-            msg = response.text.strip()
-            print(f"✅ 生成成功！ (文字数: {len(msg)})")
-            print(f"   返信内容プレビュー: {msg[:100]}...")
-        else:
-            print("⚠️ 空の応答を受信")
-            msg = "答えが見つからなかったケロ..."
-
-    except Exception as e:
-        print(f"❌ カエル生成エラー: {e}")
-        print(f"   エラータイプ: {type(e).__name__}")
-        import traceback
-
-        print(f"   スタックトレース:\n{traceback.format_exc()}")
-        msg = f"エラーが起きたケロ...💦"
-
-    # LINEに返信
-    try:
-        print("🐸 ステップ6: LINE返信開始")
-        print(f"   返信先token: {event.reply_token}")
-        print(f"   メッセージ: {msg[:50]}...")
-
-        with ApiClient(configuration_frog) as c:
-            api = MessagingApi(c)
-            api.reply_message(
-                ReplyMessageRequest(
-                    reply_token=event.reply_token, messages=[TextMessage(text=msg)]
-                )
-            )
-        print("📨 カエル返信送信完了！")
-
-    except Exception as e:
-        print(f"❌ 返信送信エラー: {e}")
-        print(f"   エラータイプ: {type(e).__name__}")
-        import traceback
-
-        print(f"   スタックトレース:\n{traceback.format_exc()}")
 
 
 @app.post("/callback_capybara")
