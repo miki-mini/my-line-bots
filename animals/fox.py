@@ -13,6 +13,7 @@ from linebot.v3.messaging import (
 )
 from linebot.v3.webhook import MessageEvent
 from linebot.v3.webhooks import TextMessageContent
+from linebot.v3.exceptions import InvalidSignatureError
 
 
 def register_fox_handler(app, handler_fox, configuration_fox, search_model, text_model):
@@ -27,8 +28,10 @@ def register_fox_handler(app, handler_fox, configuration_fox, search_model, text
         text_model: 通常のGeminiモデル
     """
 
+    from fastapi import Request, HTTPException
+
     @app.post("/callback_fox")
-    async def callback_fox(request):
+    async def callback_fox(request: Request):
         """キツネ用Webhook"""
         print("🦊🦊🦊 キツネWebhook受信！")
 
@@ -38,14 +41,15 @@ def register_fox_handler(app, handler_fox, configuration_fox, search_model, text
         try:
             handler_fox.handle(body.decode("utf-8"), signature)
             print("🦊 handler_fox.handle() 完了")
+        except InvalidSignatureError:
+            print(f"🦊❌ 署名検証エラー")
+            raise HTTPException(status_code=400, detail="Invalid signature")
         except Exception as e:
             print(f"🦊❌ handler エラー: {e}")
             import traceback
             print(traceback.format_exc())
-            from fastapi import HTTPException
-            raise HTTPException(status_code=400)
 
-        return "OK"
+        return {"status": "ok"}
 
 
     @handler_fox.add(MessageEvent, message=TextMessageContent)
