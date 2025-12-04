@@ -59,6 +59,12 @@ from fastapi.responses import StreamingResponse
 import pandas as pd
 from datetime import datetime
 
+# ========================================
+# きつね🦊
+from fox import register_fox_handler
+
+# ========================================
+
 # --- グローバル変数 ---
 # モデルたち
 image_model = None
@@ -205,6 +211,14 @@ def startup_event():
         print("⚠️ 検索機能なしで起動します（通常モデルで代替）")
 
     print("🚀 サーバー起動完了！ Super Capybara (2.5) is Ready.")
+
+    # 🦊 キツネハンドラー登録
+    if handler_fox and configuration_fox:
+        print("🦊 キツネハンドラー登録中...")
+        register_fox_handler(
+            app, handler_fox, configuration_fox, search_model, text_model
+        )
+        print("✅ キツネハンドラー登録完了")
 
 
 # ========================================
@@ -973,39 +987,6 @@ def handle_frog_message(event):
         import traceback
 
         print(f"   スタックトレース:\n{traceback.format_exc()}")
-
-
-# ========================================
-# きつね🦊のメッセージハンドラー
-# ========================================
-
-
-@app.post("/callback_fox")
-async def callback_fox(request: Request):
-    signature = request.headers["X-Line-Signature"]
-    body = await request.body()
-    try:
-        handler_fox.handle(body.decode("utf-8"), signature)
-    except:
-        raise HTTPException(status_code=400)
-    return "OK"
-
-
-@handler_fox.add(MessageEvent, message=TextMessageContent)
-def handle_fox_message(event):
-    try:
-        res = genai.GenerativeModel("gemini-2.5-flash").generate_content(
-            f"動画情報: {event.message.text}\n役割:キツネ先生。語尾コン。"
-        )
-        msg = res.text
-    except:
-        msg = "エラーコン..."
-    with ApiClient(configuration_fox) as c:
-        MessagingApi(c).reply_message(
-            ReplyMessageRequest(
-                reply_token=event.reply_token, messages=[TextMessage(text=msg)]
-            )
-        )
 
 
 @app.post("/callback_capybara")
