@@ -101,8 +101,10 @@ handler_voidoll = WebhookHandler(os.getenv("VOIDOLL_CHANNEL_SECRET"))
 configuration_frog = Configuration(access_token=os.getenv("FROG_ACCESS_TOKEN"))
 handler_frog = WebhookHandler(os.getenv("FROG_CHANNEL_SECRET"))
 
-configuration_fox = Configuration(access_token=os.getenv("FOX_ACCESS_TOKEN"))
-handler_fox = WebhookHandler(os.getenv("FOX_CHANNEL_SECRET"))
+LINE_TOKEN_FOX = os.getenv("FOX_ACCESS_TOKEN")
+LINE_SECRET_FOX = os.getenv("FOX_CHANNEL_SECRET")
+configuration_fox = Configuration(access_token=LINE_TOKEN_FOX) if LINE_TOKEN_FOX else None
+handler_fox = WebhookHandler(LINE_SECRET_FOX) if LINE_SECRET_FOX else None
 
 configuration_capybara = Configuration(access_token=os.getenv("CAPYBARA_ACCESS_TOKEN"))
 handler_capybara = WebhookHandler(os.getenv("CAPYBARA_CHANNEL_SECRET"))
