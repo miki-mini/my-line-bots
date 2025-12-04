@@ -9,7 +9,7 @@ from linebot.v3.messaging import (
     ApiClient,
     MessagingApi,
     ReplyMessageRequest,
-    TextMessage
+    TextMessage,
 )
 from linebot.v3.webhook import MessageEvent
 from linebot.v3.webhooks import TextMessageContent
@@ -47,10 +47,10 @@ def register_fox_handler(app, handler_fox, configuration_fox, search_model, text
         except Exception as e:
             print(f"🦊❌ handler エラー: {e}")
             import traceback
+
             print(traceback.format_exc())
 
         return {"status": "ok"}
-
 
     @handler_fox.add(MessageEvent, message=TextMessageContent)
     def handle_fox_message(event):
@@ -63,7 +63,7 @@ def register_fox_handler(app, handler_fox, configuration_fox, search_model, text
 
         try:
             # YouTube URLの検出
-            youtube_regex = r'(?:https?://)?(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]+)'
+            youtube_regex = r"(?:https?://)?(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]+)"
             match = re.search(youtube_regex, user_message)
 
             if match:
@@ -71,17 +71,14 @@ def register_fox_handler(app, handler_fox, configuration_fox, search_model, text
                 print(f"🦊 YouTube動画ID検出: {video_id}")
 
                 # YouTube動画の要約
-                msg = summarize_youtube_with_search(
-                    video_id,
-                    search_model,
-                    text_model
-                )
+                msg = summarize_youtube_with_search(video_id, search_model, text_model)
             else:
                 msg = "🦊 キツネ先生だコン！\n要約したいYouTube動画のURLを送ってコン！"
 
         except Exception as e:
             print(f"❌ キツネ処理エラー: {e}")
             import traceback
+
             print(traceback.format_exc())
             msg = "🦊 エラーが起きたコン...💦"
 
@@ -92,8 +89,7 @@ def register_fox_handler(app, handler_fox, configuration_fox, search_model, text
                 api = MessagingApi(c)
                 api.reply_message(
                     ReplyMessageRequest(
-                        reply_token=event.reply_token,
-                        messages=[TextMessage(text=msg)]
+                        reply_token=event.reply_token, messages=[TextMessage(text=msg)]
                     )
                 )
             print("📨 キツネ返信送信完了！")
@@ -101,12 +97,13 @@ def register_fox_handler(app, handler_fox, configuration_fox, search_model, text
         except Exception as e:
             print(f"❌ 返信送信エラー: {e}")
             import traceback
+
             print(traceback.format_exc())
 
 
 def summarize_youtube_with_search(video_id: str, search_model, text_model) -> str:
     """
-    YouTube動画を要約（Google検索で補足情報も取得）
+    YouTube動画を要約（Google検索で補足情報も取得 + コメント分析）
 
     Args:
         video_id: YouTube動画ID
@@ -126,12 +123,14 @@ def summarize_youtube_with_search(video_id: str, search_model, text_model) -> st
             print("⚠️ YOUTUBE_API_KEY が設定されていません")
             return "🦊 YouTube APIキーが設定されていないコン...管理者に連絡してコン！"
 
-        # YouTube Data API で動画情報を取得
+        # ========================================
+        # 1. YouTube Data API で動画情報を取得
+        # ========================================
         youtube_url = f"https://www.googleapis.com/youtube/v3/videos"
         params = {
             "id": video_id,
             "key": YOUTUBE_API_KEY,
-            "part": "snippet,contentDetails,statistics"
+            "part": "snippet,contentDetails,statistics",
         }
 
         print("🦊 YouTube API呼び出し中...")
@@ -152,10 +151,57 @@ def summarize_youtube_with_search(video_id: str, search_model, text_model) -> st
         channel_title = snippet["channelTitle"]
         published_at = snippet["publishedAt"]
         view_count = statistics.get("viewCount", "不明")
+        comment_count = statistics.get("commentCount", "0")
 
         print(f"✅ 動画情報取得成功: {title}")
+        print(f"   コメント数: {comment_count}件")
 
-        # Google検索で関連情報を取得
+        # ========================================
+        # 2. コメントを取得（最新20件）
+        # ========================================
+        comments_text = ""
+
+        try:
+            comments_url = f"https://www.googleapis.com/youtube/v3/commentThreads"
+            comments_params = {
+                "videoId": video_id,
+                "key": YOUTUBE_API_KEY,
+                "part": "snippet",
+                "maxResults": 20,  # 最新20件
+                "order": "relevance",  # 関連度順（人気コメント）
+            }
+
+            print("🦊 コメント取得中...")
+            comments_response = requests.get(
+                comments_url, params=comments_params, timeout=10
+            )
+            comments_response.raise_for_status()
+
+            comments_data = comments_response.json()
+
+            if comments_data.get("items"):
+                comment_list = []
+                for item in comments_data["items"][:20]:
+                    comment = item["snippet"]["topLevelComment"]["snippet"][
+                        "textDisplay"
+                    ]
+                    # HTMLタグを削除
+                    comment_clean = re.sub(r"<[^>]+>", "", comment)
+                    comment_list.append(comment_clean)
+
+                comments_text = "\n".join(comment_list)
+                print(f"✅ コメント取得成功: {len(comment_list)}件")
+            else:
+                print("⚠️ コメントが取得できませんでした")
+                comments_text = "（コメントが無効化されているか、取得できませんでした）"
+
+        except Exception as e:
+            print(f"⚠️ コメント取得エラー: {e}")
+            comments_text = "（コメント取得失敗）"
+
+        # ========================================
+        # 3. Google検索で関連情報を取得
+        # ========================================
         search_context = ""
 
         if search_model:
@@ -175,16 +221,22 @@ def summarize_youtube_with_search(video_id: str, search_model, text_model) -> st
                     generation_config={
                         "temperature": 0.5,
                         "max_output_tokens": 512,
-                    }
+                    },
                 )
 
-                if search_response and hasattr(search_response, 'text') and search_response.text:
+                if (
+                    search_response
+                    and hasattr(search_response, "text")
+                    and search_response.text
+                ):
                     search_context = f"\n\n【関連情報（ネット検索結果）】\n{search_response.text.strip()}\n"
                     print("✅ 検索情報取得成功")
             except Exception as e:
                 print(f"⚠️ 検索失敗: {e}")
 
-        # Geminiで要約を生成
+        # ========================================
+        # 4. Geminiで要約を生成
+        # ========================================
         print("🦊 Geminiで要約生成中...")
 
         model = text_model if text_model else search_model
@@ -193,7 +245,14 @@ def summarize_youtube_with_search(video_id: str, search_model, text_model) -> st
             return "🦊 AIモデルが利用できないコン...管理者に連絡してコン！"
 
         # 説明文を適切な長さに制限
-        description_preview = description[:1000] if len(description) > 1000 else description
+        description_preview = (
+            description[:800] if len(description) > 800 else description
+        )
+
+        # コメントも制限（長すぎる場合）
+        comments_preview = (
+            comments_text[:1500] if len(comments_text) > 1500 else comments_text
+        )
 
         summary_prompt = f"""あなたはYouTube動画要約の専門家「キツネ先生」です。
 以下の動画情報を読んで、視聴者が知りたい要点を分かりやすく要約してください。
@@ -203,13 +262,18 @@ def summarize_youtube_with_search(video_id: str, search_model, text_model) -> st
 チャンネル: {channel_title}
 公開日: {published_at[:10]}
 視聴回数: {view_count}回
+コメント数: {comment_count}件
 
 【説明文】
 {description_preview}
+
+【視聴者のコメント（人気順）】
+{comments_preview}
 {search_context}
 
 【要約の条件】
-- 要点を3〜5つの箇条書きで
+- 動画の要点を3〜5つの箇条書きで
+- コメントから視聴者の反応や評価も1〜2つ追加
 - 語尾に「〜コン！」「〜だコン！」を付けて親しみやすく
 - 専門用語は分かりやすく説明
 - 挨拶は不要、要点から始める
@@ -221,10 +285,10 @@ def summarize_youtube_with_search(video_id: str, search_model, text_model) -> st
             generation_config={
                 "temperature": 0.7,
                 "max_output_tokens": 1024,
-            }
+            },
         )
 
-        if response and hasattr(response, 'text') and response.text:
+        if response and hasattr(response, "text") and response.text:
             summary = response.text.strip()
             print("✅ 要約生成成功")
 
@@ -239,6 +303,9 @@ def summarize_youtube_with_search(video_id: str, search_model, text_model) -> st
 
 【👀 視聴回数】
 {view_count}回
+
+【💬 コメント数】
+{comment_count}件
 
 {summary}
 
@@ -259,5 +326,6 @@ def summarize_youtube_with_search(video_id: str, search_model, text_model) -> st
     except Exception as e:
         print(f"❌ YouTube要約エラー: {e}")
         import traceback
+
         print(traceback.format_exc())
         return f"🦊 エラーが発生したコン...💦"
