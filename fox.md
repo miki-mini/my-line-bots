@@ -41,7 +41,7 @@ graph TD
     CloudRun -->|Reply Message| LINE
     LINE -->|Notification| User
 
-```markdown
+
 ## 💡 こだわったポイント
 
 * **情報の網羅性と精度の両立**:
