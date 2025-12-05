@@ -1,5 +1,5 @@
 """
-fox.py - キツネのYouTube要約BOT
+fox.py - キツネのYouTube要約BOT (修正版: 長文対応 + 検索強化)
 """
 
 import os
@@ -14,21 +14,13 @@ from linebot.v3.messaging import (
 from linebot.v3.webhook import MessageEvent
 from linebot.v3.webhooks import TextMessageContent
 from linebot.v3.exceptions import InvalidSignatureError
+from fastapi import Request, HTTPException
 
 
 def register_fox_handler(app, handler_fox, configuration_fox, search_model, text_model):
     """
     キツネのハンドラーを登録
-
-    Args:
-        app: FastAPIアプリ
-        handler_fox: LINE Webhookハンドラー
-        configuration_fox: LINE API設定
-        search_model: 検索対応Geminiモデル
-        text_model: 通常のGeminiモデル
     """
-
-    from fastapi import Request, HTTPException
 
     @app.post("/callback_fox")
     async def callback_fox(request: Request):
@@ -57,12 +49,11 @@ def register_fox_handler(app, handler_fox, configuration_fox, search_model, text
         """キツネのメッセージ処理"""
 
         print(f"🦊 キツネ受信: {event.message.text}")
-
         user_message = event.message.text
         msg = ""
 
         try:
-            # YouTube URLの検出
+            # YouTube URLの検出 (短縮URLやモバイルURLにも対応)
             youtube_regex = r"(?:https?://)?(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]+)"
             match = re.search(youtube_regex, user_message)
 
@@ -70,10 +61,13 @@ def register_fox_handler(app, handler_fox, configuration_fox, search_model, text
                 video_id = match.group(1)
                 print(f"🦊 YouTube動画ID検出: {video_id}")
 
-                # YouTube動画の要約
+                # 処理中のメッセージを送る（オプション: LINEの仕様上、応答は1回なのでここはスキップしますが、ログには残します）
+                print("🦊 動画要約プロセスを開始します...")
+
+                # YouTube動画の要約実行
                 msg = summarize_youtube_with_search(video_id, search_model, text_model)
             else:
-                msg = "🦊 キツネ先生だコン！\n要約したいYouTube動画のURLを送ってコン！"
+                msg = "🦊 キツネ先生だコン！\n要約したいYouTube動画のURLを送ってコン！\n長〜い動画でもバッチリ解説するコン！"
 
         except Exception as e:
             print(f"❌ キツネ処理エラー: {e}")
@@ -103,22 +97,12 @@ def register_fox_handler(app, handler_fox, configuration_fox, search_model, text
 
 def summarize_youtube_with_search(video_id: str, search_model, text_model) -> str:
     """
-    YouTube動画を要約（Google検索で補足情報も取得 + コメント分析）
-
-    Args:
-        video_id: YouTube動画ID
-        search_model: 検索対応Geminiモデル
-        text_model: 通常のGeminiモデル
-
-    Returns:
-        要約テキスト
+    YouTube動画を要約（Google検索補足 + コメント分析 + 長文対応）
     """
-
     print(f"🦊 YouTube要約開始: {video_id}")
 
     try:
         YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
-
         if not YOUTUBE_API_KEY:
             print("⚠️ YOUTUBE_API_KEY が設定されていません")
             return "🦊 YouTube APIキーが設定されていないコン...管理者に連絡してコン！"
@@ -136,7 +120,6 @@ def summarize_youtube_with_search(video_id: str, search_model, text_model) -> st
         print("🦊 YouTube API呼び出し中...")
         response = requests.get(youtube_url, params=params, timeout=10)
         response.raise_for_status()
-
         video_data = response.json()
 
         if not video_data.get("items"):
@@ -154,21 +137,19 @@ def summarize_youtube_with_search(video_id: str, search_model, text_model) -> st
         comment_count = statistics.get("commentCount", "0")
 
         print(f"✅ 動画情報取得成功: {title}")
-        print(f"   コメント数: {comment_count}件")
 
         # ========================================
-        # 2. コメントを取得（最新20件）
+        # 2. コメントを取得（最新30件に増量）
         # ========================================
         comments_text = ""
-
         try:
             comments_url = f"https://www.googleapis.com/youtube/v3/commentThreads"
             comments_params = {
                 "videoId": video_id,
                 "key": YOUTUBE_API_KEY,
                 "part": "snippet",
-                "maxResults": 20,  # 最新20件
-                "order": "relevance",  # 関連度順（人気コメント）
+                "maxResults": 30,  # 少し増やしました
+                "order": "relevance",
             }
 
             print("🦊 コメント取得中...")
@@ -176,156 +157,113 @@ def summarize_youtube_with_search(video_id: str, search_model, text_model) -> st
                 comments_url, params=comments_params, timeout=10
             )
             comments_response.raise_for_status()
-
             comments_data = comments_response.json()
 
             if comments_data.get("items"):
                 comment_list = []
-                for item in comments_data["items"][:20]:
-                    comment = item["snippet"]["topLevelComment"]["snippet"][
+                for item in comments_data["items"]:
+                    raw_comment = item["snippet"]["topLevelComment"]["snippet"][
                         "textDisplay"
                     ]
-                    # HTMLタグを削除
-                    comment_clean = re.sub(r"<[^>]+>", "", comment)
-                    comment_list.append(comment_clean)
+                    clean_comment = re.sub(r"<[^>]+>", "", raw_comment)  # HTMLタグ除去
+                    comment_list.append(f"- {clean_comment}")
 
                 comments_text = "\n".join(comment_list)
                 print(f"✅ コメント取得成功: {len(comment_list)}件")
             else:
-                print("⚠️ コメントが取得できませんでした")
-                comments_text = "（コメントが無効化されているか、取得できませんでした）"
-
+                comments_text = "（コメントなし）"
         except Exception as e:
             print(f"⚠️ コメント取得エラー: {e}")
-            comments_text = "（コメント取得失敗）"
+            comments_text = "（取得失敗）"
 
         # ========================================
-        # 3. Google検索で関連情報を取得
+        # 3. Google検索で関連情報を取得 (RAG)
         # ========================================
         search_context = ""
-
         if search_model:
             print("🔍 関連情報をGoogle検索中...")
-
-            search_query = f"{title} {channel_title} 解説 まとめ"
-
-            search_prompt = f"""以下の検索クエリに関する最新情報を簡潔にまとめてください：
-
-検索クエリ: {search_query}
-
-重要なポイントを3つ程度、箇条書きで教えてください。"""
+            # 検索クエリを少し工夫
+            search_query = f"{title} {channel_title} 評判 解説"
 
             try:
+                # 検索専用の軽いプロンプト
+                search_prompt = f"""検索クエリ: {search_query}
+                この動画やトピックに関する「最新の補足情報」や「世間の評価」を検索して、重要な事実を3つ抽出してください。"""
+
                 search_response = search_model.generate_content(
                     search_prompt,
-                    generation_config={
-                        "temperature": 0.5,
-                        "max_output_tokens": 512,
-                    },
+                    generation_config={"temperature": 0.5, "max_output_tokens": 1000},
                 )
 
-                if (
-                    search_response
-                    and hasattr(search_response, "text")
-                    and search_response.text
-                ):
-                    search_context = f"\n\n【関連情報（ネット検索結果）】\n{search_response.text.strip()}\n"
+                if search_response and search_response.text:
+                    search_context = f"\n【Google検索による補足情報】\n{search_response.text.strip()}\n"
                     print("✅ 検索情報取得成功")
             except Exception as e:
                 print(f"⚠️ 検索失敗: {e}")
 
         # ========================================
-        # 4. Geminiで要約を生成
+        # 4. Geminiで要約を生成 (ここが本番！)
         # ========================================
         print("🦊 Geminiで要約生成中...")
-
         model = text_model if text_model else search_model
-
         if not model:
-            return "🦊 AIモデルが利用できないコン...管理者に連絡してコン！"
+            return "🦊 AIモデルのエラーだコン..."
 
-        # 説明文を適切な長さに制限
-        description_preview = (
-            description[:800] if len(description) > 800 else description
-        )
+        # プロンプトの大幅強化
+        summary_prompt = f"""
+あなたはプロの動画解説者「キツネ先生」です。
+以下の情報を元に、YouTube動画の魅力と内容を「詳細に」解説してください。
+途中で文章が切れないように、最後まで完結させてください。
 
-        # コメントも制限（長すぎる場合）
-        comments_preview = (
-            comments_text[:1500] if len(comments_text) > 1500 else comments_text
-        )
-
-        summary_prompt = f"""あなたはYouTube動画要約の専門家「キツネ先生」です。
-以下の動画情報を読んで、視聴者が知りたい要点を分かりやすく要約してください。
-
-【動画情報】
+【動画基本情報】
 タイトル: {title}
 チャンネル: {channel_title}
 公開日: {published_at[:10]}
-視聴回数: {view_count}回
-コメント数: {comment_count}件
+再生数: {view_count}回 / コメント数: {comment_count}件
 
-【説明文】
-{description_preview}
+【動画の説明文】
+{description[:1000]}...
 
-【視聴者のコメント（人気順）】
-{comments_preview}
+【視聴者のコメント（反応）】
+{comments_text[:2000]}
+
 {search_context}
 
-【要約の条件】
-- 動画の要点を3〜5つの箇条書きで
-- コメントから視聴者の反応や評価も1〜2つ追加
-- 語尾に「〜コン！」「〜だコン！」を付けて親しみやすく
-- 専門用語は分かりやすく説明
-- 挨拶は不要、要点から始める
+【解説のルール】
+1. **挨拶**: 「キツネ先生だコン！今回の動画はこれだコン！」から始める。
+2. **概要**: 動画がどんな内容か、3行程度で分かりやすく。
+3. **詳細ポイント**: 動画の重要なポイントを、長くなっても良いので詳しく解説する（箇条書きでも文章でも可）。
+4. **世間の反応**: 視聴者のコメントや検索情報を元に、みんながどう思っているか紹介する。
+5. **まとめ**: 最後に一言で締める。
+6. **語尾**: 文末は「〜コン」「〜だコン」など、キツネキャラを崩さないこと。
 
-要約:"""
+解説をお願いするコン！
+"""
 
+        # 🚀 ここが修正の核心です！ max_output_tokens を大幅アップ
         response = model.generate_content(
             summary_prompt,
             generation_config={
                 "temperature": 0.7,
-                "max_output_tokens": 1024,
+                "max_output_tokens": 8192,  # 👈 1024から8192へ変更！これで切れません
             },
         )
 
-        if response and hasattr(response, "text") and response.text:
+        if response and response.text:
             summary = response.text.strip()
             print("✅ 要約生成成功")
 
-            # 最終的な返信メッセージ
-            result = f"""🦊 キツネ先生の要約だコン！
+            # LINEの見やすさのために少し整形して返す
+            result = f"""{summary}
 
-【📹 動画タイトル】
-{title}
-
-【📺 チャンネル】
-{channel_title}
-
-【👀 視聴回数】
-{view_count}回
-
-【💬 コメント数】
-{comment_count}件
-
-{summary}
-
-🔗 動画URL: https://youtu.be/{video_id}"""
-
+🔗 動画を見る: https://youtu.be/{video_id}"""
             return result
         else:
-            return "🦊 要約の生成に失敗したコン...もう一度試してコン！"
-
-    except requests.Timeout:
-        print("❌ YouTube API タイムアウト")
-        return "🦊 YouTube APIの応答が遅いコン...もう一度試してコン！"
-
-    except requests.RequestException as e:
-        print(f"❌ YouTube API エラー: {e}")
-        return "🦊 YouTube APIでエラーが発生したコン...💦"
+            return "🦊 うまく要約できなかったコン...もう一度試してほしいコン！"
 
     except Exception as e:
-        print(f"❌ YouTube要約エラー: {e}")
+        print(f"❌ 全体エラー: {e}")
         import traceback
 
         print(traceback.format_exc())
-        return f"🦊 エラーが発生したコン...💦"
+        return "🦊 エラーが発生したコン...ごめんコン💦"
