@@ -259,12 +259,10 @@ def call_gemini_email(raw_subject, raw_body, model):
 
 def call_gemini_concierge(query, model):
     """
-    コンシェルジュ用Gemini
-    戻り値: (解説テキスト, 検索用クエリ)
+    コンシェルジュ用Gemini（修正版：名前の重複を削除）
     """
     try:
         import google.generativeai as genai
-
         use_model = model if model else genai.GenerativeModel("gemini-2.5-flash")
 
         prompt = f"""
@@ -274,9 +272,10 @@ def call_gemini_concierge(query, model):
         これに対して、おすすめの「お店」または「商品」を3つ提案してください。
 
         【出力ルール】
-        1. 3つの候補を挙げ、それぞれの「名前」「特徴」「おすすめ理由」を簡潔に書く。
-        2. 最後に、Googleマップで検索するための「最適な検索キーワード」を1つだけ提案する。
-        3. 出力はJSON形式のみ。
+        1. 3つの候補を挙げ、店名は「### 1. 店名」のように見出しにする。
+        2. 各店舗について「特徴」と「おすすめ理由」のみを箇条書きにする。（※「名前」という箇条書き項目は絶対に作らないこと）
+        3. 最後に、Googleマップで検索するための「最適な検索キーワード」を1つだけ提案する。
+        4. 出力はJSON形式のみ。
 
         {{
             "message": "（ここに提案文全体を入れる。Markdownで見やすく。絵文字も使って）",
