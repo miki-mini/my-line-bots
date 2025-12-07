@@ -14,15 +14,20 @@ from linebot.v3.messaging import (
     TemplateMessage,
     ButtonsTemplate,
     PostbackAction,
-    URIAction
+    URIAction,
 )
-from linebot.v3.webhook import MessageEvent, PostbackEvent
-from linebot.v3.webhooks import TextMessageContent
+
+# ▼▼▼ 修正箇所：webhook ではなく webhooks（sをつける）からインポート ▼▼▼
+from linebot.v3.webhooks import MessageEvent, PostbackEvent, TextMessageContent
+
+# ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
 from linebot.v3.exceptions import InvalidSignatureError
 from fastapi import Request, HTTPException
 
 # ユーザーごとのメール下書きを一時保存
 pending_emails = {}
+
 
 def register_penguin_handler(app, handler_penguin, configuration_penguin, text_model):
     """
@@ -40,6 +45,7 @@ def register_penguin_handler(app, handler_penguin, configuration_penguin, text_m
         except Exception as e:
             print(f"🐧❌ handler エラー: {e}")
             import traceback
+
             print(traceback.format_exc())
         return {"status": "ok"}
 
@@ -54,13 +60,17 @@ def register_penguin_handler(app, handler_penguin, configuration_penguin, text_m
             # 機能1：メール作成（メール：〜）
             # -------------------------------------------
             if user_message.startswith("メール："):
-                handle_email_request(event, user_message, user_id, configuration_penguin, text_model)
+                handle_email_request(
+                    event, user_message, user_id, configuration_penguin, text_model
+                )
 
             # -------------------------------------------
             # 機能2：お店・手土産選び（お店：〜 / 接待：〜 / 手土産：〜）
             # -------------------------------------------
             elif user_message.startswith(("お店：", "接待：", "手土産：")):
-                handle_concierge_request(event, user_message, configuration_penguin, text_model)
+                handle_concierge_request(
+                    event, user_message, configuration_penguin, text_model
+                )
 
             # -------------------------------------------
             # その他：使い方の説明
@@ -78,13 +88,18 @@ def register_penguin_handler(app, handler_penguin, configuration_penguin, text_m
 「手土産：甘くないもの 3000円」
 
 みたいに話しかけてペン！私が探すペン！✨"""
-                reply_simple_message(event.reply_token, reply_text, configuration_penguin)
+                reply_simple_message(
+                    event.reply_token, reply_text, configuration_penguin
+                )
 
         except Exception as e:
             print(f"❌ エラー: {e}")
             import traceback
+
             print(traceback.format_exc())
-            reply_simple_message(event.reply_token, "エラーが起きたペン...💦", configuration_penguin)
+            reply_simple_message(
+                event.reply_token, "エラーが起きたペン...💦", configuration_penguin
+            )
 
     @handler_penguin.add(PostbackEvent)
     def handle_penguin_postback(event):
@@ -93,32 +108,54 @@ def register_penguin_handler(app, handler_penguin, configuration_penguin, text_m
         data = event.postback.data
 
         if data == "action=cancel":
-            if user_id in pending_emails: del pending_emails[user_id]
-            reply_simple_message(event.reply_token, "送信を中止したペン！🗑️", configuration_penguin)
+            if user_id in pending_emails:
+                del pending_emails[user_id]
+            reply_simple_message(
+                event.reply_token, "送信を中止したペン！🗑️", configuration_penguin
+            )
 
         elif data == "action=send":
             email_data = pending_emails.get(user_id)
             if not email_data:
-                reply_simple_message(event.reply_token, "タイムアウトしちゃったペン💦 もう一度作ってペン！", configuration_penguin)
+                reply_simple_message(
+                    event.reply_token,
+                    "タイムアウトしちゃったペン💦 もう一度作ってペン！",
+                    configuration_penguin,
+                )
                 return
 
-            success, msg = send_email_via_gas(email_data["to"], email_data["subject"], email_data["body"])
+            success, msg = send_email_via_gas(
+                email_data["to"], email_data["subject"], email_data["body"]
+            )
             if success:
                 del pending_emails[user_id]
-                reply_simple_message(event.reply_token, "✅ 送信完了だペン！お仕事完了！🐧✨", configuration_penguin)
+                reply_simple_message(
+                    event.reply_token,
+                    "✅ 送信完了だペン！お仕事完了！🐧✨",
+                    configuration_penguin,
+                )
             else:
-                reply_simple_message(event.reply_token, f"❌ 送信失敗だペン...💦\n{msg}", configuration_penguin)
+                reply_simple_message(
+                    event.reply_token,
+                    f"❌ 送信失敗だペン...💦\n{msg}",
+                    configuration_penguin,
+                )
 
 
 # ---------------------------------------------------------
 # ロジック関数群
 # ---------------------------------------------------------
 
+
 def handle_email_request(event, text, user_id, conf, model):
     """メール作成のリクエスト処理"""
     parts = text.split("\n")
     if len(parts) < 3:
-        reply_simple_message(event.reply_token, "入力形式が違うペン💦\nメール：宛先\n件名\n本文\nの順で頼むペン！", conf)
+        reply_simple_message(
+            event.reply_token,
+            "入力形式が違うペン💦\nメール：宛先\n件名\n本文\nの順で頼むペン！",
+            conf,
+        )
         return
 
     target_email = parts[0].replace("メール：", "").strip()
@@ -133,15 +170,21 @@ def handle_email_request(event, text, user_id, conf, model):
 
     # 確認ボタン送信
     confirm_msg = TemplateMessage(
-        alt_text='メール確認',
+        alt_text="メール確認",
         template=ButtonsTemplate(
-            title='メール確認だペン🐧',
+            title="メール確認だペン🐧",
             text=f"【件名】{subject[:20]}...",
             actions=[
-                PostbackAction(label='送信する 🚀', display_text='送信する！', data='action=send'),
-                PostbackAction(label='修正/キャンセル ❌', display_text='やめる', data='action=cancel')
-            ]
-        )
+                PostbackAction(
+                    label="送信する 🚀", display_text="送信する！", data="action=send"
+                ),
+                PostbackAction(
+                    label="修正/キャンセル ❌",
+                    display_text="やめる",
+                    data="action=cancel",
+                ),
+            ],
+        ),
     )
 
     with ApiClient(conf) as c:
@@ -150,16 +193,21 @@ def handle_email_request(event, text, user_id, conf, model):
             ReplyMessageRequest(
                 reply_token=event.reply_token,
                 messages=[
-                    TextMessage(text=f"下書きしたペン！\n\n【件名】\n{subject}\n\n【本文】\n{body}"),
-                    confirm_msg
-                ]
+                    TextMessage(
+                        text=f"下書きしたペン！\n\n【件名】\n{subject}\n\n【本文】\n{body}"
+                    ),
+                    confirm_msg,
+                ],
             )
         )
+
 
 def handle_concierge_request(event, text, conf, model):
     """お店・手土産選びのリクエスト処理"""
     # キーワードを取り除く（"お店："などを消す）
-    query = text.replace("お店：", "").replace("接待：", "").replace("手土産：", "").strip()
+    query = (
+        text.replace("お店：", "").replace("接待：", "").replace("手土産：", "").strip()
+    )
 
     # Geminiでおすすめを考える
     recommendation_text, search_query = call_gemini_concierge(query, model)
@@ -170,14 +218,12 @@ def handle_concierge_request(event, text, conf, model):
 
     # LINEで返信（ボタン付き）
     buttons_msg = TemplateMessage(
-        alt_text='おすすめのお店',
+        alt_text="おすすめのお店",
         template=ButtonsTemplate(
-            title='検索結果だペン🔍',
-            text='最新情報や場所はここからチェックしてペン！',
-            actions=[
-                URIAction(label='Googleマップで見る 🗺️', uri=map_url)
-            ]
-        )
+            title="検索結果だペン🔍",
+            text="最新情報や場所はここからチェックしてペン！",
+            actions=[URIAction(label="Googleマップで見る 🗺️", uri=map_url)],
+        ),
     )
 
     with ApiClient(conf) as c:
@@ -185,17 +231,16 @@ def handle_concierge_request(event, text, conf, model):
         api.reply_message(
             ReplyMessageRequest(
                 reply_token=event.reply_token,
-                messages=[
-                    TextMessage(text=recommendation_text),
-                    buttons_msg
-                ]
+                messages=[TextMessage(text=recommendation_text), buttons_msg],
             )
         )
+
 
 def call_gemini_email(raw_subject, raw_body, model):
     """メール推敲用Gemini"""
     try:
         import google.generativeai as genai
+
         use_model = model if model else genai.GenerativeModel("gemini-2.5-flash")
         prompt = f"""
         以下のメールをビジネスメールとして修正しJSONで出力してください。
@@ -211,6 +256,7 @@ def call_gemini_email(raw_subject, raw_body, model):
     except:
         return raw_subject, raw_body
 
+
 def call_gemini_concierge(query, model):
     """
     コンシェルジュ用Gemini
@@ -218,6 +264,7 @@ def call_gemini_concierge(query, model):
     """
     try:
         import google.generativeai as genai
+
         use_model = model if model else genai.GenerativeModel("gemini-2.5-flash")
 
         prompt = f"""
@@ -244,14 +291,22 @@ def call_gemini_concierge(query, model):
         print(f"Concierge Error: {e}")
         return "ごめんペン、うまく探せなかったペン...💦", query
 
+
 def reply_simple_message(token, text, conf):
     with ApiClient(conf) as c:
-        MessagingApi(c).reply_message(ReplyMessageRequest(reply_token=token, messages=[TextMessage(text=text)]))
+        MessagingApi(c).reply_message(
+            ReplyMessageRequest(reply_token=token, messages=[TextMessage(text=text)])
+        )
+
 
 def send_email_via_gas(to, sub, body):
     url = os.environ.get("GAS_MAIL_WEB_APP_URL")
-    if not url: return False, "URL未設定"
+    if not url:
+        return False, "URL未設定"
     try:
-        res = requests.post(url, json={"to": to, "subject": sub, "body": body}, timeout=10)
+        res = requests.post(
+            url, json={"to": to, "subject": sub, "body": body}, timeout=10
+        )
         return (True, "OK") if res.status_code in [200, 302] else (False, res.text)
-    except Exception as e: return False, str(e)
+    except Exception as e:
+        return False, str(e)
