@@ -528,23 +528,6 @@ def handle_message(event):
                 except:
                     reply_text = "カピバラ呼び出しエラーだっぴ..."
 
-            # 📧 5. メール送信
-            elif user_text.startswith("メール："):
-                parts = user_text.split("\n")
-                if len(parts) < 3:
-                    reply_text = "ペン...？入力形式が違うペン。\n1行目: アドレス\n2行目: 件名\n3行目: 本文"
-                else:
-                    target_email = parts[0].replace("メール：", "").strip()
-                    raw_subject = parts[1].strip()
-                    raw_body = "\n".join(parts[2:])
-                    subject, body = call_gemini_to_clean_email(raw_subject, raw_body)
-                    success, msg = send_email_via_gas(target_email, subject, body)
-                    reply_text = (
-                        f"送信完了だペン！🐧\n\n{body}"
-                        if success
-                        else f"失敗だペン...💦\n{msg}"
-                    )
-
             # 📝 6. メモ追加 (テキスト)
 
             # （↑上には天気やニュースの処理があるはずです）
@@ -632,28 +615,6 @@ def handle_message(event):
                 )
             )
 
-
-def call_gemini_to_clean_email(raw_subject, raw_body):
-    try:
-        model = genai.GenerativeModel("gemini-2.5-flash")
-        prompt = f"ビジネスメールに修正して。JSON形式 {{'subject': '...', 'body': '...'}} で出力。\n件名:{raw_subject}\n本文:{raw_body}"
-        response = model.generate_content(prompt)
-        text = response.text.replace("```json", "").replace("```", "").strip()
-        data = json.loads(text)
-        return data["subject"], data["body"]
-    except:
-        return raw_subject, raw_body
-
-
-def send_email_via_gas(to_email, subject, body):
-    payload = {"to": to_email, "subject": subject, "body": body}
-    try:
-        res = requests.post(GAS_MAIL_WEB_APP_URL, json=payload)
-        if res.status_code == 200 or res.status_code == 302:
-            return True, "成功"
-        return False, res.text
-    except Exception as e:
-        return False, str(e)
 
 
 @app.get("/trigger-check-reminders")
