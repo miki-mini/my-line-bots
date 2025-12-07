@@ -60,9 +60,10 @@ import pandas as pd
 from datetime import datetime
 
 # ========================================
-# きつね🦊カエル
+# 🦊🐸🐧
 from animals.fox import register_fox_handler
 from animals.frog import register_frog_handler
+from animals.penguin import register_penguin_handler
 
 # ========================================
 
@@ -101,6 +102,9 @@ handler_voidoll = WebhookHandler(os.getenv("VOIDOLL_CHANNEL_SECRET"))
 
 configuration_frog = Configuration(access_token=os.getenv("FROG_ACCESS_TOKEN"))
 handler_frog = WebhookHandler(os.getenv("FROG_CHANNEL_SECRET"))
+
+configuration_penguin = Configuration(access_token=os.getenv("PENGUIN_ACCESS_TOKEN"))
+handler_penguin = WebhookHandler(os.getenv("PENGUIN_CHANNEL_SECRET"))
 
 LINE_TOKEN_FOX = os.getenv("FOX_ACCESS_TOKEN")
 LINE_SECRET_FOX = os.getenv("FOX_CHANNEL_SECRET")
@@ -232,6 +236,14 @@ def startup_event():
             app, handler_frog, configuration_frog, search_model, text_model
         )
         print("✅ カエルハンドラー登録完了")
+
+        # 🐧 ペンギンハンドラー登録
+    if handler_penguin and configuration_penguin:
+        print("🐧 ペンギンハンドラー登録中...")
+        register_penguin_handler(
+            app, handler_penguin, configuration_penguin, text_model
+        )
+    print("✅ ペンギンハンドラー登録完了")
 
     print("🚀 サーバー起動完了！")
 
