@@ -1,5 +1,5 @@
 """
-penguin.py - スーパー秘書ペンギンのメール送信 & コンシェルジュBOT
+penguin.py - スーパー秘書ペンギンのメール送信 & コンシェルジュBOT（カルーセル版）
 """
 
 import os
@@ -13,15 +13,12 @@ from linebot.v3.messaging import (
     TextMessage,
     TemplateMessage,
     ButtonsTemplate,
+    CarouselTemplate,  # 追加！
+    CarouselColumn,  # 追加！
     PostbackAction,
     URIAction,
 )
-
-# ▼▼▼ 修正箇所：webhook ではなく webhooks（sをつける）からインポート ▼▼▼
 from linebot.v3.webhooks import MessageEvent, PostbackEvent, TextMessageContent
-
-# ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
-
 from linebot.v3.exceptions import InvalidSignatureError
 from fastapi import Request, HTTPException
 
@@ -30,9 +27,6 @@ pending_emails = {}
 
 
 def register_penguin_handler(app, handler_penguin, configuration_penguin, text_model):
-    """
-    ペンギンのハンドラーを登録
-    """
 
     @app.post("/callback_penguin")
     async def callback_penguin(request: Request):
@@ -51,43 +45,30 @@ def register_penguin_handler(app, handler_penguin, configuration_penguin, text_m
 
     @handler_penguin.add(MessageEvent, message=TextMessageContent)
     def handle_penguin_message(event):
-        """メッセージ受信時の処理"""
         user_id = event.source.user_id
         user_message = event.message.text
 
         try:
-            # -------------------------------------------
-            # 機能1：メール作成（メール：〜）
-            # -------------------------------------------
             if user_message.startswith("メール："):
                 handle_email_request(
                     event, user_message, user_id, configuration_penguin, text_model
                 )
 
-            # -------------------------------------------
-            # 機能2：お店・手土産選び（お店：〜 / 接待：〜 / 手土産：〜）
-            # -------------------------------------------
             elif user_message.startswith(("お店：", "接待：", "手土産：")):
                 handle_concierge_request(
                     event, user_message, configuration_penguin, text_model
                 )
 
-            # -------------------------------------------
-            # その他：使い方の説明
-            # -------------------------------------------
             else:
                 reply_text = """🐧 スーパー秘書ペンギンだペン！
 
-【できること】
-📧 メールの下書き
+【メール作成】
 「メール：宛先」で始めてペン！
 
-🍽️ お店・手土産の相談
+【お店・手土産探し】
 「お店：新宿で焼肉デート」
 「接待：大阪で静かな和食」
-「手土産：甘くないもの 3000円」
-
-みたいに話しかけてペン！私が探すペン！✨"""
+みたいに話しかけてペン！カードで提案するペン！✨"""
                 reply_simple_message(
                     event.reply_token, reply_text, configuration_penguin
                 )
@@ -103,7 +84,6 @@ def register_penguin_handler(app, handler_penguin, configuration_penguin, text_m
 
     @handler_penguin.add(PostbackEvent)
     def handle_penguin_postback(event):
-        """メール送信確認ボタンの処理"""
         user_id = event.source.user_id
         data = event.postback.data
 
@@ -119,7 +99,7 @@ def register_penguin_handler(app, handler_penguin, configuration_penguin, text_m
             if not email_data:
                 reply_simple_message(
                     event.reply_token,
-                    "タイムアウトしちゃったペン💦 もう一度作ってペン！",
+                    "タイムアウトしちゃったペン💦",
                     configuration_penguin,
                 )
                 return
@@ -130,9 +110,7 @@ def register_penguin_handler(app, handler_penguin, configuration_penguin, text_m
             if success:
                 del pending_emails[user_id]
                 reply_simple_message(
-                    event.reply_token,
-                    "✅ 送信完了だペン！お仕事完了！🐧✨",
-                    configuration_penguin,
+                    event.reply_token, "✅ 送信完了だペン！🐧✨", configuration_penguin
                 )
             else:
                 reply_simple_message(
@@ -148,12 +126,11 @@ def register_penguin_handler(app, handler_penguin, configuration_penguin, text_m
 
 
 def handle_email_request(event, text, user_id, conf, model):
-    """メール作成のリクエスト処理"""
     parts = text.split("\n")
     if len(parts) < 3:
         reply_simple_message(
             event.reply_token,
-            "入力形式が違うペン💦\nメール：宛先\n件名\n本文\nの順で頼むペン！",
+            "形式が違うペン💦\nメール：宛先\n件名\n本文\nの順で頼むペン！",
             conf,
         )
         return
@@ -162,13 +139,9 @@ def handle_email_request(event, text, user_id, conf, model):
     raw_subject = parts[1].strip()
     raw_body = "\n".join(parts[2:])
 
-    # Geminiで推敲
     subject, body = call_gemini_email(raw_subject, raw_body, model)
-
-    # 一時保存
     pending_emails[user_id] = {"to": target_email, "subject": subject, "body": body}
 
-    # 確認ボタン送信
     confirm_msg = TemplateMessage(
         alt_text="メール確認",
         template=ButtonsTemplate(
@@ -179,9 +152,7 @@ def handle_email_request(event, text, user_id, conf, model):
                     label="送信する 🚀", display_text="送信する！", data="action=send"
                 ),
                 PostbackAction(
-                    label="修正/キャンセル ❌",
-                    display_text="やめる",
-                    data="action=cancel",
+                    label="キャンセル ❌", display_text="やめる", data="action=cancel"
                 ),
             ],
         ),
@@ -203,27 +174,43 @@ def handle_email_request(event, text, user_id, conf, model):
 
 
 def handle_concierge_request(event, text, conf, model):
-    """お店・手土産選びのリクエスト処理"""
-    # キーワードを取り除く（"お店："などを消す）
+    """お店選び（カルーセル表示版）"""
     query = (
         text.replace("お店：", "").replace("接待：", "").replace("手土産：", "").strip()
     )
 
-    # Geminiでおすすめを考える
-    recommendation_text, search_query = call_gemini_concierge(query, model)
+    # Geminiから「3つのリスト」をもらう
+    shops_list, intro_msg = call_gemini_concierge_list(query, model)
 
-    # Googleマップの検索URLを作成
-    encoded_query = urllib.parse.quote(search_query)
-    map_url = f"https://www.google.com/maps/search/?api=1&query={encoded_query}"
+    if not shops_list:
+        reply_simple_message(
+            event.reply_token, "ごめんペン、うまく探せなかったペン...💦", conf
+        )
+        return
 
-    # LINEで返信（ボタン付き）
-    buttons_msg = TemplateMessage(
-        alt_text="おすすめのお店",
-        template=ButtonsTemplate(
-            title="検索結果だペン🔍",
-            text="最新情報や場所はここからチェックしてペン！",
-            actions=[URIAction(label="Googleマップで見る 🗺️", uri=map_url)],
-        ),
+    # カルーセルの列（カラム）を作成
+    columns = []
+    for shop in shops_list:
+        # 地図のURLを作る
+        map_query = urllib.parse.quote(shop["search_keyword"])
+        map_url = f"https://www.google.com/maps/search/?api=1&query={map_query}"
+
+        # 説明文が長すぎるとエラーになるので60文字でカット
+        desc = shop["description"][:60]
+        if len(shop["description"]) > 60:
+            desc += "..."
+
+        columns.append(
+            CarouselColumn(
+                title=shop["name"][:40],  # タイトル制限40文字
+                text=desc,  # 本文制限60文字
+                actions=[URIAction(label="地図を見る 🗺️", uri=map_url)],
+            )
+        )
+
+    # カルーセルメッセージを作成
+    carousel_msg = TemplateMessage(
+        alt_text="おすすめのお店リスト", template=CarouselTemplate(columns=columns)
     )
 
     with ApiClient(conf) as c:
@@ -231,21 +218,22 @@ def handle_concierge_request(event, text, conf, model):
         api.reply_message(
             ReplyMessageRequest(
                 reply_token=event.reply_token,
-                messages=[TextMessage(text=recommendation_text), buttons_msg],
+                messages=[
+                    TextMessage(text=intro_msg),  # 「候補を見つけたペン！」などの挨拶
+                    carousel_msg,
+                ],
             )
         )
 
 
 def call_gemini_email(raw_subject, raw_body, model):
-    """メール推敲用Gemini"""
     try:
         import google.generativeai as genai
 
         use_model = model if model else genai.GenerativeModel("gemini-2.5-flash")
         prompt = f"""
-        以下のメールをビジネスメールとして修正しJSONで出力してください。
-        {{ "subject": "件名", "body": "本文" }}
-
+        以下のメールをビジネスメールとして修正しJSONで出力。
+        {{ "subject": "...", "body": "..." }}
         元件名: {raw_subject}
         元本文: {raw_body}
         """
@@ -257,38 +245,43 @@ def call_gemini_email(raw_subject, raw_body, model):
         return raw_subject, raw_body
 
 
-def call_gemini_concierge(query, model):
+def call_gemini_concierge_list(query, model):
     """
-    コンシェルジュ用Gemini（修正版：名前の重複を削除）
+    コンシェルジュ用Gemini（リスト形式で出力させる）
+    Returns: (list_of_shops, intro_message)
     """
     try:
         import google.generativeai as genai
+
         use_model = model if model else genai.GenerativeModel("gemini-2.5-flash")
 
         prompt = f"""
-        あなたは有能な秘書です。上司から以下のリクエストを受けました。
+        あなたは秘書です。以下のリクエストにおすすめのお店/手土産を3つ提案してください。
         リクエスト: 「{query}」
 
-        これに対して、おすすめの「お店」または「商品」を3つ提案してください。
-
-        【出力ルール】
-        1. 3つの候補を挙げ、店名は「### 1. 店名」のように見出しにする。
-        2. 各店舗について「特徴」と「おすすめ理由」のみを箇条書きにする。（※「名前」という箇条書き項目は絶対に作らないこと）
-        3. 最後に、Googleマップで検索するための「最適な検索キーワード」を1つだけ提案する。
-        4. 出力はJSON形式のみ。
+        【出力形式】
+        必ず以下のJSONフォーマットのみを出力してください。
 
         {{
-            "message": "（ここに提案文全体を入れる。Markdownで見やすく。絵文字も使って）",
-            "search_keyword": "（Googleマップ検索用のキーワード例: 新宿 焼肉 個室）"
+            "intro": "上司、候補を3つピックアップしました！などの短い挨拶",
+            "shops": [
+                {{
+                    "name": "店名（短く）",
+                    "description": "特徴やおすすめ理由を簡潔に（50文字以内）",
+                    "search_keyword": "Googleマップ検索用キーワード"
+                }},
+                {{ ... }},
+                {{ ... }}
+            ]
         }}
         """
         res = use_model.generate_content(prompt)
         text = res.text.replace("```json", "").replace("```", "").strip()
         data = json.loads(text)
-        return data["message"], data["search_keyword"]
+        return data["shops"], data["intro"]
     except Exception as e:
         print(f"Concierge Error: {e}")
-        return "ごめんペン、うまく探せなかったペン...💦", query
+        return [], "エラーだペン..."
 
 
 def reply_simple_message(token, text, conf):
