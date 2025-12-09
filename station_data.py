@@ -1,5 +1,10 @@
 # このファイルは自動生成されました
 STATIONS = [
+      {
+        "name": "吉祥寺",
+        "id": "odpt.Station:JR-East.Chuo.Kichijoji",
+        "railway": "JR-East"
+    },
   {
     "name": "新宿",
     "id": "odpt.Station:TokyoMetro.Marunouchi.Shinjuku",

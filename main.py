@@ -64,8 +64,9 @@ from datetime import datetime
 from animals.fox import register_fox_handler
 from animals.frog import register_frog_handler
 from animals.penguin import register_penguin_handler
-
+from animals.mole import register_mole_handler
 # ========================================
+
 
 # --- グローバル変数 ---
 # モデルたち
@@ -244,6 +245,13 @@ def startup_event():
             app, handler_penguin, configuration_penguin, text_model
         )
     print("✅ ペンギンハンドラー登録完了")
+    # 🦡 もぐら駅長ハンドラー登録
+if handler_train and configuration_train:
+    print("🦡 もぐら駅長ハンドラー登録中...")
+    register_mole_handler(
+        app, handler_train, configuration_train, text_model
+    )
+    print("✅ もぐら駅長ハンドラー登録完了")
 
     print("🚀 サーバー起動完了！")
 
@@ -663,135 +671,6 @@ def trigger_check_reminders():
         return {"error": str(e)}
 
 
-# モグラ、Voidoll、カエル、キツネ、カピバラのエンドポイント
-@app.post("/callback_train")
-async def callback_train(request: Request):
-    signature = request.headers["X-Line-Signature"]
-    body = await request.body()
-    try:
-        handler_train.handle(body.decode("utf-8"), signature)
-    except:
-        raise HTTPException(status_code=400)
-    return "OK"
-
-
-try:
-    from station_data import STATIONS
-except:
-    STATIONS = []
-STATIONS.append(
-    {
-        "name": "吉祥寺",
-        "id": "odpt.Station:Keio.Inokashira.Kichijoji",
-        "railway": "Keio",
-    }
-)
-
-
-def get_current_calendar():
-    jst = datetime.timezone(datetime.timedelta(hours=+9), "JST")
-    weekday = datetime.datetime.now(jst).weekday()
-    if weekday == 5:
-        return "odpt.Calendar:Saturday"
-    elif weekday == 6:
-        return "odpt.Calendar:Holiday"
-    else:
-        return "odpt.Calendar:Weekday"
-
-
-@handler_train.add(MessageEvent, message=TextMessageContent)
-def handle_train_message(event):
-    user_text = event.message.text
-    try:
-        res = genai.GenerativeModel("gemini-2.5-flash").generate_content(
-            f"駅名だけ抜き出して。「{user_text}」 -> 出力:"
-        )
-        extracted = (
-            res.text.strip().replace("駅", "").replace("「", "").replace("」", "")
-        )
-    except:
-        extracted = user_text
-
-    found_data = None
-    for s in STATIONS:
-        if s["name"] == extracted:
-            found_data = s
-            break
-    if not found_data:
-        for s in STATIONS:
-            if extracted in s["name"]:
-                found_data = s
-                break
-
-    if not found_data:
-        msg = f"駅が見つからないモグ...「{extracted}」？"
-    else:
-        try:
-            params = {
-                # os.getenvを使う
-                "acl:consumerKey": os.getenv("ODPT_API_KEY"),
-                "odpt:station": found_data["id"],
-                "odpt:calendar": get_current_calendar(),
-            }
-            res = requests.get(
-                "https://api.odpt.org/api/v4/odpt:StationTimetable", params=params
-            )
-            timetables = res.json()
-            if not timetables:
-                msg = f"【{found_data['name']}】データなしモグ..."
-            else:
-                jst = datetime.timezone(datetime.timedelta(hours=+9), "JST")
-                now_hm = datetime.datetime.now(jst).strftime("%H:%M")
-                upcoming = []
-                for t in timetables:
-                    d = t.get("odpt:railwayDirection", "").split(":")[-1]
-                    for tr in t.get("odpt:stationTimetableObject", []):
-                        dept = tr.get("odpt:departureTime")
-                        dest = tr.get("odpt:destinationStation", ["?"])[0].split(".")[
-                            -1
-                        ]
-                        if dept and dept > now_hm:
-                            upcoming.append({"time": dept, "dest": dest, "dir": d})
-                upcoming.sort(key=lambda x: x["time"])
-                top5 = upcoming[:5]
-                msg = (
-                    f"【{found_data['name']}】\n"
-                    + "\n".join([f"🕒 {t['time']} ({t['dest']})" for t in top5])
-                    if top5
-                    else "もう電車ないモグ..."
-                )
-        except Exception as e:
-            msg = f"エラーモグ: {e}"
-    with ApiClient(configuration_train) as c:
-        MessagingApi(c).reply_message(
-            ReplyMessageRequest(
-                reply_token=event.reply_token, messages=[TextMessage(text=msg)]
-            )
-        )
-
-
-@handler_train.add(MessageEvent, message=LocationMessageContent)
-def handle_location_message(event):
-    try:
-        res = gmaps.places_nearby(
-            location=(event.message.latitude, event.message.longitude),
-            rank_by="distance",
-            type="train_station",
-            language="ja",
-        )
-        msg = (
-            f"最寄りは「{res['results'][0]['name']}」だモグ！"
-            if res.get("results")
-            else "駅がないモグ..."
-        )
-    except:
-        msg = "検索失敗モグ..."
-    with ApiClient(configuration_train) as c:
-        MessagingApi(c).reply_message(
-            ReplyMessageRequest(
-                reply_token=event.reply_token, messages=[TextMessage(text=msg)]
-            )
-        )
 
 
 @app.post("/callback_voidoll")
