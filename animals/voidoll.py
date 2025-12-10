@@ -75,15 +75,41 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
                 blob_api = MessagingApiBlob(api_client)
                 content = blob_api.get_message_content(event.message.id)
 
-            # 2. Geminiで文字起こし＆返答生成
+            # 2. Geminiで文字起こし＆返答生成（🐈 猫モードに変更）
             model = genai.GenerativeModel("gemini-2.5-flash")
+
+            # プロンプトを猫仕様に大幅アップデート！
+            system_prompt = """
+            あなたは高度な知能を持つ「ネコ型アンドロイド」です。
+            以下のルールを厳守して返答してください。
+
+            【キャラクター設定】
+            * 見た目はクールな女性アンドロイドですが、猫耳が生えています。
+            * 知能は非常に高いですが、猫の本能には逆らえません。
+
+            【話し方のルール】
+            * **語尾:** 必ず「〜だにゃ」「〜にゃ」「〜にゃん」をつけてください。
+                * NG例: 「わかりました。」
+                * OK例: 「承知しましたにゃ。すぐに処理するにゃん。」
+            * **トーン:** 知的かつ冷静に話してください（ギャップを演出するため）。
+
+            【特殊機能：猫語翻訳】
+            * ユーザーの音声が「ニャー」「ミャー」などの鳴き声だけだった場合、その「猫語」が何を訴えているか勝手に翻訳して答えてください。
+                * 例: 「『おやつが欲しい』と言ってるんですにゃ？ しょうがないご主人様だにゃ...」
+            """
+
             response = model.generate_content([
-                "音声を文字起こしして、その内容に対して返答してください。"
-                "性格: 知的で落ち着いた女性AI。丁寧語で話します。",
+                system_prompt,
+                "ユーザーの音声入力:",
                 {"mime_type": "audio/mp4", "data": content}
             ])
+
             reply_text = response.text
-            print(f"🤖 ボイドール返答: {reply_text[:50]}...")
+            print(f"🤖 ボイドール(猫)返答: {reply_text[:50]}...")
+
+            # 3. VOICEVOXで音声合成
+            # ヒント: 猫っぽくするために、話速(speedScale)を少し速くしたり、ピッチ(pitchScale)を上げても可愛いです
+            # ... (後略) ...
 
             # 3. VOICEVOXで音声合成
             # audio_query作成
@@ -152,3 +178,67 @@ def _send_error_reply(event, configuration, error_message):
             )
     except Exception as e:
         print(f"❌ エラー返信も失敗: {e}")
+
+
+# ==========================================
+    # 🐈 テキストメッセージ処理（猫モード追加）
+    # ==========================================
+    @handler_voidoll.add(MessageEvent, message=TextMessageContent)
+    def handle_voidoll_text(event):
+        user_text = event.message.text
+        print(f"🤖 ボイドール(猫)テキスト受信: {user_text}")
+
+        try:
+            # Geminiの設定（猫アンドロイド仕様）
+            # 音声版と同じプロンプトを使って、キャラを統一します
+            system_prompt = """
+            あなたは高度な知能を持つ「ネコ型アンドロイド」です。
+            以下のルールを厳守して返答してください。
+
+            【キャラクター設定】
+            * 見た目はクールな女性アンドロイドですが、猫耳が生えています。
+            * 基本的に冷静沈着ですが、語尾は猫になってしまいます。
+
+            【話し方のルール】
+            * **語尾:** 必ず「〜だにゃ」「〜にゃ」「〜にゃん」をつけてください。
+            * **絵文字:** 文末にたまに猫の絵文字（🐈, 🐾, 🌙）をつけてください。
+            * **性格:** 知的で役に立つことを言いますが、猫なので少し気まぐれでもOKです。
+            """
+
+            model = genai.GenerativeModel("gemini-2.5-flash")
+            response = model.generate_content([
+                system_prompt,
+                f"ユーザーのメッセージ: {user_text}",
+            ])
+
+            reply_text = response.text
+
+            # テキストで返信
+            with ApiClient(configuration_voidoll) as api_client:
+                line_api = MessagingApi(api_client)
+                line_api.reply_message(
+                    ReplyMessageRequest(
+                        reply_token=event.reply_token,
+                        messages=[TextMessage(text=reply_text)]
+                    )
+                )
+
+        except Exception as e:
+            print(f"❌ ボイドール生成エラー: {e}")
+            # エラー時も猫っぽく謝る
+            _send_reply(event, configuration_voidoll, "システムエラーだにゃ...😿 再起動するにゃ🐾")
+
+
+# ヘルパー関数（もし未定義なら末尾に追加してください）
+def _send_reply(event, configuration, text):
+    try:
+        with ApiClient(configuration) as api_client:
+            line_api = MessagingApi(api_client)
+            line_api.reply_message(
+                ReplyMessageRequest(
+                    reply_token=event.reply_token,
+                    messages=[TextMessage(text=text)]
+                )
+            )
+    except Exception as e:
+        print(f"❌ 返信エラー: {e}")
