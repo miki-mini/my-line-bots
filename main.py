@@ -111,9 +111,7 @@ handler_penguin = WebhookHandler(os.getenv("PENGUIN_CHANNEL_SECRET"))
 
 LINE_TOKEN_FOX = os.getenv("FOX_ACCESS_TOKEN")
 LINE_SECRET_FOX = os.getenv("FOX_CHANNEL_SECRET")
-configuration_fox = (
-    Configuration(access_token=LINE_TOKEN_FOX) if LINE_TOKEN_FOX else None
-)
+configuration_fox = (Configuration(access_token=LINE_TOKEN_FOX) if LINE_TOKEN_FOX else None)
 handler_fox = WebhookHandler(LINE_SECRET_FOX) if LINE_SECRET_FOX else None
 
 configuration_capybara = Configuration(access_token=os.getenv("CAPYBARA_ACCESS_TOKEN"))
@@ -172,8 +170,7 @@ def startup_event():
         # (B) 画像生成
         try:
             image_model = ImageGenerationModel.from_pretrained(
-                "imagen-3.0-fast-generate-001"
-            )
+                "imagen-3.0-fast-generate-001")
             print("✅ 基本モデル (2.5 Flash & Imagen) 準備完了")
         except:
             image_model = None
@@ -189,14 +186,12 @@ def startup_event():
         # まず grounding が使えるか確認
         print(f"   grounding モジュール: {grounding}")
         print(
-            f"   GoogleSearchRetrieval: {hasattr(grounding, 'GoogleSearchRetrieval')}"
-        )
+            f"   GoogleSearchRetrieval: {hasattr(grounding, 'GoogleSearchRetrieval')}")
 
         # ✅ 正しいインポートと使い方
         search_retrieval = grounding.GoogleSearchRetrieval()
         print(
-            f"   GoogleSearchRetrieval インスタンス作成成功: {type(search_retrieval)}"
-        )
+            f"   GoogleSearchRetrieval インスタンス作成成功: {type(search_retrieval)}")
 
         search_tool = Tool.from_google_search_retrieval(search_retrieval)
         print(f"   Tool 作成成功: {type(search_tool)}")
@@ -224,47 +219,39 @@ def startup_event():
 
     print("🚀 サーバー起動完了！ Super Capybara (2.5) is Ready.")
 
-    # 🦊 キツネハンドラー登録
+        # 🦊 キツネハンドラー登録
     if handler_fox and configuration_fox:
         print("🦊 キツネハンドラー登録中...")
         register_fox_handler(
-            app, handler_fox, configuration_fox, search_model, text_model
-        )
+            app, handler_fox, configuration_fox, search_model, text_model)
         print("✅ キツネハンドラー登録完了")
-
         # 🐸 カエルハンドラー登録（追加）
     if handler_frog and configuration_frog:
         print("🐸 カエルハンドラー登録中...")
         register_frog_handler(
-            app, handler_frog, configuration_frog, search_model, text_model
-        )
+            app, handler_frog, configuration_frog, search_model, text_model)
         print("✅ カエルハンドラー登録完了")
-
         # 🐧 ペンギンハンドラー登録
     if handler_penguin and configuration_penguin:
         print("🐧 ペンギンハンドラー登録中...")
         register_penguin_handler(
-            app, handler_penguin, configuration_penguin, text_model
-        )
+            app, handler_penguin, configuration_penguin, text_model)
         print("✅ ペンギンハンドラー登録完了")
     # 🦡 もぐら駅長ハンドラー登録
     if handler_train and configuration_train:
         print("🦡 もぐら駅長ハンドラー登録中...")
         register_mole_handler(app, handler_train, configuration_train, text_model)
         print("✅ もぐら駅長ハンドラー登録完了")
-
     # 🤖 ボイドールハンドラー登録
     if handler_voidoll and configuration_voidoll:
         print("🤖 ボイドールハンドラー登録中...")
         register_voidoll_handler(app, handler_voidoll, configuration_voidoll)
         print("✅ ボイドールハンドラー登録完了")
-
     # 🐹 カピバラハンドラー登録
     if handler_capybara and configuration_capybara:
         print("🐹 カピバラハンドラー登録中...")
         register_capybara_handler(
-            app, handler_capybara, configuration_capybara, search_model, text_model
-        )
+            app, handler_capybara, configuration_capybara, search_model, text_model)
         print("✅ カピバラハンドラー登録完了")
 
     print("🚀 サーバー起動完了！")
