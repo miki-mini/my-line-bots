@@ -18,7 +18,7 @@ from linebot.v3.messaging import (
     TextMessage,
     AudioMessage,
 )
-from linebot.v3.webhooks import MessageEvent, AudioMessageContent
+from linebot.v3.webhooks import MessageEvent, AudioMessageContent, TextMessageContent
 from linebot.v3.exceptions import InvalidSignatureError
 import requests
 
@@ -178,10 +178,14 @@ def _send_error_reply(event, configuration, error_message):
             )
     except Exception as e:
         print(f"❌ エラー返信も失敗: {e}")
+# 1. ここで関数が始まります（configuration_voidollを受け取る）
+def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
 
+    # ... (これまでの音声処理のコードなどはここにあります) ...
 
-# ==========================================
-    # 🐈 テキストメッセージ処理（猫モード追加）
+    # ==========================================
+    # 🐈 テキストメッセージ処理（ここに貼り付け！）
+    # ⚠️ 注意：全体を右にずらして、def register... の内側に入れます
     # ==========================================
     @handler_voidoll.add(MessageEvent, message=TextMessageContent)
     def handle_voidoll_text(event):
@@ -189,8 +193,7 @@ def _send_error_reply(event, configuration, error_message):
         print(f"🤖 ボイドール(猫)テキスト受信: {user_text}")
 
         try:
-            # Geminiの設定（猫アンドロイド仕様）
-            # 音声版と同じプロンプトを使って、キャラを統一します
+            # プロンプト設定
             system_prompt = """
             あなたは高度な知能を持つ「ネコ型アンドロイド」です。
             以下のルールを厳守して返答してください。
@@ -213,7 +216,8 @@ def _send_error_reply(event, configuration, error_message):
 
             reply_text = response.text
 
-            # テキストで返信
+            # 👇 ここで configuration_voidoll を使います！
+            # インデントが合っていれば、上の関数から受け取ったこれが見えるようになります
             with ApiClient(configuration_voidoll) as api_client:
                 line_api = MessagingApi(api_client)
                 line_api.reply_message(
@@ -225,20 +229,19 @@ def _send_error_reply(event, configuration, error_message):
 
         except Exception as e:
             print(f"❌ ボイドール生成エラー: {e}")
-            # エラー時も猫っぽく謝る
-            _send_reply(event, configuration_voidoll, "システムエラーだにゃ...😿 再起動するにゃ🐾")
+            # エラー時
+            # ここも _send_reply を使うか、直接書いてもOKですが、
+            # 簡単にするため直接書く方式に修正します
+            try:
+                with ApiClient(configuration_voidoll) as api_client:
+                    line_api = MessagingApi(api_client)
+                    line_api.reply_message(
+                        ReplyMessageRequest(
+                            reply_token=event.reply_token,
+                            messages=[TextMessage(text="システムエラーだにゃ...😿")]
+                        )
+                    )
+            except:
+                pass
 
-
-# ヘルパー関数（もし未定義なら末尾に追加してください）
-def _send_reply(event, configuration, text):
-    try:
-        with ApiClient(configuration) as api_client:
-            line_api = MessagingApi(api_client)
-            line_api.reply_message(
-                ReplyMessageRequest(
-                    reply_token=event.reply_token,
-                    messages=[TextMessage(text=text)]
-                )
-            )
-    except Exception as e:
-        print(f"❌ 返信エラー: {e}")
+    # ここで register_voidoll_handler 関数が終わります
