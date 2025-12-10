@@ -253,6 +253,12 @@ if handler_train and configuration_train:
     )
     print("✅ もぐら駅長ハンドラー登録完了")
 
+    # 🤖 ボイドールハンドラー登録
+if handler_voidoll and configuration_voidoll:
+    print("🤖 ボイドールハンドラー登録中...")
+    register_voidoll_handler(app, handler_voidoll, configuration_voidoll)
+    print("✅ ボイドールハンドラー登録完了")
+
     print("🚀 サーバー起動完了！")
 
 
@@ -671,57 +677,6 @@ def trigger_check_reminders():
         return {"error": str(e)}
 
 
-
-
-@app.post("/callback_voidoll")
-async def callback_voidoll(request: Request):
-    signature = request.headers["X-Line-Signature"]
-    body = await request.body()
-    try:
-        handler_voidoll.handle(body.decode("utf-8"), signature)
-    except:
-        raise HTTPException(status_code=400)
-    return "OK"
-
-
-@handler_voidoll.add(MessageEvent, message=AudioMessageContent)
-def handle_voidoll_audio(event):
-    try:
-        content = line_bot_blob_api_voidoll.get_message_content(event.message.id)
-        res = genai.GenerativeModel("gemini-2.5-flash").generate_content(
-            [
-                "文字起こしして返答。性格:知的女性AI。",
-                {"mime_type": "audio/mp4", "data": content},
-            ]
-        )
-
-        q = requests.post(
-            "https://voicevox-engine-1032484155743.asia-northeast1.run.app/audio_query",
-            params={"text": res.text, "speaker": 89},
-        ).json()
-        syn = requests.post(
-            "https://voicevox-engine-1032484155743.asia-northeast1.run.app/synthesis",
-            params={"speaker": 89},
-            json=q,
-        )
-
-        client = storage.Client()
-        blob = client.bucket(os.getenv("GCS_BUCKET_NAME")).blob(
-            f"voice_{uuid.uuid4()}.wav"
-        )
-        blob.upload_from_string(syn.content, content_type="audio/wav")
-        blob.make_public()
-
-        msg = AudioMessage(original_content_url=blob.public_url, duration=2000)
-        line_bot_api_voidoll.reply_message(
-            ReplyMessageRequest(reply_token=event.reply_token, messages=[msg])
-        )
-    except Exception as e:
-        line_bot_api_voidoll.reply_message(
-            ReplyMessageRequest(
-                reply_token=event.reply_token, messages=[TextMessage(text=str(e))]
-            )
-        )
 
 
 @app.post("/callback_capybara")
