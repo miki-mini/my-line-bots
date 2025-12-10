@@ -246,28 +246,26 @@ def startup_event():
         register_penguin_handler(
             app, handler_penguin, configuration_penguin, text_model
         )
-    print("✅ ペンギンハンドラー登録完了")
+        print("✅ ペンギンハンドラー登録完了")
     # 🦡 もぐら駅長ハンドラー登録
-
-
-if handler_train and configuration_train:
-    print("🦡 もぐら駅長ハンドラー登録中...")
-    register_mole_handler(app, handler_train, configuration_train, text_model)
-    print("✅ もぐら駅長ハンドラー登録完了")
+    if handler_train and configuration_train:
+        print("🦡 もぐら駅長ハンドラー登録中...")
+        register_mole_handler(app, handler_train, configuration_train, text_model)
+        print("✅ もぐら駅長ハンドラー登録完了")
 
     # 🤖 ボイドールハンドラー登録
-if handler_voidoll and configuration_voidoll:
-    print("🤖 ボイドールハンドラー登録中...")
-    register_voidoll_handler(app, handler_voidoll, configuration_voidoll)
-    print("✅ ボイドールハンドラー登録完了")
+    if handler_voidoll and configuration_voidoll:
+        print("🤖 ボイドールハンドラー登録中...")
+        register_voidoll_handler(app, handler_voidoll, configuration_voidoll)
+        print("✅ ボイドールハンドラー登録完了")
 
     # 🐹 カピバラハンドラー登録
-if handler_capybara and configuration_capybara:
-    print("🐹 カピバラハンドラー登録中...")
-    register_capybara_handler(
-        app, handler_capybara, configuration_capybara, search_model, text_model
-    )
-    print("✅ カピバラハンドラー登録完了")
+    if handler_capybara and configuration_capybara:
+        print("🐹 カピバラハンドラー登録中...")
+        register_capybara_handler(
+            app, handler_capybara, configuration_capybara, search_model, text_model
+        )
+        print("✅ カピバラハンドラー登録完了")
 
     print("🚀 サーバー起動完了！")
 
