@@ -59,11 +59,12 @@ import pandas as pd
 from datetime import datetime
 
 # ========================================
-# 🦊🐸🐧🦡
+# 🦊🐸🐧🦡🤖
 from animals.fox import register_fox_handler
 from animals.frog import register_frog_handler
 from animals.penguin import register_penguin_handler
 from animals.mole import register_mole_handler
+from animals.voidoll import register_voidoll_handler
 # ========================================
 
 
