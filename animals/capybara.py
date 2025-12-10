@@ -43,59 +43,76 @@ def register_capybara_handler(app, handler_capybara, configuration_capybara, sea
             raise HTTPException(status_code=400, detail=str(e))
         return "OK"
 
-    # ==========================================
-    # 🐹 テキストメッセージ処理（検索対応）
+# ==========================================
+    # 🐹 テキストメッセージ処理（検索対応 ＋ ♨️温泉モード）
     # ==========================================
     @handler_capybara.add(MessageEvent, message=TextMessageContent)
     def handle_capybara_message(event):
         user_text = event.message.text
         print(f"🐹 カピバラ受信: {user_text}")
 
-        # 今日の日付を取得（日本時間）
+        # 今日の日付を取得
         try:
             today = dt.date.today().strftime("%Y年%m月%d日")
         except Exception as e:
-            print(f"⚠️ 日付取得エラー: {e}")
             today = "今日"
+
+        # ♨️ 温泉モード判定（キーワード検知）
+        # ユーザーが弱音を吐いたり、癒やしを求めているかチェック
+        onsen_keywords = ["疲れた", "つかれた", "しんどい", "休憩", "休みたい", "癒やして", "温泉", "つらい"]
+        is_onsen_mode = any(keyword in user_text for keyword in onsen_keywords)
 
         msg = ""
         try:
-            # 検索モデルがあれば使う
-            if search_model:
-                # 💡 プロンプト修正：絵文字の指定を追加しました
+            # -------------------------------------------------
+            # ♨️ 温泉モード（癒やし優先）
+            # -------------------------------------------------
+            if is_onsen_mode:
+                if text_model: # 雑談なので軽量な通常モデルでOK（検索モデルでも可）
+                    prompt = f"""
+                    ユーザーの発言: {user_text}
+
+                    役割: あなたは柚子湯に浸かっている、のんびり屋のカピバラです。
+                    目的: 疲れているユーザーを全力で癒やしてください。
+                    ルール:
+                    1. ニュースの話はしないでください。
+                    2. 「動物のほっこりする雑学」を1つ教えてあげるか、優しく労ってください。
+                    3. 語尾は「〜だっぴ」「〜っぴ」で、とてものんびりした口調で。
+                    4. 絵文字（♨️, 🍊, 🧼, 🌿, ☁️, 🐹）を使って、温かい雰囲気にしてください。
+                    """
+                    # モデル呼び出し（ここではtext_modelを使いますが、search_modelでも動きます）
+                    # 検索モデル(search_model)を使うと最新の動物ニュースも拾えますが、
+                    # 癒やし会話ならtext_modelの方が応答が速いことが多いです。
+                    target_model = text_model if text_model else search_model
+                    response = target_model.generate_content(prompt)
+                    msg = response.text
+                else:
+                    msg = "お疲れ様だっぴ...♨️ 背中流すっぴ？🧼"
+
+            # -------------------------------------------------
+            # 📰 通常モード（ニュース解説）
+            # -------------------------------------------------
+            elif search_model:
                 prompt = f"""
                 現在日時: {today}
                 ユーザーの質問: {user_text}
 
-                役割: あなたはニュース解説が得意な癒やし系のカピバラです。
+                役割: ニュース解説が得意なカピバラ（語尾はっぴ）。
                 ルール:
-                1. 上記の「現在日時」を基準にして、Google検索で最新情報を調べてください。
-                2. 「昨日」と聞かれたら、現在日時の1日前を検索してください。
-                3. 語尾は「っぴ」をつけてください。
-                4. 難しいニュースも分かりやすく、親しみやすく解説してください。
-                5. 絵文字（🐹, 🌿, ♨️, ✨, 🍊など）を文中にふんだんに使って、見た目をかわいく楽しくしてください。
-                6. ユーザーが落ち込んでいるようなら、優しく励ましてください。
+                1. Google検索で最新情報を調べて解説する。
+                2. 絵文字（🐹, ✨, 📝）を使ってかわいく分かりやすく。
+                3. ユーザーの質問に答えられない場合は、正直に検索できなかったと伝えて。
                 """
                 response = search_model.generate_content(prompt)
                 msg = response.text
+
+            # フォールバック
             else:
-                # フォールバック：通常モデル
-                if text_model:
-                    prompt = f"""
-                    ユーザーの質問: {user_text}
-                    役割: カピバラとして親しみやすく答えてください。
-                    ルール:
-                    1. 語尾は「っぴ」。
-                    2. 絵文字（🐹, 🌿, ♨️）を使ってかわいく返信してください。
-                    """
-                    response = text_model.generate_content(prompt)
-                    msg = response.text
-                else:
-                    msg = "検索機能がちょっと調子悪いっぴ...💦 ごめんっぴ🐹"
+                msg = "ちょっと調子悪いっぴ...💦 ごめんっぴ🐹"
 
         except Exception as e:
             print(f"❌ カピバラ生成エラー: {e}")
-            msg = "エラーが出ちゃったっぴ😭 もう一回言ってほしいっぴ🌿"
+            msg = "エラーが出ちゃったっぴ😭 ゆっくり休むのも大事だっぴ...♨️"
 
         # LINEに返信
         _send_reply(event, configuration_capybara, msg)
