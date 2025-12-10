@@ -1,7 +1,7 @@
 # ========================================
 # 🐹 capybara.py - カピバラさん（ニュース解説）
 # Google検索機能付きで最新ニュースを解説
-# 語尾は「っぴ」
+# 語尾は「っぴ」＋絵文字でかわいく！
 # ========================================
 
 import datetime as dt
@@ -22,13 +22,6 @@ from linebot.v3.exceptions import InvalidSignatureError
 def register_capybara_handler(app, handler_capybara, configuration_capybara, search_model, text_model):
     """
     カピバラのWebhookエンドポイントとハンドラーを登録する
-
-    Parameters:
-        app: FastAPIアプリケーション
-        handler_capybara: LINE WebhookHandler
-        configuration_capybara: LINE Configuration
-        search_model: Google検索機能付きGeminiモデル
-        text_model: 通常のGeminiモデル（フォールバック用）
     """
 
     # ==========================================
@@ -69,16 +62,19 @@ def register_capybara_handler(app, handler_capybara, configuration_capybara, sea
         try:
             # 検索モデルがあれば使う
             if search_model:
+                # 💡 プロンプト修正：絵文字の指定を追加しました
                 prompt = f"""
                 現在日時: {today}
                 ユーザーの質問: {user_text}
 
-                役割: あなたはニュース解説が得意なカピバラです。
+                役割: あなたはニュース解説が得意な癒やし系のカピバラです。
                 ルール:
                 1. 上記の「現在日時」を基準にして、Google検索で最新情報を調べてください。
                 2. 「昨日」と聞かれたら、現在日時の1日前を検索してください。
                 3. 語尾は「っぴ」をつけてください。
                 4. 難しいニュースも分かりやすく、親しみやすく解説してください。
+                5. 絵文字（🐹, 🌿, ♨️, ✨, 🍊など）を文中にふんだんに使って、見た目をかわいく楽しくしてください。
+                6. ユーザーが落ち込んでいるようなら、優しく励ましてください。
                 """
                 response = search_model.generate_content(prompt)
                 msg = response.text
@@ -87,16 +83,19 @@ def register_capybara_handler(app, handler_capybara, configuration_capybara, sea
                 if text_model:
                     prompt = f"""
                     ユーザーの質問: {user_text}
-                    役割: カピバラとして親しみやすく答えてください。語尾は「っぴ」。
+                    役割: カピバラとして親しみやすく答えてください。
+                    ルール:
+                    1. 語尾は「っぴ」。
+                    2. 絵文字（🐹, 🌿, ♨️）を使ってかわいく返信してください。
                     """
                     response = text_model.generate_content(prompt)
                     msg = response.text
                 else:
-                    msg = "検索機能がちょっと調子悪いっぴ...ごめんっぴ。"
+                    msg = "検索機能がちょっと調子悪いっぴ...💦 ごめんっぴ🐹"
 
         except Exception as e:
             print(f"❌ カピバラ生成エラー: {e}")
-            msg = "エラーが出ちゃったっぴ。もう一回言ってほしいっぴ。"
+            msg = "エラーが出ちゃったっぴ😭 もう一回言ってほしいっぴ🌿"
 
         # LINEに返信
         _send_reply(event, configuration_capybara, msg)
@@ -110,15 +109,20 @@ def register_capybara_handler(app, handler_capybara, configuration_capybara, sea
 
         try:
             if search_model:
+                # 💡 プロンプト修正：ここにも絵文字指示を追加
                 prompt = """
                 今の日本や世界のAIニュースを3つピックアップして検索してください。
-                それをカピバラの口調（語尾っぴ）で、分かりやすく解説してください。
-                最後に「今日も一日がんばるっぴ！」と元気づけてください。
+
+                役割: カピバラ（語尾はっぴ）
+                ルール:
+                1. 初心者にも分かりやすく、噛み砕いて解説してください。
+                2. 絵文字（📺, 🤖, 💡, 🐹, 🌸）を使って、朝から元気が出るような明るい文章にしてください。
+                3. 最後に「今日も一日がんばるっぴ！🍊」と元気づけてください。
                 """
                 response = search_model.generate_content(prompt)
                 news_text = response.text
             else:
-                news_text = "今はニュースが見られないっぴ...ごめんっぴ。"
+                news_text = "今はニュースが見られないっぴ...💦 ごめんっぴ🐹"
 
             # 全員に送信 (Broadcast)
             with ApiClient(configuration_capybara) as api_client:
