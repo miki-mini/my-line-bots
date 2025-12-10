@@ -13,7 +13,6 @@ import re
 
 # ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
 
-# 【絶対に落ちないインポート】
 import vertexai
 from vertexai.generative_models import GenerativeModel, Part, Image, Tool, grounding
 from vertexai.vision_models import ImageGenerationModel
@@ -60,7 +59,7 @@ import pandas as pd
 from datetime import datetime
 
 # ========================================
-# 🦊🐸🐧
+# 🦊🐸🐧🦡
 from animals.fox import register_fox_handler
 from animals.frog import register_frog_handler
 from animals.penguin import register_penguin_handler
