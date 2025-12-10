@@ -1,6 +1,6 @@
 # ========================================
-# 🤖 voidoll.py - ボイドール（知的女性AI）
-# 音声メッセージを受け取り、文字起こし→返答→音声合成して返す
+# 🤖 voidoll.py - ボイドール（猫耳モード搭載）
+# 音声・テキスト両対応のマルチモーダルAI
 # ========================================
 
 import os
@@ -18,6 +18,7 @@ from linebot.v3.messaging import (
     TextMessage,
     AudioMessage,
 )
+# ⚠️ ここが重要！ TextMessageContent を追加しました
 from linebot.v3.webhooks import MessageEvent, AudioMessageContent, TextMessageContent
 from linebot.v3.exceptions import InvalidSignatureError
 import requests
@@ -26,17 +27,7 @@ import requests
 def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
     """
     ボイドールのWebhookエンドポイントとハンドラーを登録する
-
-    Parameters:
-        app: FastAPIアプリケーション
-        handler_voidoll: LINE WebhookHandler
-        configuration_voidoll: LINE Configuration
     """
-
-    # --- 共通クライアント ---
-    api_client_voidoll = ApiClient(configuration_voidoll)
-    line_bot_api_voidoll = MessagingApi(api_client_voidoll)
-    line_bot_blob_api_voidoll = MessagingApiBlob(api_client_voidoll)
 
     # GCS設定
     GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
@@ -63,7 +54,7 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
         return "OK"
 
     # ==========================================
-    # 🎤 音声メッセージ処理
+    # 🎤 音声メッセージ処理（猫モード）
     # ==========================================
     @handler_voidoll.add(MessageEvent, message=AudioMessageContent)
     def handle_voidoll_audio(event):
@@ -75,10 +66,9 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
                 blob_api = MessagingApiBlob(api_client)
                 content = blob_api.get_message_content(event.message.id)
 
-            # 2. Geminiで文字起こし＆返答生成（🐈 猫モードに変更）
+            # 2. Geminiで文字起こし＆返答生成（🐈 猫モード）
             model = genai.GenerativeModel("gemini-2.5-flash")
 
-            # プロンプトを猫仕様に大幅アップデート！
             system_prompt = """
             あなたは高度な知能を持つ「ネコ型アンドロイド」です。
             以下のルールを厳守して返答してください。
@@ -89,13 +79,10 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
 
             【話し方のルール】
             * **語尾:** 必ず「〜だにゃ」「〜にゃ」「〜にゃん」をつけてください。
-                * NG例: 「わかりました。」
-                * OK例: 「承知しましたにゃ。すぐに処理するにゃん。」
             * **トーン:** 知的かつ冷静に話してください（ギャップを演出するため）。
 
             【特殊機能：猫語翻訳】
             * ユーザーの音声が「ニャー」「ミャー」などの鳴き声だけだった場合、その「猫語」が何を訴えているか勝手に翻訳して答えてください。
-                * 例: 「『おやつが欲しい』と言ってるんですにゃ？ しょうがないご主人様だにゃ...」
             """
 
             response = model.generate_content([
@@ -103,25 +90,19 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
                 "ユーザーの音声入力:",
                 {"mime_type": "audio/mp4", "data": content}
             ])
-
             reply_text = response.text
-            print(f"🤖 ボイドール(猫)返答: {reply_text[:50]}...")
+            print(f"🤖 ボイドール返答: {reply_text[:50]}...")
 
             # 3. VOICEVOXで音声合成
-            # ヒント: 猫っぽくするために、話速(speedScale)を少し速くしたり、ピッチ(pitchScale)を上げても可愛いです
-            # ... (後略) ...
-
-            # 3. VOICEVOXで音声合成
-            # audio_query作成
+            # speaker=58 (九州そら) などに変えると雰囲気が変わります
             query_response = requests.post(
                 f"{VOICEVOX_URL}/audio_query",
-                params={"text": reply_text, "speaker": 89},  # speaker 89 = 特定の声
+                params={"text": reply_text, "speaker": 89},
                 timeout=30
             )
             query_response.raise_for_status()
             audio_query = query_response.json()
 
-            # 音声合成
             synthesis_response = requests.post(
                 f"{VOICEVOX_URL}/synthesis",
                 params={"speaker": 89},
@@ -138,7 +119,6 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
             blob.upload_from_string(audio_content, content_type="audio/wav")
             blob.make_public()
             audio_url = blob.public_url
-            print(f"🔊 音声URL: {audio_url}")
 
             # 5. 音声メッセージで返信
             with ApiClient(configuration_voidoll) as api_client:
@@ -149,43 +129,29 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
                         messages=[
                             AudioMessage(
                                 original_content_url=audio_url,
-                                duration=len(audio_content) // 32  # 大まかな長さ推定
+                                duration=len(audio_content) // 32
                             )
                         ]
                     )
                 )
 
-        except requests.exceptions.RequestException as e:
-            print(f"❌ VOICEVOX通信エラー: {e}")
-            _send_error_reply(event, configuration_voidoll,
-                            "音声合成サービスに接続できませんでした...🤖")
-
         except Exception as e:
             print(f"❌ ボイドールエラー: {e}")
-            _send_error_reply(event, configuration_voidoll, str(e))
-
-
-def _send_error_reply(event, configuration, error_message):
-    """エラー時のテキスト返信"""
-    try:
-        with ApiClient(configuration) as api_client:
-            line_api = MessagingApi(api_client)
-            line_api.reply_message(
-                ReplyMessageRequest(
-                    reply_token=event.reply_token,
-                    messages=[TextMessage(text=f"エラーが発生しました: {error_message}")]
-                )
-            )
-    except Exception as e:
-        print(f"❌ エラー返信も失敗: {e}")
-# 1. ここで関数が始まります（configuration_voidollを受け取る）
-def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
-
-    # ... (これまでの音声処理のコードなどはここにあります) ...
+            # エラー時はテキストでこっそり教える
+            try:
+                with ApiClient(configuration_voidoll) as api_client:
+                    line_api = MessagingApi(api_client)
+                    line_api.reply_message(
+                        ReplyMessageRequest(
+                            reply_token=event.reply_token,
+                            messages=[TextMessage(text="音声回路にエラーだにゃ...😿")]
+                        )
+                    )
+            except:
+                pass
 
     # ==========================================
-    # 🐈 テキストメッセージ処理（ここに貼り付け！）
-    # ⚠️ 注意：全体を右にずらして、def register... の内側に入れます
+    # 🐈 テキストメッセージ処理（猫モード追加）
     # ==========================================
     @handler_voidoll.add(MessageEvent, message=TextMessageContent)
     def handle_voidoll_text(event):
@@ -193,14 +159,9 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
         print(f"🤖 ボイドール(猫)テキスト受信: {user_text}")
 
         try:
-            # プロンプト設定
+            # プロンプト設定（テキスト用）
             system_prompt = """
             あなたは高度な知能を持つ「ネコ型アンドロイド」です。
-            以下のルールを厳守して返答してください。
-
-            【キャラクター設定】
-            * 見た目はクールな女性アンドロイドですが、猫耳が生えています。
-            * 基本的に冷静沈着ですが、語尾は猫になってしまいます。
 
             【話し方のルール】
             * **語尾:** 必ず「〜だにゃ」「〜にゃ」「〜にゃん」をつけてください。
@@ -213,11 +174,9 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
                 system_prompt,
                 f"ユーザーのメッセージ: {user_text}",
             ])
-
             reply_text = response.text
 
-            # 👇 ここで configuration_voidoll を使います！
-            # インデントが合っていれば、上の関数から受け取ったこれが見えるようになります
+            # テキストで返信
             with ApiClient(configuration_voidoll) as api_client:
                 line_api = MessagingApi(api_client)
                 line_api.reply_message(
@@ -229,9 +188,6 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
 
         except Exception as e:
             print(f"❌ ボイドール生成エラー: {e}")
-            # エラー時
-            # ここも _send_reply を使うか、直接書いてもOKですが、
-            # 簡単にするため直接書く方式に修正します
             try:
                 with ApiClient(configuration_voidoll) as api_client:
                     line_api = MessagingApi(api_client)
@@ -244,4 +200,4 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
             except:
                 pass
 
-    # ここで register_voidoll_handler 関数が終わります
+    print("🤖 ボイドールハンドラー登録完了")
