@@ -59,12 +59,14 @@ import pandas as pd
 from datetime import datetime
 
 # ========================================
-# 🦊🐸🐧🦡🤖
+# 🦊🐸🐧🦡🤖🐹
 from animals.fox import register_fox_handler
 from animals.frog import register_frog_handler
 from animals.penguin import register_penguin_handler
 from animals.mole import register_mole_handler
 from animals.voidoll import register_voidoll_handler
+from animals.capybara import register_capybara_handler
+
 # ========================================
 
 
@@ -246,11 +248,11 @@ def startup_event():
         )
     print("✅ ペンギンハンドラー登録完了")
     # 🦡 もぐら駅長ハンドラー登録
+
+
 if handler_train and configuration_train:
     print("🦡 もぐら駅長ハンドラー登録中...")
-    register_mole_handler(
-        app, handler_train, configuration_train, text_model
-    )
+    register_mole_handler(app, handler_train, configuration_train, text_model)
     print("✅ もぐら駅長ハンドラー登録完了")
 
     # 🤖 ボイドールハンドラー登録
@@ -258,6 +260,14 @@ if handler_voidoll and configuration_voidoll:
     print("🤖 ボイドールハンドラー登録中...")
     register_voidoll_handler(app, handler_voidoll, configuration_voidoll)
     print("✅ ボイドールハンドラー登録完了")
+
+    # 🐹 カピバラハンドラー登録
+if handler_capybara and configuration_capybara:
+    print("🐹 カピバラハンドラー登録中...")
+    register_capybara_handler(
+        app, handler_capybara, configuration_capybara, search_model, text_model
+    )
+    print("✅ カピバラハンドラー登録完了")
 
     print("🚀 サーバー起動完了！")
 
@@ -630,7 +640,6 @@ def handle_message(event):
             )
 
 
-
 @app.get("/trigger-check-reminders")
 def trigger_check_reminders():
     if not db:
@@ -675,115 +684,6 @@ def trigger_check_reminders():
     except Exception as e:
         print(f"Check Error: {e}")
         return {"error": str(e)}
-
-
-
-
-@app.post("/callback_capybara")
-async def callback_capybara(request: Request):
-    # ヘッダーから署名を取得
-    signature = request.headers["X-Line-Signature"]
-    # ボディを取得
-    body = await request.body()
-    body_str = body.decode("utf-8")
-
-    try:
-        # 署名検証を実行 (ここでパスワードが合っているかチェックされます)
-        handler_capybara.handle(body_str, signature)
-    except Exception as e:
-        # ★ここでエラーの正体をログに出す！
-        print(f"❌ LINE Webhook エラー: {e}")
-        # InvalidSignatureError なら環境変数の間違いです
-        raise HTTPException(status_code=400, detail=str(e))
-
-    return "OK"
-
-
-# ==========================================
-# 🐹 カピバラさん (日付エラー完全修正・最終版)
-# ==========================================
-@handler_capybara.add(MessageEvent, message=TextMessageContent)
-def handle_capybara_message(event):
-    print(f"🐹 カピバラ受信: {event.message.text}")
-    global search_model
-
-    # ★重要！ここで「dt」というあだ名でインポートします
-    # これなら外でどんな設定になっていても絶対に干渉しません！
-    import datetime as dt
-
-    try:
-        # dt.date.today() なら確実に動きます
-        today = dt.date.today().strftime("%Y年%m月%d日")
-    except Exception as e:
-        print(f"⚠️ 日付取得エラー: {e}")
-        today = "今日"
-
-    msg = ""
-    try:
-        # 検索モデルがあるか確認
-        if search_model:
-            prompt = f"""
-            現在日時: {today}
-            ユーザーの質問: {event.message.text}
-
-            役割: あなたはニュース解説が得意なカピバラです。
-            ルール:
-            1. 上記の「現在日時」を基準にして、Google検索で最新情報を調べてください。
-            2. 「昨日」と聞かれたら、現在日時の1日前を検索してください。
-            3. 語尾は「っぴ」をつけてください。
-            """
-            response = search_model.generate_content(prompt)
-            msg = response.text
-        else:
-            msg = "検索機能がちょっと調子悪いっぴ...ごめんっぴ。"
-
-    except Exception as e:
-        print(f"❌ カピバラ生成エラー: {e}")
-        msg = "エラーが出ちゃったっぴ。もう一回言ってほしいっぴ。"
-
-    # LINEに返信
-    try:
-        with ApiClient(configuration_capybara) as api_client:
-            line_bot_api = MessagingApi(api_client)
-            line_bot_api.reply_message(
-                ReplyMessageRequest(
-                    reply_token=event.reply_token, messages=[TextMessage(text=msg)]
-                )
-            )
-    except Exception as e:
-        print(f"❌ LINE返信エラー: {e}")
-
-
-# --- ☀️ 朝のニュース配信 (検索機能付き) ---
-@app.post("/trigger_morning_news")
-def trigger_morning_news():
-    print("☀️ 朝のニュース配信を開始します...")
-    global search_model
-
-    try:
-        if search_model:
-            # ★ここで「今日のニュース」を検索させる！
-            prompt = """
-            今の日本や世界のAIニュースを3つピックアップして検索してください。
-            それをカピバラの口調（語尾っぴ）で、分かりやすく解説してください。
-            最後に「今日も一日がんばるっぴ！」と元気づけてください。
-            """
-            res = search_model.generate_content(prompt)
-            news_text = res.text
-        else:
-            news_text = "今はニュースが見られないっぴ...ごめんっぴ。"
-
-        # 全員に送信 (Broadcast)
-        with ApiClient(configuration_capybara) as api_client:
-            line_bot_api = MessagingApi(api_client)
-            line_bot_api.broadcast(
-                BroadcastRequest(messages=[TextMessage(text=news_text)])
-            )
-        return {"status": "ok", "message": "ニュース配信完了っぴ！"}
-
-    except Exception as e:
-        print(f"❌ ニュース配信エラー: {e}")
-        return {"status": "error", "message": str(e)}
 
 
 # --- この下に class GenerateRequest(BaseModel): があってもOKです ---
