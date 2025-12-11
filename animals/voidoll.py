@@ -31,10 +31,14 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
 
     # GCS設定
     GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
-    VOICEVOX_URL = os.getenv(
-        "VOICEVOX_URL",
-        "https://voicevox-engine-1032484155743.asia-northeast1.run.app"
-    )
+
+# デフォルト値をなくすか、Noneにします。
+# URLは必ず環境変数で設定するように強制します。
+VOICEVOX_URL = os.getenv("VOICEVOX_URL")
+
+if not VOICEVOX_URL:
+    # URLが設定されていなかったらエラーで止める（安全装置）
+    raise ValueError("⚠️ 環境変数 VOICEVOX_URL が設定されていません！")
 
     # ==========================================
     # 🤖 ボイドール Webhook エンドポイント
