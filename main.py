@@ -58,14 +58,17 @@ from fastapi.responses import StreamingResponse
 import pandas as pd
 from datetime import datetime
 
+from pydantic import BaseModel
+from datetime import datetime
 # ========================================
-# 🦊🐸🐧🦡🤖🐹
+# 🦊🐸🐧🦡🤖🐹🦉
 from animals.fox import register_fox_handler
 from animals.frog import register_frog_handler
 from animals.penguin import register_penguin_handler
 from animals.mole import register_mole_handler
 from animals.voidoll import register_voidoll_handler
 from animals.capybara import register_capybara_handler
+from animals.owl import register_owl_handler
 
 # ========================================
 
@@ -253,6 +256,10 @@ def startup_event():
         register_capybara_handler(
             app, handler_capybara, configuration_capybara, search_model, text_model)
         print("✅ カピバラハンドラー登録完了")
+    # 🦉 フクロウハンドラー登録
+    print("🦉 フクロウハンドラー登録中...")
+    register_owl_handler(app)
+    print("✅ フクロウハンドラー登録完了")
 
     print("🚀 サーバー起動完了！")
 
@@ -711,128 +718,7 @@ def generate_image_endpoint(req: GenerateRequest):
         raise HTTPException(500, detail=str(e))
 
 
-# --- グラフ生成のエンドポイント ---11/23
-@app.get("/graph/weight")
-async def get_weight_graph():
-    # 1. Firestoreからデータを取得
-    db = firestore.Client()
 
-    # ★ここを修正しました！ (.stream() を .get() に変えました)
-    docs = db.collection("weights").order_by("date").limit_to_last(7).get()
-
-    dates = []
-    weights = []
-
-    for doc in docs:
-        data = doc.to_dict()
-        dates.append(data.get("date"))
-        weights.append(data.get("kg"))
-
-    # 2. データフレーム作成
-    df = pd.DataFrame({"日付": dates, "体重": weights})
-
-    # 3. グラフ描画
-    plt.figure(figsize=(6, 4))
-    if not df.empty:
-        plt.plot(df["日付"], df["体重"], marker="o", color="#ff7f0e", label="体重(kg)")
-
-    plt.title("体重の推移", fontsize=14)
-    plt.xlabel("日付")
-    plt.ylabel("体重 (kg)")
-    plt.grid(True, linestyle="--", alpha=0.6)
-    if not df.empty:
-        plt.legend()
-
-    # 4. 画像保存
-    buf = io.BytesIO()
-    plt.savefig(buf, format="png", bbox_inches="tight")
-    buf.seek(0)
-    plt.close()
-
-    return StreamingResponse(buf, media_type="image/png")
-
-
-# ==========================================
-# ★追加：カロリーグラフ機能 (棒グラフ)
-# ==========================================
-@app.get("/graph/calories")
-async def get_calories_graph():
-    db = firestore.Client()
-    # 最新の食事データを取得（30件くらい）
-    docs = db.collection("calories").order_by("timestamp").limit_to_last(30).get()
-
-    # 日付ごとにカロリーを足し算する（集計）
-    daily_data = {}
-    for doc in docs:
-        data = doc.to_dict()
-        date_str = data.get("date")[5:]  # "2025-11-23" → "11/23" に短縮
-        kcal = data.get("kcal", 0)
-
-        # その日のデータがなければ0からスタート、あれば足す
-        if date_str in daily_data:
-            daily_data[date_str] += kcal
-        else:
-            daily_data[date_str] = kcal
-
-    # グラフ用にデータを整理
-    dates = sorted(daily_data.keys())
-    kcals = [daily_data[d] for d in dates]
-
-    # グラフ描画 (Bar Chart = 棒グラフ)
-    plt.figure(figsize=(6, 4))
-    if dates:
-        plt.bar(dates, kcals, color="#2ca02c", label="摂取カロリー")  # 緑色
-
-    plt.title("日々の摂取カロリー", fontsize=14)
-    plt.xlabel("日付")
-    plt.ylabel("kcal")
-    plt.grid(axis="y", linestyle="--", alpha=0.6)  # 横線だけ引く
-    plt.legend()
-
-    # 画像保存
-    buf = io.BytesIO()
-    plt.savefig(buf, format="png", bbox_inches="tight")
-    buf.seek(0)
-    plt.close()
-
-    return StreamingResponse(buf, media_type="image/png")
-
-
-# ==========================================
-# ★追加：体重記録用のコード
-# ==========================================
-from pydantic import BaseModel
-from datetime import datetime
-
-
-class WeightRequest(BaseModel):
-    weight: float
-
-
-@app.post("/record/weight")
-def record_weight(req: WeightRequest):
-    try:
-        db = firestore.Client()
-        now = datetime.now()
-
-        # 今日の日付 (例: "11/23")
-        date_str = now.strftime("%m/%d")
-        # 記録用のID (例: "2025-11-23") ※同じ日は上書きされます
-        doc_id = now.strftime("%Y-%m-%d")
-
-        # Firestoreに保存
-        doc_ref = db.collection("weights").document(doc_id)
-        doc_ref.set(
-            {
-                "date": date_str,
-                "kg": req.weight,
-                "timestamp": firestore.SERVER_TIMESTAMP,
-            }
-        )
-
-        return {"message": f"📅 {date_str}\n⚖️ {req.weight}kg で記録しました！"}
-    except Exception as e:
-        raise HTTPException(500, detail=str(e))
 
 
 # 既存のAPIも残しておきます（GASのタイマー用）
@@ -943,67 +829,6 @@ async def get_daily_summary_memos():
     return {"memos_by_user": memos}
 
 
-# ==========================================
-# ★改良版：画像分析 ＆ カロリー自動保存 (頑丈バージョン)
-# ==========================================
-@app.post("/analyze_image/")
-async def analyze_image(image_file: UploadFile = File(...)):
-    try:
-        # 1. 画像の読み込み
-        content = await image_file.read()
-        image_part = Part.from_data(data=content, mime_type="image/jpeg")
-
-        # 2. AIへの命令
-        prompt = """
-        この料理の画像を分析してください。
-        以下の情報をJSON形式で出力してください。
-        必ず { で始まり } で終わる正しいJSONデータのみを出力し、前後の挨拶文やマークダウン記号（```json など）は含めないでください。
-        ```json
-        {
-            "food_name": "料理名",
-            "calories": 0,  // 推定カロリー（整数値だけで。幅がある場合は平均値で）
-            "message": "ユーザーへの解説メッセージ（料理の特定、カロリーの根拠、ねぎらいの言葉など。温かみのある口調で）"
-        }
-        ```
-        """
-
-        # 3. Gemini (Flash) で分析
-        model = GenerativeModel("gemini-2.5-flash")
-        response = model.generate_content([image_part, prompt])
-        text_response = response.text
-        print(f"AI Response Raw: {text_response}")  # ログで確認用
-
-        # 4. AIの返事からJSON部分だけを強力に抜き出す (正規表現)
-        match = re.search(r"\{.*\}", text_response, re.DOTALL)
-        if match:
-            json_str = match.group(0)
-            result = json.loads(json_str)  # 変換
-        else:
-            raise ValueError("AIの返答からJSONが見つかりませんでした。")
-
-        # 5. Firestoreにカロリーを「貯金」する
-        db = firestore.Client()
-        now = datetime.now()
-
-        doc_ref = db.collection("calories").document()
-        doc_ref.set(
-            {
-                "date": now.strftime("%Y-%m-%d"),
-                "timestamp": firestore.SERVER_TIMESTAMP,
-                "food_name": result["food_name"],
-                "kcal": result["calories"],
-            }
-        )
-
-        # 6. LINEにメッセージを返す
-        return {"analysis": result["message"]}
-
-    except Exception as e:
-        print(f"Error in analyze_image: {e}")
-        # エラー内容を少し詳しく出すように変更（デバッグ用）
-        return {
-            "analysis": f"ごめんなさい、分析に失敗しました... (エラー: {str(e)}) もう一度試してみてください🦉"
-        }
 
 
 # ★★★ 追加：明日の予定をチェックして通知する機能 ★★★
