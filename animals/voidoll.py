@@ -34,11 +34,10 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
 
 # デフォルト値をなくすか、Noneにします。
 # URLは必ず環境変数で設定するように強制します。
-VOICEVOX_URL = os.getenv("VOICEVOX_URL")
-
-if not VOICEVOX_URL:
+    VOICEVOX_URL = os.getenv("VOICEVOX_URL")
+    if not VOICEVOX_URL:
     # URLが設定されていなかったらエラーで止める（安全装置）
-    raise ValueError("⚠️ 環境変数 VOICEVOX_URL が設定されていません！")
+        raise ValueError("⚠️ 環境変数 VOICEVOX_URL が設定されていません！")
 
     # ==========================================
     # 🤖 ボイドール Webhook エンドポイント
