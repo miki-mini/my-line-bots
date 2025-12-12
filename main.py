@@ -9,24 +9,28 @@ import re
 import traceback
 import io
 import uvicorn
-import re
 
-# ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-
+# ========================================
+# Vertex AI（検索機能 & 画像生成で使う）
+# ========================================
 import vertexai
-from vertexai.generative_models import GenerativeModel, Part, Image, Tool, grounding
-from vertexai.vision_models import ImageGenerationModel
-from vertexai.generative_models import grounding
+from vertexai.generative_models import (
+    GenerativeModel,
+    Part,
+    Tool as VertexTool,      # ← 名前変更！これで衝突しない
+    grounding
+)
 from vertexai.preview.vision_models import ImageGenerationModel
 
-# ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
-
-from google import genai
-from google.genai.types import GenerateContentConfig, GoogleSearch, Tool
+# ========================================
+# Google Generative AI（一部のボットで使う）
+# ========================================
 import google.generativeai as genai
-from google.genai import types
-from PIL import Image
 
+# ========================================
+# その他
+# ========================================
+from PIL import Image
 import googlemaps
 from fastapi import FastAPI, Request, HTTPException, UploadFile, File
 from pydantic import BaseModel
@@ -52,14 +56,11 @@ from google.cloud import storage
 from google.cloud import firestore
 
 import matplotlib.pyplot as plt
-import japanize_matplotlib  # 日本語化
-from fastapi import FastAPI, Response
+import japanize_matplotlib
 from fastapi.responses import StreamingResponse
 import pandas as pd
-from datetime import datetime
 
-from pydantic import BaseModel
-from datetime import datetime
+
 # ========================================
 # 🦊🐸🐧🦡🤖🐹🦉🐋
 from animals.fox import register_fox_handler
@@ -186,22 +187,15 @@ def startup_event():
     except Exception as e:
         print(f"❌ 基本モデル設定エラー: {e}")
 
-    # (C) ★検索機能 - 2025年最新の正しい書き方★
+    # (C) ★検索機能★
     try:
         print("👉 Google Search 機能を設定中...")
 
-        # まず grounding が使えるか確認
-        print(f"   grounding モジュール: {grounding}")
-        print(
-            f"   GoogleSearchRetrieval: {hasattr(grounding, 'GoogleSearchRetrieval')}")
-
-        # ✅ 正しいインポートと使い方
         search_retrieval = grounding.GoogleSearchRetrieval()
-        print(
-            f"   GoogleSearchRetrieval インスタンス作成成功: {type(search_retrieval)}")
+        search_tool = VertexTool.from_google_search_retrieval(search_retrieval)  # ← VertexTool に変更！
+        search_model = GenerativeModel("gemini-2.5-flash", tools=[search_tool])
 
-        search_tool = Tool.from_google_search_retrieval(search_retrieval)
-        print(f"   Tool 作成成功: {type(search_tool)}")
+        print("🎉 Google Search 設定完了！")
 
         # 検索対応モデルの作成
         search_model = GenerativeModel("gemini-2.5-flash", tools=[search_tool])
