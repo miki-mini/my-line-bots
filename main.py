@@ -74,6 +74,37 @@ from animals.whale import register_whale_handler
 
 # ========================================
 
+# ========================================
+# 🔍 検索モデルラッパー（ここに追加！）
+# ========================================
+class SearchModelWrapper:
+    """動物たちが今まで通り使えるようにするラッパー"""
+
+    def __init__(self, project_id, location="asia-northeast1"):
+        from google import genai
+        from google.genai import types
+
+        self.client = genai.Client(
+            vertexai=True,
+            project=project_id,
+            location=location
+        )
+        self.model_name = "gemini-2.5-flash"
+        self.config = types.GenerateContentConfig(
+            tools=[types.Tool(google_search=types.GoogleSearch())]
+        )
+
+    def generate_content(self, prompt):
+        """今まで通りの呼び出し方で使える"""
+        response = self.client.models.generate_content(
+            model=self.model_name,
+            contents=prompt,
+            config=self.config
+        )
+        return response
+
+# ========================================
+
 
 # --- グローバル変数 ---
 # モデルたち
@@ -187,48 +218,15 @@ def startup_event():
     except Exception as e:
         print(f"❌ 基本モデル設定エラー: {e}")
 
-    # (C) ★検索機能 - 2025年12月最新版★
+# (C) ★検索機能★
     try:
         print("👉 Google Search 機能を設定中...")
-
-        from vertexai.generative_models import GenerativeModel, Tool, grounding
-
-        # 新しい書き方: google_search を使う
-        search_tool = Tool.from_google_search_retrieval(
-            grounding.GoogleSearch()  # ← GoogleSearchRetrieval() から変更！
-        )
-        search_model = GenerativeModel("gemini-2.5-flash", tools=[search_tool])
-
+        search_model = SearchModelWrapper(GCP_PROJECT_ID)
         print("🎉 Google Search 設定完了！")
-
     except Exception as e:
         print(f"❌ 検索設定エラー: {e}")
-        # もし上の方法がダメなら別の方法を試す
-        try:
-            search_model = GenerativeModel(
-                "gemini-2.5-flash",
-                tools=[grounding.GoogleSearch()]  # 直接渡す方法
-            )
-            print("🎉 Google Search 設定完了（方法2）！")
-        except Exception as e2:
-            print(f"❌ 方法2も失敗: {e2}")
-            search_model = text_model
-            startup_errors.append(str(e2))
-
-    except AttributeError as e:
-        error_msg = f"AttributeError: {str(e)}"
-        print(f"❌ 検索モデル設定エラー: {error_msg}")
-        startup_errors.append(error_msg)
-        search_model = text_model
-        print("⚠️ 検索機能なしで起動します（通常モデルで代替）")
-
-    except Exception as e:
-        error_msg = f"{type(e).__name__}: {str(e)}"
-        print(f"❌ 検索モデル設定エラー: {error_msg}")
-        startup_errors.append(error_msg)
-        # フォールバック：検索なしで動作
-        search_model = text_model
-        print("⚠️ 検索機能なしで起動します（通常モデルで代替）")
+        startup_errors.append(str(e))
+        search_model = text_model  # フォールバック
 
     print("🚀 サーバー起動完了！ Super Capybara (2.5) is Ready.")
 
