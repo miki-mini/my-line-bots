@@ -187,21 +187,33 @@ def startup_event():
     except Exception as e:
         print(f"❌ 基本モデル設定エラー: {e}")
 
-    # (C) ★検索機能★
+    # (C) ★検索機能 - 2025年12月最新版★
     try:
         print("👉 Google Search 機能を設定中...")
 
-        search_retrieval = grounding.GoogleSearchRetrieval()
-        search_tool = VertexTool.from_google_search_retrieval(search_retrieval)  # ← VertexTool に変更！
+        from vertexai.generative_models import GenerativeModel, Tool, grounding
+
+        # 新しい書き方: google_search を使う
+        search_tool = Tool.from_google_search_retrieval(
+            grounding.GoogleSearch()  # ← GoogleSearchRetrieval() から変更！
+        )
         search_model = GenerativeModel("gemini-2.5-flash", tools=[search_tool])
 
         print("🎉 Google Search 設定完了！")
 
-        # 検索対応モデルの作成
-        search_model = GenerativeModel("gemini-2.5-flash", tools=[search_tool])
-
-        print("🎉 Gemini 2.5 Flash + Google Search 設定完了！")
-        print(f"   search_model._tools: {len(search_model._tools)} tools")
+    except Exception as e:
+        print(f"❌ 検索設定エラー: {e}")
+        # もし上の方法がダメなら別の方法を試す
+        try:
+            search_model = GenerativeModel(
+                "gemini-2.5-flash",
+                tools=[grounding.GoogleSearch()]  # 直接渡す方法
+            )
+            print("🎉 Google Search 設定完了（方法2）！")
+        except Exception as e2:
+            print(f"❌ 方法2も失敗: {e2}")
+            search_model = text_model
+            startup_errors.append(str(e2))
 
     except AttributeError as e:
         error_msg = f"AttributeError: {str(e)}"
