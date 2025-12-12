@@ -271,6 +271,10 @@ def startup_event():
 def read_root():
     return {"status": "All Bots Operational 🤖✨"}
 
+# これがないと、監視員（GET）が来た時に 405 エラーになります！
+@app.get("/")
+def health_check():
+    return {"status": "OK", "message": "生きてます！"}
 
 # ========================================
 # デバッグ：起動後にモデル確認
