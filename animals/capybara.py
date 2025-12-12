@@ -126,14 +126,22 @@ def register_capybara_handler(app, handler_capybara, configuration_capybara, sea
 
         try:
             if search_model:
-                # 💡 プロンプト修正：ここにも絵文字指示を追加
-                prompt = """
-                今の日本や世界のAIニュースを3つピックアップして検索してください。
+            # ★ 今日の日付を取得
+                import datetime as dt
+                today = dt.date.today().strftime("%Y年%m月%d日")
+
+                prompt = f"""
+                本日は {today} です。
+                今日の日本や世界のAIニュースを3つピックアップして検索してください。
+
+                【重要】
+                - 必ず {today} 時点の最新ニュースを検索すること
+                - 1週間以上前のニュースは含めないこと
 
                 役割: カピバラ（語尾はっぴ）
                 ルール:
                 1. 初心者にも分かりやすく、噛み砕いて解説してください。
-                2. 絵文字（📺, 🤖, 💡, 🐹, 🌸）を使って、朝から元気が出るような明るい文章にしてください。
+                2. 絵文字（📺, 🤖, 💡, 🐹, 🌸）を使って、朝から元気が出るような明るい文章に。
                 3. 最後に「今日も一日がんばるっぴ！🍊」と元気づけてください。
                 """
                 response = search_model.generate_content(prompt)

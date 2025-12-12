@@ -131,16 +131,30 @@ def register_whale_handler(app, handler_whale, configuration_whale):
 # ==========================================
 def _get_jwst_image():
     """
-    NASAのAPIを叩いて、ジェイムズ・ウェッブの最新っぽい画像のURLを取得する関数
+    NASAのAPIを叩いて、ジェイムズ・ウェッブが撮影した宇宙画像のURLを取得する関数
     LINEはHTTPS必須なので、http:// は https:// に変換する
     """
     search_url = "https://images-api.nasa.gov/search"
 
-    # 2025年の画像を探す設定（年が変わったらここを変えます）
+    # 本物の宇宙画像が出るキーワードをランダムで選ぶ
+    keywords = [
+        "JWST nebula",           # 星雲
+        "JWST galaxy",           # 銀河
+        "JWST deep field",       # 深宇宙
+        "Webb telescope cosmos", # 宇宙
+        "JWST stars",            # 星々
+        "JWST infrared space",   # 赤外線宇宙画像
+        "Carina Nebula Webb",    # カリーナ星雲（有名な画像）
+        "Pillars of Creation Webb",  # 創造の柱（超有名）
+    ]
+
+    query = random.choice(keywords)
+    print(f"🐋 NASA API 検索キーワード: {query}")
+
     params = {
-        "q": "James Webb Space Telescope",
+        "q": query,
         "media_type": "image",
-        "year_start": "2025"
+        "year_start": "2022"  # JWSTは2022年から本格稼働
     }
 
     try:
@@ -149,11 +163,13 @@ def _get_jwst_image():
 
         # 画像が見つかったか確認
         if "items" in data["collection"] and len(data["collection"]["items"]) > 0:
-            # 検索結果の1つ目を取得
-            first_item = data["collection"]["items"][0]
+            items = data["collection"]["items"]
+
+            # 複数の結果からランダムで1つ選ぶ（同じ画像ばかりにならないように）
+            selected_item = random.choice(items[:10]) if len(items) > 10 else random.choice(items)
 
             # 画像ファイルのリストがあるURL（collection）を取得
-            json_href = first_item["href"]
+            json_href = selected_item["href"]
             image_response = requests.get(json_href, timeout=10)
             image_list = image_response.json()
 
@@ -166,14 +182,14 @@ def _get_jwst_image():
                     print(f"🐋 JWST画像取得成功: {img_url}")
                     return img_url
 
-            # mediumがなければリストの1つ目を返す
-            if image_list:
-                img_url = image_list[0]
-                # HTTPSに変換（LINE必須）
-                if img_url.startswith("http://"):
-                    img_url = img_url.replace("http://", "https://")
-                print(f"🐋 JWST画像取得成功（フォールバック）: {img_url}")
-                return img_url
+            # mediumがなければ ~orig や ~large を探す
+            for img_url in image_list:
+                if img_url.endswith(".jpg") or img_url.endswith(".png"):
+                    # HTTPSに変換（LINE必須）
+                    if img_url.startswith("http://"):
+                        img_url = img_url.replace("http://", "https://")
+                    print(f"🐋 JWST画像取得成功（フォールバック）: {img_url}")
+                    return img_url
 
     except requests.exceptions.Timeout:
         print("❌ 星くじら: NASA API タイムアウト")
