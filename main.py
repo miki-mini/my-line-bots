@@ -891,3 +891,19 @@ def check_reminders():
     except Exception as e:
         print(f"❌ リマインダーエラー: {e}")
         return {"status": "error", "message": str(e)}
+
+
+@app.get("/debug-grounding")
+def debug_grounding():
+    """grounding の使用可能なメソッドを確認"""
+    try:
+        from vertexai.generative_models import grounding, Tool
+
+        return {
+            "grounding_attrs": [a for a in dir(grounding) if not a.startswith('_')],
+            "tool_attrs": [a for a in dir(Tool) if not a.startswith('_')],
+            "has_GoogleSearchRetrieval": hasattr(grounding, 'GoogleSearchRetrieval'),
+            "has_from_google_search_retrieval": hasattr(Tool, 'from_google_search_retrieval'),
+        }
+    except Exception as e:
+        return {"error": str(e), "type": type(e).__name__}
