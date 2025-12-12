@@ -61,7 +61,7 @@ from datetime import datetime
 from pydantic import BaseModel
 from datetime import datetime
 # ========================================
-# 🦊🐸🐧🦡🤖🐹🦉
+# 🦊🐸🐧🦡🤖🐹🦉🐋
 from animals.fox import register_fox_handler
 from animals.frog import register_frog_handler
 from animals.penguin import register_penguin_handler
@@ -69,6 +69,7 @@ from animals.mole import register_mole_handler
 from animals.voidoll import register_voidoll_handler
 from animals.capybara import register_capybara_handler
 from animals.owl import register_owl_handler
+from animals.whale import register_whale_handler
 
 # ========================================
 
@@ -119,6 +120,9 @@ handler_fox = WebhookHandler(LINE_SECRET_FOX) if LINE_SECRET_FOX else None
 
 configuration_capybara = Configuration(access_token=os.getenv("CAPYBARA_ACCESS_TOKEN"))
 handler_capybara = WebhookHandler(os.getenv("CAPYBARA_CHANNEL_SECRET"))
+
+configuration_whale = Configuration(access_token=os.getenv("WHALE_ACCESS_TOKEN"))
+handler_whale = WebhookHandler(os.getenv("WHALE_CHANNEL_SECRET"))
 
 # --- 共通クライアント ---
 api_client = ApiClient(configuration)
@@ -256,6 +260,11 @@ def startup_event():
         register_capybara_handler(
             app, handler_capybara, configuration_capybara, search_model, text_model)
         print("✅ カピバラハンドラー登録完了")
+        # 🐋 星くじらハンドラー登録
+    if handler_whale and configuration_whale:
+        print("🐋 星くじらハンドラー登録中...")
+        register_whale_handler(app, handler_whale, configuration_whale)
+        print("✅ 星くじらハンドラー登録完了")
     # 🦉 フクロウハンドラー登録
     print("🦉 フクロウハンドラー登録中...")
     register_owl_handler(app)
