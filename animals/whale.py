@@ -132,6 +132,7 @@ def register_whale_handler(app, handler_whale, configuration_whale):
 def _get_jwst_image():
     """
     NASAのAPIを叩いて、ジェイムズ・ウェッブの最新っぽい画像のURLを取得する関数
+    LINEはHTTPS必須なので、http:// は https:// に変換する
     """
     search_url = "https://images-api.nasa.gov/search"
 
@@ -159,13 +160,20 @@ def _get_jwst_image():
             # LINEで送りやすい "medium" サイズの画像を探す
             for img_url in image_list:
                 if "medium.jpg" in img_url:
+                    # HTTPSに変換（LINE必須）
+                    if img_url.startswith("http://"):
+                        img_url = img_url.replace("http://", "https://")
                     print(f"🐋 JWST画像取得成功: {img_url}")
                     return img_url
 
             # mediumがなければリストの1つ目を返す
             if image_list:
-                print(f"🐋 JWST画像取得成功（フォールバック）: {image_list[0]}")
-                return image_list[0]
+                img_url = image_list[0]
+                # HTTPSに変換（LINE必須）
+                if img_url.startswith("http://"):
+                    img_url = img_url.replace("http://", "https://")
+                print(f"🐋 JWST画像取得成功（フォールバック）: {img_url}")
+                return img_url
 
     except requests.exceptions.Timeout:
         print("❌ 星くじら: NASA API タイムアウト")
