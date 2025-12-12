@@ -1,3606 +1,3607 @@
 """
-station_data.py - 駅データ一覧（ODPT APIから自動生成）
+station_data.py - 駅データ一覧（ODPT APIから取得）
+合計: 720駅
 """
 
 STATIONS = [
     {
         "name": "あざみ野",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Azamino",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "あざみ野",
         "id": "odpt.Station:Tokyu.DenEnToshi.Azamino",
-        "railway": "Tokyu.DenEnToshi"
+        "railway": "Tokyu"
     },
     {
         "name": "お台場海浜公園",
         "id": "odpt.Station:Yurikamome.Yurikamome.OdaibaKaihinkoen",
-        "railway": "Yurikamome.Yurikamome"
+        "railway": "Yurikamome"
     },
     {
         "name": "かしわ台",
         "id": "odpt.Station:Sotetsu.Main.Kashiwadai",
-        "railway": "Sotetsu.Main"
+        "railway": "Sotetsu"
     },
     {
         "name": "つくば",
         "id": "odpt.Station:MIR.TsukubaExpress.Tsukuba",
-        "railway": "MIR.TsukubaExpress"
+        "railway": "MIR"
     },
     {
         "name": "つつじヶ丘",
         "id": "odpt.Station:Keio.Keio.Tsutsujigaoka",
-        "railway": "Keio.Keio"
+        "railway": "Keio"
     },
     {
         "name": "みどりの",
         "id": "odpt.Station:MIR.TsukubaExpress.Midorino",
-        "railway": "MIR.TsukubaExpress"
+        "railway": "MIR"
     },
     {
         "name": "みらい平",
         "id": "odpt.Station:MIR.TsukubaExpress.Miraidaira",
-        "railway": "MIR.TsukubaExpress"
+        "railway": "MIR"
     },
     {
         "name": "センター北",
         "id": "odpt.Station:YokohamaMunicipal.Blue.CenterKita",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "センター北",
         "id": "odpt.Station:YokohamaMunicipal.Green.CenterKita",
-        "railway": "YokohamaMunicipal.Green"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "センター南",
         "id": "odpt.Station:YokohamaMunicipal.Blue.CenterMinami",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "センター南",
         "id": "odpt.Station:YokohamaMunicipal.Green.CenterMinami",
-        "railway": "YokohamaMunicipal.Green"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "テレコムセンター",
         "id": "odpt.Station:Yurikamome.Yurikamome.TelecomCenter",
-        "railway": "Yurikamome.Yurikamome"
+        "railway": "Yurikamome"
     },
     {
         "name": "一之江",
         "id": "odpt.Station:Toei.Shinjuku.Ichinoe",
-        "railway": "Toei.Shinjuku"
+        "railway": "Toei"
     },
     {
         "name": "万博記念公園",
         "id": "odpt.Station:MIR.TsukubaExpress.BampakuKinenKoen",
-        "railway": "MIR.TsukubaExpress"
+        "railway": "MIR"
     },
     {
         "name": "万願寺",
         "id": "odpt.Station:TamaMonorail.TamaMonorail.Manganji",
-        "railway": "TamaMonorail.TamaMonorail"
+        "railway": "TamaMonorail"
     },
     {
         "name": "三ツ沢上町",
         "id": "odpt.Station:YokohamaMunicipal.Blue.MitsuzawaKamicho",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "三ツ沢下町",
         "id": "odpt.Station:YokohamaMunicipal.Blue.MitsuzawaShimocho",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "三ノ輪",
         "id": "odpt.Station:TokyoMetro.Hibiya.Minowa",
-        "railway": "TokyoMetro.Hibiya"
+        "railway": "TokyoMetro"
     },
     {
         "name": "三ノ輪橋",
         "id": "odpt.Station:Toei.Arakawa.Minowabashi",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "三崎口",
         "id": "odpt.Station:Keikyu.Kurihama.Misakiguchi",
-        "railway": "Keikyu.Kurihama"
+        "railway": "Keikyu"
     },
     {
         "name": "三浦海岸",
         "id": "odpt.Station:Keikyu.Kurihama.Miurakaigan",
-        "railway": "Keikyu.Kurihama"
+        "railway": "Keikyu"
     },
     {
         "name": "三田",
         "id": "odpt.Station:Toei.Asakusa.Mita",
-        "railway": "Toei.Asakusa"
+        "railway": "Toei"
     },
     {
         "name": "三田",
         "id": "odpt.Station:Toei.Mita.Mita",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "三越前",
         "id": "odpt.Station:TokyoMetro.Ginza.Mitsukoshimae",
-        "railway": "TokyoMetro.Ginza"
+        "railway": "TokyoMetro"
     },
     {
         "name": "三越前",
         "id": "odpt.Station:TokyoMetro.Hanzomon.Mitsukoshimae",
-        "railway": "TokyoMetro.Hanzomon"
+        "railway": "TokyoMetro"
     },
     {
         "name": "三郷中央",
         "id": "odpt.Station:MIR.TsukubaExpress.MisatoChuo",
-        "railway": "MIR.TsukubaExpress"
+        "railway": "MIR"
     },
     {
         "name": "三鷹",
         "id": "odpt.Station:JR-East.ChuoSobuLocal.Mitaka",
-        "railway": "JR-East.ChuoSobuLocal"
+        "railway": "JR-East"
     },
     {
         "name": "上北台",
         "id": "odpt.Station:TamaMonorail.TamaMonorail.Kamikitadai",
-        "railway": "TamaMonorail.TamaMonorail"
+        "railway": "TamaMonorail"
     },
     {
         "name": "上大岡",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Kamiooka",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "上大岡",
         "id": "odpt.Station:Keikyu.Main.Kamiooka",
-        "railway": "Keikyu.Main"
+        "railway": "Keikyu"
     },
     {
         "name": "上永谷",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Kaminagaya",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "上野",
         "id": "odpt.Station:JR-East.JobanRapid.Ueno",
-        "railway": "JR-East.JobanRapid"
+        "railway": "JR-East"
     },
     {
         "name": "上野",
         "id": "odpt.Station:JR-East.KeihinTohokuNegishi.Ueno",
-        "railway": "JR-East.KeihinTohokuNegishi"
+        "railway": "JR-East"
     },
     {
         "name": "上野",
         "id": "odpt.Station:JR-East.Takasaki.Ueno",
-        "railway": "JR-East.Takasaki"
+        "railway": "JR-East"
     },
     {
         "name": "上野",
         "id": "odpt.Station:JR-East.Utsunomiya.Ueno",
-        "railway": "JR-East.Utsunomiya"
+        "railway": "JR-East"
     },
     {
         "name": "上野",
         "id": "odpt.Station:JR-East.Yamanote.Ueno",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "上野",
         "id": "odpt.Station:TokyoMetro.Ginza.Ueno",
-        "railway": "TokyoMetro.Ginza"
+        "railway": "TokyoMetro"
     },
     {
         "name": "上野",
         "id": "odpt.Station:TokyoMetro.Hibiya.Ueno",
-        "railway": "TokyoMetro.Hibiya"
+        "railway": "TokyoMetro"
     },
     {
         "name": "上野",
         "id": "odpt.Station:JR-East.AkitaShinkansen.Ueno",
-        "railway": "JR-East.AkitaShinkansen"
+        "railway": "JR-East"
     },
     {
         "name": "上野",
         "id": "odpt.Station:JR-East.HokurikuShinkansen.Ueno",
-        "railway": "JR-East.HokurikuShinkansen"
+        "railway": "JR-East"
     },
     {
         "name": "上野",
         "id": "odpt.Station:JR-East.JoetsuShinkansen.Ueno",
-        "railway": "JR-East.JoetsuShinkansen"
+        "railway": "JR-East"
     },
     {
         "name": "上野",
         "id": "odpt.Station:JR-East.TohokuShinkansen.Ueno",
-        "railway": "JR-East.TohokuShinkansen"
+        "railway": "JR-East"
     },
     {
         "name": "上野",
         "id": "odpt.Station:JR-East.YamagataShinkansen.Ueno",
-        "railway": "JR-East.YamagataShinkansen"
+        "railway": "JR-East"
     },
     {
         "name": "上野広小路",
         "id": "odpt.Station:TokyoMetro.Ginza.UenoHirokoji",
-        "railway": "TokyoMetro.Ginza"
+        "railway": "TokyoMetro"
     },
     {
         "name": "上野御徒町",
         "id": "odpt.Station:Toei.Oedo.UenoOkachimachi",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "下永谷",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Shimonagaya",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "下飯田",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Shimoiida",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "両国",
         "id": "odpt.Station:Toei.Oedo.Ryogoku",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "両国",
         "id": "odpt.Station:JR-East.ChuoSobuLocal.Ryogoku",
-        "railway": "JR-East.ChuoSobuLocal"
+        "railway": "JR-East"
     },
     {
         "name": "中井",
         "id": "odpt.Station:Toei.Oedo.Nakai",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "中井",
         "id": "odpt.Station:Seibu.Shinjuku.Nakai",
-        "railway": "Seibu.Shinjuku"
+        "railway": "Seibu"
     },
     {
         "name": "中央大学・明星大学",
         "id": "odpt.Station:TamaMonorail.TamaMonorail.ChuoDaigakuMeiseiDaigaku",
-        "railway": "TamaMonorail.TamaMonorail"
+        "railway": "TamaMonorail"
     },
     {
         "name": "中央林間",
         "id": "odpt.Station:Tokyu.DenEnToshi.ChuoRinkan",
-        "railway": "Tokyu.DenEnToshi"
+        "railway": "Tokyu"
     },
     {
         "name": "中山",
         "id": "odpt.Station:YokohamaMunicipal.Green.Nakayama",
-        "railway": "YokohamaMunicipal.Green"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "中山",
         "id": "odpt.Station:JR-East.Yokohama.Nakayama",
-        "railway": "JR-East.Yokohama"
+        "railway": "JR-East"
     },
     {
         "name": "中川",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Nakagawa",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "中延",
         "id": "odpt.Station:Toei.Asakusa.Nakanobu",
-        "railway": "Toei.Asakusa"
+        "railway": "Toei"
     },
     {
         "name": "中延",
         "id": "odpt.Station:Tokyu.Oimachi.Nakanobu",
-        "railway": "Tokyu.Oimachi"
+        "railway": "Tokyu"
     },
     {
         "name": "中田",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Nakada",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "中目黒",
         "id": "odpt.Station:Tokyu.Toyoko.NakaMeguro",
-        "railway": "Tokyu.Toyoko"
+        "railway": "Tokyu"
     },
     {
         "name": "中目黒",
         "id": "odpt.Station:TokyoMetro.Hibiya.NakaMeguro",
-        "railway": "TokyoMetro.Hibiya"
+        "railway": "TokyoMetro"
     },
     {
         "name": "中野",
         "id": "odpt.Station:JR-East.ChuoRapid.Nakano",
-        "railway": "JR-East.ChuoRapid"
+        "railway": "JR-East"
     },
     {
         "name": "中野",
         "id": "odpt.Station:JR-East.ChuoSobuLocal.Nakano",
-        "railway": "JR-East.ChuoSobuLocal"
+        "railway": "JR-East"
     },
     {
         "name": "中野",
         "id": "odpt.Station:TokyoMetro.Tozai.Nakano",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "中野坂上",
         "id": "odpt.Station:Toei.Oedo.NakanoSakaue",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "中野坂上",
         "id": "odpt.Station:TokyoMetro.Marunouchi.NakanoSakaue",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "中野坂上",
         "id": "odpt.Station:TokyoMetro.MarunouchiBranch.NakanoSakaue",
-        "railway": "TokyoMetro.MarunouchiBranch"
+        "railway": "TokyoMetro"
     },
     {
         "name": "中野富士見町",
         "id": "odpt.Station:TokyoMetro.MarunouchiBranch.NakanoFujimicho",
-        "railway": "TokyoMetro.MarunouchiBranch"
+        "railway": "TokyoMetro"
     },
     {
         "name": "中野新橋",
         "id": "odpt.Station:TokyoMetro.MarunouchiBranch.NakanoShimbashi",
-        "railway": "TokyoMetro.MarunouchiBranch"
+        "railway": "TokyoMetro"
     },
     {
         "name": "乃木坂",
         "id": "odpt.Station:TokyoMetro.Chiyoda.Nogizaka",
-        "railway": "TokyoMetro.Chiyoda"
+        "railway": "TokyoMetro"
     },
     {
         "name": "久喜",
         "id": "odpt.Station:Tobu.Isesaki.Kuki",
-        "railway": "Tobu.Isesaki"
+        "railway": "Tobu"
     },
     {
         "name": "九段下",
         "id": "odpt.Station:Toei.Shinjuku.Kudanshita",
-        "railway": "Toei.Shinjuku"
+        "railway": "Toei"
     },
     {
         "name": "九段下",
         "id": "odpt.Station:TokyoMetro.Hanzomon.Kudanshita",
-        "railway": "TokyoMetro.Hanzomon"
+        "railway": "TokyoMetro"
     },
     {
         "name": "九段下",
         "id": "odpt.Station:TokyoMetro.Tozai.Kudanshita",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "二俣川",
         "id": "odpt.Station:Sotetsu.Main.Futamatagawa",
-        "railway": "Sotetsu.Main"
+        "railway": "Sotetsu"
     },
     {
         "name": "二子玉川",
         "id": "odpt.Station:Tokyu.DenEnToshi.FutakoTamagawa",
-        "railway": "Tokyu.DenEnToshi"
+        "railway": "Tokyu"
     },
     {
         "name": "二重橋前〈丸の内〉",
         "id": "odpt.Station:TokyoMetro.Chiyoda.Nijubashimae",
-        "railway": "TokyoMetro.Chiyoda"
+        "railway": "TokyoMetro"
     },
     {
         "name": "五反田",
         "id": "odpt.Station:Toei.Asakusa.Gotanda",
-        "railway": "Toei.Asakusa"
+        "railway": "Toei"
     },
     {
         "name": "五反田",
         "id": "odpt.Station:Tokyu.Ikegami.Gotanda",
-        "railway": "Tokyu.Ikegami"
+        "railway": "Tokyu"
     },
     {
         "name": "五反田",
         "id": "odpt.Station:JR-East.Yamanote.Gotanda",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "京急久里浜",
         "id": "odpt.Station:Keikyu.Kurihama.KeikyuKurihama",
-        "railway": "Keikyu.Kurihama"
+        "railway": "Keikyu"
     },
     {
         "name": "京急川崎",
         "id": "odpt.Station:Keikyu.Main.KeikyuKawasaki",
-        "railway": "Keikyu.Main"
+        "railway": "Keikyu"
     },
     {
         "name": "京急蒲田",
         "id": "odpt.Station:Keikyu.Main.KeikyuKamata",
-        "railway": "Keikyu.Main"
+        "railway": "Keikyu"
     },
     {
         "name": "京成上野",
         "id": "odpt.Station:Keisei.Main.KeiseiUeno",
-        "railway": "Keisei.Main"
+        "railway": "Keisei"
     },
     {
         "name": "京成佐倉",
         "id": "odpt.Station:Keisei.Main.KeiseiSakura",
-        "railway": "Keisei.Main"
+        "railway": "Keisei"
     },
     {
         "name": "京成八幡",
         "id": "odpt.Station:Keisei.Main.KeiseiYawata",
-        "railway": "Keisei.Main"
+        "railway": "Keisei"
     },
     {
         "name": "京成成田",
         "id": "odpt.Station:Keisei.Main.KeiseiNarita",
-        "railway": "Keisei.Main"
+        "railway": "Keisei"
     },
     {
         "name": "京成西船",
         "id": "odpt.Station:Keisei.Main.KeiseiNishifuna",
-        "railway": "Keisei.Main"
+        "railway": "Keisei"
     },
     {
         "name": "京成高砂",
         "id": "odpt.Station:Keisei.Main.KeiseiTakasago",
-        "railway": "Keisei.Main"
+        "railway": "Keisei"
     },
     {
         "name": "京橋",
         "id": "odpt.Station:TokyoMetro.Ginza.Kyobashi",
-        "railway": "TokyoMetro.Ginza"
+        "railway": "TokyoMetro"
     },
     {
         "name": "京王八王子",
         "id": "odpt.Station:Keio.Keio.KeioHachioji",
-        "railway": "Keio.Keio"
+        "railway": "Keio"
     },
     {
         "name": "京王多摩センター",
         "id": "odpt.Station:Keio.Sagamihara.KeioTamaCenter",
-        "railway": "Keio.Sagamihara"
+        "railway": "Keio"
     },
     {
         "name": "人形町",
         "id": "odpt.Station:Toei.Asakusa.Ningyocho",
-        "railway": "Toei.Asakusa"
+        "railway": "Toei"
     },
     {
         "name": "人形町",
         "id": "odpt.Station:TokyoMetro.Hibiya.Ningyocho",
-        "railway": "TokyoMetro.Hibiya"
+        "railway": "TokyoMetro"
     },
     {
         "name": "代々木",
         "id": "odpt.Station:Toei.Oedo.Yoyogi",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "代々木",
         "id": "odpt.Station:JR-East.ChuoSobuLocal.Yoyogi",
-        "railway": "JR-East.ChuoSobuLocal"
+        "railway": "JR-East"
     },
     {
         "name": "代々木",
         "id": "odpt.Station:JR-East.Yamanote.Yoyogi",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "代々木上原",
         "id": "odpt.Station:Odakyu.Odawara.YoyogiUehara",
-        "railway": "Odakyu.Odawara"
+        "railway": "Odakyu"
     },
     {
         "name": "代々木上原",
         "id": "odpt.Station:TokyoMetro.Chiyoda.YoyogiUehara",
-        "railway": "TokyoMetro.Chiyoda"
+        "railway": "TokyoMetro"
     },
     {
         "name": "代々木公園",
         "id": "odpt.Station:TokyoMetro.Chiyoda.YoyogiKoen",
-        "railway": "TokyoMetro.Chiyoda"
+        "railway": "TokyoMetro"
     },
     {
         "name": "仲御徒町",
         "id": "odpt.Station:TokyoMetro.Hibiya.NakaOkachimachi",
-        "railway": "TokyoMetro.Hibiya"
+        "railway": "TokyoMetro"
     },
     {
         "name": "仲町台",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Nakamachidai",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "伊勢佐木長者町",
         "id": "odpt.Station:YokohamaMunicipal.Blue.IsezakiChojamachi",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "伊勢原",
         "id": "odpt.Station:Odakyu.Odawara.Isehara",
-        "railway": "Odakyu.Odawara"
+        "railway": "Odakyu"
     },
     {
         "name": "住吉",
         "id": "odpt.Station:Toei.Shinjuku.Sumiyoshi",
-        "railway": "Toei.Shinjuku"
+        "railway": "Toei"
     },
     {
         "name": "住吉",
         "id": "odpt.Station:TokyoMetro.Hanzomon.Sumiyoshi",
-        "railway": "TokyoMetro.Hanzomon"
+        "railway": "TokyoMetro"
     },
     {
         "name": "保谷",
         "id": "odpt.Station:Seibu.Ikebukuro.Hoya",
-        "railway": "Seibu.Ikebukuro"
+        "railway": "Seibu"
     },
     {
         "name": "元住吉",
         "id": "odpt.Station:Tokyu.Meguro.Motosumiyoshi",
-        "railway": "Tokyu.Meguro"
+        "railway": "Tokyu"
     },
     {
         "name": "元住吉",
         "id": "odpt.Station:Tokyu.Toyoko.Motosumiyoshi",
-        "railway": "Tokyu.Toyoko"
+        "railway": "Tokyu"
     },
     {
         "name": "元町・中華街",
         "id": "odpt.Station:Minatomirai.Minatomirai.MotomachiChukagai",
-        "railway": "Minatomirai.Minatomirai"
+        "railway": "Minatomirai"
     },
     {
         "name": "光が丘",
         "id": "odpt.Station:Toei.Oedo.Hikarigaoka",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "入谷",
         "id": "odpt.Station:TokyoMetro.Hibiya.Iriya",
-        "railway": "TokyoMetro.Hibiya"
+        "railway": "TokyoMetro"
     },
     {
         "name": "八丁堀",
         "id": "odpt.Station:JR-East.Keiyo.Hatchobori",
-        "railway": "JR-East.Keiyo"
+        "railway": "JR-East"
     },
     {
         "name": "八丁堀",
         "id": "odpt.Station:TokyoMetro.Hibiya.Hatchobori",
-        "railway": "TokyoMetro.Hibiya"
+        "railway": "TokyoMetro"
     },
     {
         "name": "八千代緑が丘",
         "id": "odpt.Station:ToyoRapid.ToyoRapid.YachiyoMidorigaoka",
-        "railway": "ToyoRapid.ToyoRapid"
+        "railway": "ToyoRapid"
     },
     {
         "name": "八幡山",
         "id": "odpt.Station:Keio.Keio.HachimanYama",
-        "railway": "Keio.Keio"
+        "railway": "Keio"
     },
     {
         "name": "八潮",
         "id": "odpt.Station:MIR.TsukubaExpress.Yashio",
-        "railway": "MIR.TsukubaExpress"
+        "railway": "MIR"
     },
     {
         "name": "六本木",
         "id": "odpt.Station:Toei.Oedo.Roppongi",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "六本木",
         "id": "odpt.Station:TokyoMetro.Hibiya.Roppongi",
-        "railway": "TokyoMetro.Hibiya"
+        "railway": "TokyoMetro"
     },
     {
         "name": "六本木一丁目",
         "id": "odpt.Station:TokyoMetro.Namboku.RoppongiItchome",
-        "railway": "TokyoMetro.Namboku"
+        "railway": "TokyoMetro"
     },
     {
         "name": "六町",
         "id": "odpt.Station:MIR.TsukubaExpress.Rokucho",
-        "railway": "MIR.TsukubaExpress"
+        "railway": "MIR"
     },
     {
         "name": "内幸町",
         "id": "odpt.Station:Toei.Mita.Uchisaiwaicho",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "勝どき",
         "id": "odpt.Station:Toei.Oedo.Kachidoki",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "北千住",
         "id": "odpt.Station:MIR.TsukubaExpress.KitaSenju",
-        "railway": "MIR.TsukubaExpress"
+        "railway": "MIR"
     },
     {
         "name": "北千住",
         "id": "odpt.Station:Tobu.TobuSkytree.KitaSenju",
-        "railway": "Tobu.TobuSkytree"
+        "railway": "Tobu"
     },
     {
         "name": "北千住",
         "id": "odpt.Station:TokyoMetro.Chiyoda.KitaSenju",
-        "railway": "TokyoMetro.Chiyoda"
+        "railway": "TokyoMetro"
     },
     {
         "name": "北千住",
         "id": "odpt.Station:TokyoMetro.Hibiya.KitaSenju",
-        "railway": "TokyoMetro.Hibiya"
+        "railway": "TokyoMetro"
     },
     {
         "name": "北千住",
         "id": "odpt.Station:JR-East.JobanRapid.KitaSenju",
-        "railway": "JR-East.JobanRapid"
+        "railway": "JR-East"
     },
     {
         "name": "北参道",
         "id": "odpt.Station:TokyoMetro.Fukutoshin.KitaSando",
-        "railway": "TokyoMetro.Fukutoshin"
+        "railway": "TokyoMetro"
     },
     {
         "name": "北山田",
         "id": "odpt.Station:YokohamaMunicipal.Green.KitaYamata",
-        "railway": "YokohamaMunicipal.Green"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "北新横浜",
         "id": "odpt.Station:YokohamaMunicipal.Blue.KitaShinYokohama",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "北春日部",
         "id": "odpt.Station:Tobu.TobuSkytree.KitaKasukabe",
-        "railway": "Tobu.TobuSkytree"
+        "railway": "Tobu"
     },
     {
         "name": "北綾瀬",
         "id": "odpt.Station:TokyoMetro.Chiyoda.KitaAyase",
-        "railway": "TokyoMetro.Chiyoda"
+        "railway": "TokyoMetro"
     },
     {
         "name": "北越谷",
         "id": "odpt.Station:Tobu.TobuSkytree.KitaKoshigaya",
-        "railway": "Tobu.TobuSkytree"
+        "railway": "Tobu"
     },
     {
         "name": "千川",
         "id": "odpt.Station:TokyoMetro.Fukutoshin.Senkawa",
-        "railway": "TokyoMetro.Fukutoshin"
+        "railway": "TokyoMetro"
     },
     {
         "name": "千川",
         "id": "odpt.Station:TokyoMetro.Yurakucho.Senkawa",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "千石",
         "id": "odpt.Station:Toei.Mita.Sengoku",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "千駄木",
         "id": "odpt.Station:TokyoMetro.Chiyoda.Sendagi",
-        "railway": "TokyoMetro.Chiyoda"
+        "railway": "TokyoMetro"
     },
     {
         "name": "半蔵門",
         "id": "odpt.Station:TokyoMetro.Hanzomon.Hanzomon",
-        "railway": "TokyoMetro.Hanzomon"
+        "railway": "TokyoMetro"
     },
     {
         "name": "南千住",
         "id": "odpt.Station:MIR.TsukubaExpress.MinamiSenju",
-        "railway": "MIR.TsukubaExpress"
+        "railway": "MIR"
     },
     {
         "name": "南千住",
         "id": "odpt.Station:JR-East.JobanRapid.MinamiSenju",
-        "railway": "JR-East.JobanRapid"
+        "railway": "JR-East"
     },
     {
         "name": "南千住",
         "id": "odpt.Station:TokyoMetro.Hibiya.MinamiSenju",
-        "railway": "TokyoMetro.Hibiya"
+        "railway": "TokyoMetro"
     },
     {
         "name": "南栗橋",
         "id": "odpt.Station:Tobu.Nikko.MinamiKurihashi",
-        "railway": "Tobu.Nikko"
+        "railway": "Tobu"
     },
     {
         "name": "南流山",
         "id": "odpt.Station:MIR.TsukubaExpress.MinamiNagareyama",
-        "railway": "MIR.TsukubaExpress"
+        "railway": "MIR"
     },
     {
         "name": "南流山",
         "id": "odpt.Station:JR-East.Musashino.MinamiNagareyama",
-        "railway": "JR-East.Musashino"
+        "railway": "JR-East"
     },
     {
         "name": "南砂町",
         "id": "odpt.Station:TokyoMetro.Tozai.MinamiSunamachi",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "南行徳",
         "id": "odpt.Station:TokyoMetro.Tozai.MinamiGyotoku",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "南阿佐ケ谷",
         "id": "odpt.Station:TokyoMetro.Marunouchi.MinamiAsagaya",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "印旛日本医大",
         "id": "odpt.Station:Hokuso.Hokuso.ImbaNihonIdai",
-        "railway": "Hokuso.Hokuso"
+        "railway": "Hokuso"
     },
     {
         "name": "印西牧の原",
         "id": "odpt.Station:Hokuso.Hokuso.InzaiMakinohara",
-        "railway": "Hokuso.Hokuso"
+        "railway": "Hokuso"
     },
     {
         "name": "原宿",
         "id": "odpt.Station:JR-East.Yamanote.Harajuku",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "原木中山",
         "id": "odpt.Station:TokyoMetro.Tozai.BarakiNakayama",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "取手",
         "id": "odpt.Station:JR-East.JobanLocal.Toride",
-        "railway": "JR-East.JobanLocal"
+        "railway": "JR-East"
     },
     {
         "name": "台場",
         "id": "odpt.Station:Yurikamome.Yurikamome.Daiba",
-        "railway": "Yurikamome.Yurikamome"
+        "railway": "Yurikamome"
     },
     {
         "name": "吉野町",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Yoshinocho",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "向ヶ丘遊園",
         "id": "odpt.Station:Odakyu.Odawara.MukogaokaYuen",
-        "railway": "Odakyu.Odawara"
+        "railway": "Odakyu"
     },
     {
         "name": "向原",
         "id": "odpt.Station:Toei.Arakawa.Mukohara",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "和光市",
         "id": "odpt.Station:Tobu.Tojo.Wakoshi",
-        "railway": "Tobu.Tojo"
+        "railway": "Tobu"
     },
     {
         "name": "和光市",
         "id": "odpt.Station:TokyoMetro.Fukutoshin.Wakoshi",
-        "railway": "TokyoMetro.Fukutoshin"
+        "railway": "TokyoMetro"
     },
     {
         "name": "和光市",
         "id": "odpt.Station:TokyoMetro.Yurakucho.Wakoshi",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "品川",
         "id": "odpt.Station:Keikyu.Main.Shinagawa",
-        "railway": "Keikyu.Main"
+        "railway": "Keikyu"
     },
     {
         "name": "品川シーサイド",
         "id": "odpt.Station:TWR.Rinkai.ShinagawaSeaside",
-        "railway": "TWR.Rinkai"
+        "railway": "TWR"
     },
     {
         "name": "唐木田",
         "id": "odpt.Station:Odakyu.Tama.Karakida",
-        "railway": "Odakyu.Tama"
+        "railway": "Odakyu"
     },
     {
         "name": "四ツ谷",
         "id": "odpt.Station:JR-East.ChuoRapid.Yotsuya",
-        "railway": "JR-East.ChuoRapid"
+        "railway": "JR-East"
     },
     {
         "name": "四ツ谷",
         "id": "odpt.Station:JR-East.ChuoSobuLocal.Yotsuya",
-        "railway": "JR-East.ChuoSobuLocal"
+        "railway": "JR-East"
     },
     {
         "name": "四ツ谷",
         "id": "odpt.Station:TokyoMetro.Marunouchi.Yotsuya",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "四ツ谷",
         "id": "odpt.Station:TokyoMetro.Namboku.Yotsuya",
-        "railway": "TokyoMetro.Namboku"
+        "railway": "TokyoMetro"
     },
     {
         "name": "四谷三丁目",
         "id": "odpt.Station:TokyoMetro.Marunouchi.YotsuyaSanchome",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "国会議事堂前",
         "id": "odpt.Station:TokyoMetro.Chiyoda.KokkaiGijidomae",
-        "railway": "TokyoMetro.Chiyoda"
+        "railway": "TokyoMetro"
     },
     {
         "name": "国会議事堂前",
         "id": "odpt.Station:TokyoMetro.Marunouchi.KokkaiGijidomae",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "国立競技場",
         "id": "odpt.Station:Toei.Oedo.KokuritsuKyogijo",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "国際展示場",
         "id": "odpt.Station:TWR.Rinkai.KokusaiTenjijo",
-        "railway": "TWR.Rinkai"
+        "railway": "TWR"
     },
     {
         "name": "地下鉄成増",
         "id": "odpt.Station:TokyoMetro.Fukutoshin.ChikatetsuNarimasu",
-        "railway": "TokyoMetro.Fukutoshin"
+        "railway": "TokyoMetro"
     },
     {
         "name": "地下鉄成増",
         "id": "odpt.Station:TokyoMetro.Yurakucho.ChikatetsuNarimasu",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "地下鉄赤塚",
         "id": "odpt.Station:TokyoMetro.Fukutoshin.ChikatetsuAkatsuka",
-        "railway": "TokyoMetro.Fukutoshin"
+        "railway": "TokyoMetro"
     },
     {
         "name": "地下鉄赤塚",
         "id": "odpt.Station:TokyoMetro.Yurakucho.ChikatetsuAkatsuka",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "外苑前",
         "id": "odpt.Station:TokyoMetro.Ginza.Gaiemmae",
-        "railway": "TokyoMetro.Ginza"
+        "railway": "TokyoMetro"
     },
     {
         "name": "多摩センター",
         "id": "odpt.Station:TamaMonorail.TamaMonorail.TamaCenter",
-        "railway": "TamaMonorail.TamaMonorail"
+        "railway": "TamaMonorail"
     },
     {
         "name": "多摩動物公園",
         "id": "odpt.Station:TamaMonorail.TamaMonorail.TamaDobutsukoen",
-        "railway": "TamaMonorail.TamaMonorail"
+        "railway": "TamaMonorail"
     },
     {
         "name": "多摩動物公園",
         "id": "odpt.Station:Keio.Dobutsuen.TamaDobutsukoen",
-        "railway": "Keio.Dobutsuen"
+        "railway": "Keio"
     },
     {
         "name": "大井町",
         "id": "odpt.Station:TWR.Rinkai.Oimachi",
-        "railway": "TWR.Rinkai"
+        "railway": "TWR"
     },
     {
         "name": "大井町",
         "id": "odpt.Station:Tokyu.Oimachi.Oimachi",
-        "railway": "Tokyu.Oimachi"
+        "railway": "Tokyu"
     },
     {
         "name": "大井町",
         "id": "odpt.Station:JR-East.KeihinTohokuNegishi.Oimachi",
-        "railway": "JR-East.KeihinTohokuNegishi"
+        "railway": "JR-East"
     },
     {
         "name": "大和",
         "id": "odpt.Station:Sotetsu.Main.Yamato",
-        "railway": "Sotetsu.Main"
+        "railway": "Sotetsu"
     },
     {
         "name": "大塚",
         "id": "odpt.Station:JR-East.Yamanote.Otsuka",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "大塚・帝京大学",
         "id": "odpt.Station:TamaMonorail.TamaMonorail.OtsukaTeikyoDaigaku",
-        "railway": "TamaMonorail.TamaMonorail"
+        "railway": "TamaMonorail"
     },
     {
         "name": "大塚駅前",
         "id": "odpt.Station:Toei.Arakawa.OtsukaEkimae",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "大宮",
         "id": "odpt.Station:JR-East.SaikyoKawagoe.Omiya",
-        "railway": "JR-East.SaikyoKawagoe"
+        "railway": "JR-East"
     },
     {
         "name": "大岡山",
         "id": "odpt.Station:Tokyu.Meguro.Ookayama",
-        "railway": "Tokyu.Meguro"
+        "railway": "Tokyu"
     },
     {
         "name": "大島",
         "id": "odpt.Station:Toei.Shinjuku.Ojima",
-        "railway": "Toei.Shinjuku"
+        "railway": "Toei"
     },
     {
         "name": "大崎",
         "id": "odpt.Station:TWR.Rinkai.Osaki",
-        "railway": "TWR.Rinkai"
+        "railway": "TWR"
     },
     {
         "name": "大崎",
         "id": "odpt.Station:JR-East.SaikyoKawagoe.Osaki",
-        "railway": "JR-East.SaikyoKawagoe"
+        "railway": "JR-East"
     },
     {
         "name": "大崎",
         "id": "odpt.Station:JR-East.ShonanShinjuku.Osaki",
-        "railway": "JR-East.ShonanShinjuku"
+        "railway": "JR-East"
     },
     {
         "name": "大崎",
         "id": "odpt.Station:JR-East.SotetsuDirect.Osaki",
-        "railway": "JR-East.SotetsuDirect"
+        "railway": "JR-East"
     },
     {
         "name": "大崎",
         "id": "odpt.Station:JR-East.Yamanote.Osaki",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "大手町",
         "id": "odpt.Station:Toei.Mita.Otemachi",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "大手町",
         "id": "odpt.Station:TokyoMetro.Chiyoda.Otemachi",
-        "railway": "TokyoMetro.Chiyoda"
+        "railway": "TokyoMetro"
     },
     {
         "name": "大手町",
         "id": "odpt.Station:TokyoMetro.Hanzomon.Otemachi",
-        "railway": "TokyoMetro.Hanzomon"
+        "railway": "TokyoMetro"
     },
     {
         "name": "大手町",
         "id": "odpt.Station:TokyoMetro.Marunouchi.Otemachi",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "大手町",
         "id": "odpt.Station:TokyoMetro.Tozai.Otemachi",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "大門",
         "id": "odpt.Station:Toei.Asakusa.Daimon",
-        "railway": "Toei.Asakusa"
+        "railway": "Toei"
     },
     {
         "name": "大門",
         "id": "odpt.Station:Toei.Oedo.Daimon",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "天王洲アイル",
         "id": "odpt.Station:TWR.Rinkai.TennozuIsle",
-        "railway": "TWR.Rinkai"
+        "railway": "TWR"
     },
     {
         "name": "天王洲アイル",
         "id": "odpt.Station:TokyoMonorail.HanedaAirport.TennozuIsle",
-        "railway": "TokyoMonorail.HanedaAirport"
+        "railway": "TokyoMonorail"
     },
     {
         "name": "奥沢",
         "id": "odpt.Station:Tokyu.Meguro.Okusawa",
-        "railway": "Tokyu.Meguro"
+        "railway": "Tokyu"
     },
     {
         "name": "妙典",
         "id": "odpt.Station:TokyoMetro.Tozai.Myoden",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "学習院下",
         "id": "odpt.Station:Toei.Arakawa.Gakushuinshita",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "守谷",
         "id": "odpt.Station:MIR.TsukubaExpress.Moriya",
-        "railway": "MIR.TsukubaExpress"
+        "railway": "MIR"
     },
     {
         "name": "守谷",
         "id": "odpt.Station:KantoRailway.Joso.Moriya",
-        "railway": "KantoRailway.Joso"
+        "railway": "KantoRailway"
     },
     {
         "name": "宗吾参道",
         "id": "odpt.Station:Keisei.Main.Sogosando",
-        "railway": "Keisei.Main"
+        "railway": "Keisei"
     },
     {
         "name": "宝町",
         "id": "odpt.Station:Toei.Asakusa.Takaracho",
-        "railway": "Toei.Asakusa"
+        "railway": "Toei"
     },
     {
         "name": "宮ノ前",
         "id": "odpt.Station:Toei.Arakawa.Miyanomae",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "小伝馬町",
         "id": "odpt.Station:TokyoMetro.Hibiya.Kodemmacho",
-        "railway": "TokyoMetro.Hibiya"
+        "railway": "TokyoMetro"
     },
     {
         "name": "小台",
         "id": "odpt.Station:Toei.Arakawa.Odai",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "小川町",
         "id": "odpt.Station:Toei.Shinjuku.Ogawamachi",
-        "railway": "Toei.Shinjuku"
+        "railway": "Toei"
     },
     {
         "name": "小川町",
         "id": "odpt.Station:Tobu.Tojo.Ogawamachi",
-        "railway": "Tobu.Tojo"
+        "railway": "Tobu"
     },
     {
         "name": "小手指",
         "id": "odpt.Station:Seibu.Ikebukuro.Kotesashi",
-        "railway": "Seibu.Ikebukuro"
+        "railway": "Seibu"
     },
     {
         "name": "小田急多摩センター",
         "id": "odpt.Station:Odakyu.Tama.OdakyuTamaCenter",
-        "railway": "Odakyu.Tama"
+        "railway": "Odakyu"
     },
     {
         "name": "小竹向原",
         "id": "odpt.Station:Seibu.SeibuYurakucho.KotakeMukaihara",
-        "railway": "Seibu.SeibuYurakucho"
+        "railway": "Seibu"
     },
     {
         "name": "小竹向原",
         "id": "odpt.Station:TokyoMetro.Fukutoshin.KotakeMukaihara",
-        "railway": "TokyoMetro.Fukutoshin"
+        "railway": "TokyoMetro"
     },
     {
         "name": "小竹向原",
         "id": "odpt.Station:TokyoMetro.Yurakucho.KotakeMukaihara",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "岩本町",
         "id": "odpt.Station:Toei.Shinjuku.Iwamotocho",
-        "railway": "Toei.Shinjuku"
+        "railway": "Toei"
     },
     {
         "name": "岸根公園",
         "id": "odpt.Station:YokohamaMunicipal.Blue.KishineKoen",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "川和町",
         "id": "odpt.Station:YokohamaMunicipal.Green.Kawawacho",
-        "railway": "YokohamaMunicipal.Green"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "川越",
         "id": "odpt.Station:JR-East.SaikyoKawagoe.Kawagoe",
-        "railway": "JR-East.SaikyoKawagoe"
+        "railway": "JR-East"
     },
     {
         "name": "川越市",
         "id": "odpt.Station:Tobu.Tojo.Kawagoeshi",
-        "railway": "Tobu.Tojo"
+        "railway": "Tobu"
     },
     {
         "name": "巣鴨",
         "id": "odpt.Station:Toei.Mita.Sugamo",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "巣鴨",
         "id": "odpt.Station:JR-East.Yamanote.Sugamo",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "巣鴨新田",
         "id": "odpt.Station:Toei.Arakawa.Sugamoshinden",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "市ケ谷",
         "id": "odpt.Station:JR-East.ChuoSobuLocal.Ichigaya",
-        "railway": "JR-East.ChuoSobuLocal"
+        "railway": "JR-East"
     },
     {
         "name": "市ケ谷",
         "id": "odpt.Station:TokyoMetro.Namboku.Ichigaya",
-        "railway": "TokyoMetro.Namboku"
+        "railway": "TokyoMetro"
     },
     {
         "name": "市ケ谷",
         "id": "odpt.Station:TokyoMetro.Yurakucho.Ichigaya",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "市ヶ谷",
         "id": "odpt.Station:Toei.Shinjuku.Ichigaya",
-        "railway": "Toei.Shinjuku"
+        "railway": "Toei"
     },
     {
         "name": "市場前",
         "id": "odpt.Station:Yurikamome.Yurikamome.ShijoMae",
-        "railway": "Yurikamome.Yurikamome"
+        "railway": "Yurikamome"
     },
     {
         "name": "平和台",
         "id": "odpt.Station:TokyoMetro.Fukutoshin.Heiwadai",
-        "railway": "TokyoMetro.Fukutoshin"
+        "railway": "TokyoMetro"
     },
     {
         "name": "平和台",
         "id": "odpt.Station:TokyoMetro.Yurakucho.Heiwadai",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "広尾",
         "id": "odpt.Station:TokyoMetro.Hibiya.HiroO",
-        "railway": "TokyoMetro.Hibiya"
+        "railway": "TokyoMetro"
     },
     {
         "name": "庚申塚",
         "id": "odpt.Station:Toei.Arakawa.Koshinzuka",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "府中競馬正門前",
         "id": "odpt.Station:Keio.Keibajo.FuchukeibaSeimommae",
-        "railway": "Keio.Keibajo"
+        "railway": "Keio"
     },
     {
         "name": "弘明寺",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Gumyoji",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "後楽園",
         "id": "odpt.Station:TokyoMetro.Marunouchi.Korakuen",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "後楽園",
         "id": "odpt.Station:TokyoMetro.Namboku.Korakuen",
-        "railway": "TokyoMetro.Namboku"
+        "railway": "TokyoMetro"
     },
     {
         "name": "御徒町",
         "id": "odpt.Station:JR-East.KeihinTohokuNegishi.Okachimachi",
-        "railway": "JR-East.KeihinTohokuNegishi"
+        "railway": "JR-East"
     },
     {
         "name": "御徒町",
         "id": "odpt.Station:JR-East.Yamanote.Okachimachi",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "御成門",
         "id": "odpt.Station:Toei.Mita.Onarimon",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "御茶ノ水",
         "id": "odpt.Station:JR-East.ChuoRapid.Ochanomizu",
-        "railway": "JR-East.ChuoRapid"
+        "railway": "JR-East"
     },
     {
         "name": "御茶ノ水",
         "id": "odpt.Station:JR-East.ChuoSobuLocal.Ochanomizu",
-        "railway": "JR-East.ChuoSobuLocal"
+        "railway": "JR-East"
     },
     {
         "name": "御茶ノ水",
         "id": "odpt.Station:TokyoMetro.Marunouchi.Ochanomizu",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "志木",
         "id": "odpt.Station:Tobu.Tojo.Shiki",
-        "railway": "Tobu.Tojo"
+        "railway": "Tobu"
     },
     {
         "name": "志村三丁目",
         "id": "odpt.Station:Toei.Mita.ShimuraSanchome",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "志村坂上",
         "id": "odpt.Station:Toei.Mita.ShimuraSakaue",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "志茂",
         "id": "odpt.Station:TokyoMetro.Namboku.Shimo",
-        "railway": "TokyoMetro.Namboku"
+        "railway": "TokyoMetro"
     },
     {
         "name": "恵比寿",
         "id": "odpt.Station:JR-East.SaikyoKawagoe.Ebisu",
-        "railway": "JR-East.SaikyoKawagoe"
+        "railway": "JR-East"
     },
     {
         "name": "恵比寿",
         "id": "odpt.Station:JR-East.ShonanShinjuku.Ebisu",
-        "railway": "JR-East.ShonanShinjuku"
+        "railway": "JR-East"
     },
     {
         "name": "恵比寿",
         "id": "odpt.Station:JR-East.Yamanote.Ebisu",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "恵比寿",
         "id": "odpt.Station:TokyoMetro.Hibiya.Ebisu",
-        "railway": "TokyoMetro.Hibiya"
+        "railway": "TokyoMetro"
     },
     {
         "name": "成城学園前",
         "id": "odpt.Station:Odakyu.Odawara.SeijogakuenMae",
-        "railway": "Odakyu.Odawara"
+        "railway": "Odakyu"
     },
     {
         "name": "成田空港",
         "id": "odpt.Station:Keisei.Main.NaritaAirportTerminal1",
-        "railway": "Keisei.Main"
+        "railway": "Keisei"
     },
     {
         "name": "成田空港",
         "id": "odpt.Station:Keisei.NaritaSkyAccess.NaritaAirportTerminal1",
-        "railway": "Keisei.NaritaSkyAccess"
+        "railway": "Keisei"
     },
     {
         "name": "我孫子",
         "id": "odpt.Station:JR-East.JobanLocal.Abiko",
-        "railway": "JR-East.JobanLocal"
+        "railway": "JR-East"
     },
     {
         "name": "戸塚",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Totsuka",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "戸塚",
         "id": "odpt.Station:JR-East.ShonanShinjuku.Totsuka",
-        "railway": "JR-East.ShonanShinjuku"
+        "railway": "JR-East"
     },
     {
         "name": "戸塚",
         "id": "odpt.Station:JR-East.Tokaido.Totsuka",
-        "railway": "JR-East.Tokaido"
+        "railway": "JR-East"
     },
     {
         "name": "戸塚",
         "id": "odpt.Station:JR-East.Yokosuka.Totsuka",
-        "railway": "JR-East.Yokosuka"
+        "railway": "JR-East"
     },
     {
         "name": "戸越",
         "id": "odpt.Station:Toei.Asakusa.Togoshi",
-        "railway": "Toei.Asakusa"
+        "railway": "Toei"
     },
     {
         "name": "戸越銀座",
         "id": "odpt.Station:Tokyu.Ikegami.TogoshiGinza",
-        "railway": "Tokyu.Ikegami"
+        "railway": "Tokyu"
     },
     {
         "name": "所沢",
         "id": "odpt.Station:Seibu.Ikebukuro.Tokorozawa",
-        "railway": "Seibu.Ikebukuro"
+        "railway": "Seibu"
     },
     {
         "name": "扇大橋",
         "id": "odpt.Station:Toei.NipporiToneri.OgiOhashi",
-        "railway": "Toei.NipporiToneri"
+        "railway": "Toei"
     },
     {
         "name": "押上",
         "id": "odpt.Station:Toei.Asakusa.Oshiage",
-        "railway": "Toei.Asakusa"
+        "railway": "Toei"
     },
     {
         "name": "押上",
         "id": "odpt.Station:Tobu.TobuSkytreeBranch.Oshiage",
-        "railway": "Tobu.TobuSkytreeBranch"
+        "railway": "Tobu"
     },
     {
         "name": "押上",
         "id": "odpt.Station:Keisei.Oshiage.Oshiage",
-        "railway": "Keisei.Oshiage"
+        "railway": "Keisei"
     },
     {
         "name": "押上〈スカイツリー前〉",
         "id": "odpt.Station:TokyoMetro.Hanzomon.Oshiage",
-        "railway": "TokyoMetro.Hanzomon"
+        "railway": "TokyoMetro"
     },
     {
         "name": "指扇",
         "id": "odpt.Station:JR-East.SaikyoKawagoe.Sashiogi",
-        "railway": "JR-East.SaikyoKawagoe"
+        "railway": "JR-East"
     },
     {
         "name": "新中野",
         "id": "odpt.Station:TokyoMetro.Marunouchi.ShinNakano",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "新大塚",
         "id": "odpt.Station:TokyoMetro.Marunouchi.ShinOtsuka",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "新宿",
         "id": "odpt.Station:Toei.Oedo.Shinjuku",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "新宿",
         "id": "odpt.Station:Toei.Shinjuku.Shinjuku",
-        "railway": "Toei.Shinjuku"
+        "railway": "Toei"
     },
     {
         "name": "新宿",
         "id": "odpt.Station:Odakyu.Odawara.Shinjuku",
-        "railway": "Odakyu.Odawara"
+        "railway": "Odakyu"
     },
     {
         "name": "新宿",
         "id": "odpt.Station:TokyoMetro.Marunouchi.Shinjuku",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "新宿",
         "id": "odpt.Station:Keio.Keio.Shinjuku",
-        "railway": "Keio.Keio"
+        "railway": "Keio"
     },
     {
         "name": "新宿",
         "id": "odpt.Station:Keio.KeioNew.Shinjuku",
-        "railway": "Keio.KeioNew"
+        "railway": "Keio"
     },
     {
         "name": "新宿",
         "id": "odpt.Station:JR-East.ChuoRapid.Shinjuku",
-        "railway": "JR-East.ChuoRapid"
+        "railway": "JR-East"
     },
     {
         "name": "新宿",
         "id": "odpt.Station:JR-East.ChuoSobuLocal.Shinjuku",
-        "railway": "JR-East.ChuoSobuLocal"
+        "railway": "JR-East"
     },
     {
         "name": "新宿",
         "id": "odpt.Station:JR-East.SaikyoKawagoe.Shinjuku",
-        "railway": "JR-East.SaikyoKawagoe"
+        "railway": "JR-East"
     },
     {
         "name": "新宿",
         "id": "odpt.Station:JR-East.ShonanShinjuku.Shinjuku",
-        "railway": "JR-East.ShonanShinjuku"
+        "railway": "JR-East"
     },
     {
         "name": "新宿",
         "id": "odpt.Station:JR-East.Yamanote.Shinjuku",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "新宿三丁目",
         "id": "odpt.Station:Toei.Shinjuku.ShinjukuSanchome",
-        "railway": "Toei.Shinjuku"
+        "railway": "Toei"
     },
     {
         "name": "新宿三丁目",
         "id": "odpt.Station:TokyoMetro.Fukutoshin.ShinjukuSanchome",
-        "railway": "TokyoMetro.Fukutoshin"
+        "railway": "TokyoMetro"
     },
     {
         "name": "新宿三丁目",
         "id": "odpt.Station:TokyoMetro.Marunouchi.ShinjukuSanchome",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "新宿御苑前",
         "id": "odpt.Station:TokyoMetro.Marunouchi.ShinjukuGyoemmae",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "新宿西口",
         "id": "odpt.Station:Toei.Oedo.ShinjukuNishiguchi",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "新富町",
         "id": "odpt.Station:TokyoMetro.Yurakucho.Shintomicho",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "新庚申塚",
         "id": "odpt.Station:Toei.Arakawa.ShinKoshinzuka",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "新御徒町",
         "id": "odpt.Station:Toei.Oedo.ShinOkachimachi",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "新御徒町",
         "id": "odpt.Station:MIR.TsukubaExpress.ShinOkachimachi",
-        "railway": "MIR.TsukubaExpress"
+        "railway": "MIR"
     },
     {
         "name": "新御茶ノ水",
         "id": "odpt.Station:TokyoMetro.Chiyoda.ShinOchanomizu",
-        "railway": "TokyoMetro.Chiyoda"
+        "railway": "TokyoMetro"
     },
     {
         "name": "新日本橋",
         "id": "odpt.Station:JR-East.SobuRapid.ShinNihombashi",
-        "railway": "JR-East.SobuRapid"
+        "railway": "JR-East"
     },
     {
         "name": "新木場",
         "id": "odpt.Station:TWR.Rinkai.ShinKiba",
-        "railway": "TWR.Rinkai"
+        "railway": "TWR"
     },
     {
         "name": "新木場",
         "id": "odpt.Station:JR-East.Keiyo.ShinKiba",
-        "railway": "JR-East.Keiyo"
+        "railway": "JR-East"
     },
     {
         "name": "新木場",
         "id": "odpt.Station:TokyoMetro.Yurakucho.ShinKiba",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "新板橋",
         "id": "odpt.Station:Toei.Mita.ShinItabashi",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "新横浜",
         "id": "odpt.Station:Sotetsu.SotetsuShinYokohama.ShinYokohama",
-        "railway": "Sotetsu.SotetsuShinYokohama"
+        "railway": "Sotetsu"
     },
     {
         "name": "新横浜",
         "id": "odpt.Station:Tokyu.TokyuShinYokohama.ShinYokohama",
-        "railway": "Tokyu.TokyuShinYokohama"
+        "railway": "Tokyu"
     },
     {
         "name": "新横浜",
         "id": "odpt.Station:YokohamaMunicipal.Blue.ShinYokohama",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "新横浜",
         "id": "odpt.Station:JR-Central.TokaidoShinkansen.ShinYokohama",
-        "railway": "JR-Central.TokaidoShinkansen"
+        "railway": "JR-Central"
     },
     {
         "name": "新横浜",
         "id": "odpt.Station:JR-East.Yokohama.ShinYokohama",
-        "railway": "JR-East.Yokohama"
+        "railway": "JR-East"
     },
     {
         "name": "新橋",
         "id": "odpt.Station:Yurikamome.Yurikamome.Shimbashi",
-        "railway": "Yurikamome.Yurikamome"
+        "railway": "Yurikamome"
     },
     {
         "name": "新橋",
         "id": "odpt.Station:Toei.Asakusa.Shimbashi",
-        "railway": "Toei.Asakusa"
+        "railway": "Toei"
     },
     {
         "name": "新橋",
         "id": "odpt.Station:JR-East.JobanRapid.Shimbashi",
-        "railway": "JR-East.JobanRapid"
+        "railway": "JR-East"
     },
     {
         "name": "新橋",
         "id": "odpt.Station:JR-East.KeihinTohokuNegishi.Shimbashi",
-        "railway": "JR-East.KeihinTohokuNegishi"
+        "railway": "JR-East"
     },
     {
         "name": "新橋",
         "id": "odpt.Station:JR-East.Tokaido.Shimbashi",
-        "railway": "JR-East.Tokaido"
+        "railway": "JR-East"
     },
     {
         "name": "新橋",
         "id": "odpt.Station:JR-East.Yamanote.Shimbashi",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "新橋",
         "id": "odpt.Station:JR-East.Yokosuka.Shimbashi",
-        "railway": "JR-East.Yokosuka"
+        "railway": "JR-East"
     },
     {
         "name": "新橋",
         "id": "odpt.Station:TokyoMetro.Ginza.Shimbashi",
-        "railway": "TokyoMetro.Ginza"
+        "railway": "TokyoMetro"
     },
     {
         "name": "新江古田",
         "id": "odpt.Station:Toei.Oedo.ShinEgota",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "新百合ヶ丘",
         "id": "odpt.Station:Odakyu.Odawara.ShinYurigaoka",
-        "railway": "Odakyu.Odawara"
+        "railway": "Odakyu"
     },
     {
         "name": "新羽",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Nippa",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "新豊洲",
         "id": "odpt.Station:Yurikamome.Yurikamome.ShinToyosu",
-        "railway": "Yurikamome.Yurikamome"
+        "railway": "Yurikamome"
     },
     {
         "name": "新高円寺",
         "id": "odpt.Station:TokyoMetro.Marunouchi.ShinKoenji",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "新高島平",
         "id": "odpt.Station:Toei.Mita.ShinTakashimadaira",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "方南町",
         "id": "odpt.Station:TokyoMetro.MarunouchiBranch.Honancho",
-        "railway": "TokyoMetro.MarunouchiBranch"
+        "railway": "TokyoMetro"
     },
     {
         "name": "日の出",
         "id": "odpt.Station:Yurikamome.Yurikamome.Hinode",
-        "railway": "Yurikamome.Yurikamome"
+        "railway": "Yurikamome"
     },
     {
         "name": "日吉",
         "id": "odpt.Station:Tokyu.Meguro.Hiyoshi",
-        "railway": "Tokyu.Meguro"
+        "railway": "Tokyu"
     },
     {
         "name": "日吉",
         "id": "odpt.Station:YokohamaMunicipal.Green.Hiyoshi",
-        "railway": "YokohamaMunicipal.Green"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "日吉",
         "id": "odpt.Station:Tokyu.TokyuShinYokohama.Hiyoshi",
-        "railway": "Tokyu.TokyuShinYokohama"
+        "railway": "Tokyu"
     },
     {
         "name": "日吉",
         "id": "odpt.Station:Tokyu.Toyoko.Hiyoshi",
-        "railway": "Tokyu.Toyoko"
+        "railway": "Tokyu"
     },
     {
         "name": "日吉本町",
         "id": "odpt.Station:YokohamaMunicipal.Green.HiyoshiHoncho",
-        "railway": "YokohamaMunicipal.Green"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "日暮里",
         "id": "odpt.Station:Toei.NipporiToneri.Nippori",
-        "railway": "Toei.NipporiToneri"
+        "railway": "Toei"
     },
     {
         "name": "日暮里",
         "id": "odpt.Station:JR-East.JobanRapid.Nippori",
-        "railway": "JR-East.JobanRapid"
+        "railway": "JR-East"
     },
     {
         "name": "日暮里",
         "id": "odpt.Station:JR-East.KeihinTohokuNegishi.Nippori",
-        "railway": "JR-East.KeihinTohokuNegishi"
+        "railway": "JR-East"
     },
     {
         "name": "日暮里",
         "id": "odpt.Station:JR-East.Yamanote.Nippori",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "日暮里",
         "id": "odpt.Station:Keisei.Main.Nippori",
-        "railway": "Keisei.Main"
+        "railway": "Keisei"
     },
     {
         "name": "日本橋",
         "id": "odpt.Station:Toei.Asakusa.Nihombashi",
-        "railway": "Toei.Asakusa"
+        "railway": "Toei"
     },
     {
         "name": "日本橋",
         "id": "odpt.Station:TokyoMetro.Ginza.Nihombashi",
-        "railway": "TokyoMetro.Ginza"
+        "railway": "TokyoMetro"
     },
     {
         "name": "日本橋",
         "id": "odpt.Station:TokyoMetro.Tozai.Nihombashi",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "日比谷",
         "id": "odpt.Station:Toei.Mita.Hibiya",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "日比谷",
         "id": "odpt.Station:TokyoMetro.Chiyoda.Hibiya",
-        "railway": "TokyoMetro.Chiyoda"
+        "railway": "TokyoMetro"
     },
     {
         "name": "日比谷",
         "id": "odpt.Station:TokyoMetro.Hibiya.Hibiya",
-        "railway": "TokyoMetro.Hibiya"
+        "railway": "TokyoMetro"
     },
     {
         "name": "早稲田",
         "id": "odpt.Station:Toei.Arakawa.Waseda",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "早稲田",
         "id": "odpt.Station:TokyoMetro.Tozai.Waseda",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "明治神宮前〈原宿〉",
         "id": "odpt.Station:TokyoMetro.Chiyoda.MeijiJingumae",
-        "railway": "TokyoMetro.Chiyoda"
+        "railway": "TokyoMetro"
     },
     {
         "name": "明治神宮前〈原宿〉",
         "id": "odpt.Station:TokyoMetro.Fukutoshin.MeijiJingumae",
-        "railway": "TokyoMetro.Fukutoshin"
+        "railway": "TokyoMetro"
     },
     {
         "name": "春日",
         "id": "odpt.Station:Toei.Mita.Kasuga",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "春日",
         "id": "odpt.Station:Toei.Oedo.Kasuga",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "曙橋",
         "id": "odpt.Station:Toei.Shinjuku.Akebonobashi",
-        "railway": "Toei.Shinjuku"
+        "railway": "Toei"
     },
     {
         "name": "月島",
         "id": "odpt.Station:Toei.Oedo.Tsukishima",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "月島",
         "id": "odpt.Station:TokyoMetro.Yurakucho.Tsukishima",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "有明",
         "id": "odpt.Station:Yurikamome.Yurikamome.Ariake",
-        "railway": "Yurikamome.Yurikamome"
+        "railway": "Yurikamome"
     },
     {
         "name": "有明テニスの森",
         "id": "odpt.Station:Yurikamome.Yurikamome.AriakeTennisNoMori",
-        "railway": "Yurikamome.Yurikamome"
+        "railway": "Yurikamome"
     },
     {
         "name": "有楽町",
         "id": "odpt.Station:JR-East.KeihinTohokuNegishi.Yurakucho",
-        "railway": "JR-East.KeihinTohokuNegishi"
+        "railway": "JR-East"
     },
     {
         "name": "有楽町",
         "id": "odpt.Station:JR-East.Yamanote.Yurakucho",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "有楽町",
         "id": "odpt.Station:TokyoMetro.Yurakucho.Yurakucho",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "木場",
         "id": "odpt.Station:TokyoMetro.Tozai.Kiba",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "末広町",
         "id": "odpt.Station:TokyoMetro.Ginza.Suehirocho",
-        "railway": "TokyoMetro.Ginza"
+        "railway": "TokyoMetro"
     },
     {
         "name": "本八幡",
         "id": "odpt.Station:Toei.Shinjuku.Motoyawata",
-        "railway": "Toei.Shinjuku"
+        "railway": "Toei"
     },
     {
         "name": "本八幡",
         "id": "odpt.Station:JR-East.ChuoSobuLocal.MotoYawata",
-        "railway": "JR-East.ChuoSobuLocal"
+        "railway": "JR-East"
     },
     {
         "name": "本厚木",
         "id": "odpt.Station:Odakyu.Odawara.HonAtsugi",
-        "railway": "Odakyu.Odawara"
+        "railway": "Odakyu"
     },
     {
         "name": "本所吾妻橋",
         "id": "odpt.Station:Toei.Asakusa.HonjoAzumabashi",
-        "railway": "Toei.Asakusa"
+        "railway": "Toei"
     },
     {
         "name": "本蓮沼",
         "id": "odpt.Station:Toei.Mita.Motohasunuma",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "本郷三丁目",
         "id": "odpt.Station:Toei.Oedo.HongoSanchome",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "本郷三丁目",
         "id": "odpt.Station:TokyoMetro.Marunouchi.HongoSanchome",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "本駒込",
         "id": "odpt.Station:TokyoMetro.Namboku.HonKomagome",
-        "railway": "TokyoMetro.Namboku"
+        "railway": "TokyoMetro"
     },
     {
         "name": "東中野",
         "id": "odpt.Station:Toei.Oedo.HigashiNakano",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "東中野",
         "id": "odpt.Station:JR-East.ChuoSobuLocal.HigashiNakano",
-        "railway": "JR-East.ChuoSobuLocal"
+        "railway": "JR-East"
     },
     {
         "name": "東京",
         "id": "odpt.Station:JR-East.Keiyo.Tokyo",
-        "railway": "JR-East.Keiyo"
+        "railway": "JR-East"
     },
     {
         "name": "東京",
         "id": "odpt.Station:JR-East.ChuoRapid.Tokyo",
-        "railway": "JR-East.ChuoRapid"
+        "railway": "JR-East"
     },
     {
         "name": "東京",
         "id": "odpt.Station:JR-East.JobanRapid.Tokyo",
-        "railway": "JR-East.JobanRapid"
+        "railway": "JR-East"
     },
     {
         "name": "東京",
         "id": "odpt.Station:JR-East.KeihinTohokuNegishi.Tokyo",
-        "railway": "JR-East.KeihinTohokuNegishi"
+        "railway": "JR-East"
     },
     {
         "name": "東京",
         "id": "odpt.Station:JR-East.SobuRapid.Tokyo",
-        "railway": "JR-East.SobuRapid"
+        "railway": "JR-East"
     },
     {
         "name": "東京",
         "id": "odpt.Station:JR-East.Takasaki.Tokyo",
-        "railway": "JR-East.Takasaki"
+        "railway": "JR-East"
     },
     {
         "name": "東京",
         "id": "odpt.Station:JR-East.Tokaido.Tokyo",
-        "railway": "JR-East.Tokaido"
+        "railway": "JR-East"
     },
     {
         "name": "東京",
         "id": "odpt.Station:JR-East.Utsunomiya.Tokyo",
-        "railway": "JR-East.Utsunomiya"
+        "railway": "JR-East"
     },
     {
         "name": "東京",
         "id": "odpt.Station:JR-East.Yamanote.Tokyo",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "東京",
         "id": "odpt.Station:JR-East.Yokosuka.Tokyo",
-        "railway": "JR-East.Yokosuka"
+        "railway": "JR-East"
     },
     {
         "name": "東京",
         "id": "odpt.Station:TokyoMetro.Marunouchi.Tokyo",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "東京",
         "id": "odpt.Station:JR-Central.TokaidoShinkansen.Tokyo",
-        "railway": "JR-Central.TokaidoShinkansen"
+        "railway": "JR-Central"
     },
     {
         "name": "東京",
         "id": "odpt.Station:JR-East.AkitaShinkansen.Tokyo",
-        "railway": "JR-East.AkitaShinkansen"
+        "railway": "JR-East"
     },
     {
         "name": "東京",
         "id": "odpt.Station:JR-East.HokurikuShinkansen.Tokyo",
-        "railway": "JR-East.HokurikuShinkansen"
+        "railway": "JR-East"
     },
     {
         "name": "東京",
         "id": "odpt.Station:JR-East.JoetsuShinkansen.Tokyo",
-        "railway": "JR-East.JoetsuShinkansen"
+        "railway": "JR-East"
     },
     {
         "name": "東京",
         "id": "odpt.Station:JR-East.TohokuShinkansen.Tokyo",
-        "railway": "JR-East.TohokuShinkansen"
+        "railway": "JR-East"
     },
     {
         "name": "東京",
         "id": "odpt.Station:JR-East.YamagataShinkansen.Tokyo",
-        "railway": "JR-East.YamagataShinkansen"
+        "railway": "JR-East"
     },
     {
         "name": "東京テレポート",
         "id": "odpt.Station:TWR.Rinkai.TokyoTeleport",
-        "railway": "TWR.Rinkai"
+        "railway": "TWR"
     },
     {
         "name": "東京ビッグサイト",
         "id": "odpt.Station:Yurikamome.Yurikamome.TokyoBigSight",
-        "railway": "Yurikamome.Yurikamome"
+        "railway": "Yurikamome"
     },
     {
         "name": "東京国際クルーズターミナル",
         "id": "odpt.Station:Yurikamome.Yurikamome.TokyoInternationalCruiseTerminal",
-        "railway": "Yurikamome.Yurikamome"
+        "railway": "Yurikamome"
     },
     {
         "name": "東大前",
         "id": "odpt.Station:TokyoMetro.Namboku.Todaimae",
-        "railway": "TokyoMetro.Namboku"
+        "railway": "TokyoMetro"
     },
     {
         "name": "東大島",
         "id": "odpt.Station:Toei.Shinjuku.HigashiOjima",
-        "railway": "Toei.Shinjuku"
+        "railway": "Toei"
     },
     {
         "name": "東尾久三丁目",
         "id": "odpt.Station:Toei.Arakawa.HigashiOguSanchome",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "東山田",
         "id": "odpt.Station:YokohamaMunicipal.Green.HigashiYamata",
-        "railway": "YokohamaMunicipal.Green"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "東新宿",
         "id": "odpt.Station:Toei.Oedo.HigashiShinjuku",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "東新宿",
         "id": "odpt.Station:TokyoMetro.Fukutoshin.HigashiShinjuku",
-        "railway": "TokyoMetro.Fukutoshin"
+        "railway": "TokyoMetro"
     },
     {
         "name": "東日本橋",
         "id": "odpt.Station:Toei.Asakusa.HigashiNihombashi",
-        "railway": "Toei.Asakusa"
+        "railway": "Toei"
     },
     {
         "name": "東武動物公園",
         "id": "odpt.Station:Tobu.TobuSkytree.TobuDobutsuKoen",
-        "railway": "Tobu.TobuSkytree"
+        "railway": "Tobu"
     },
     {
         "name": "東池袋",
         "id": "odpt.Station:TokyoMetro.Yurakucho.HigashiIkebukuro",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "東池袋四丁目",
         "id": "odpt.Station:Toei.Arakawa.HigashiIkebukuroYonchome",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "東葉勝田台",
         "id": "odpt.Station:ToyoRapid.ToyoRapid.ToyoKatsutadai",
-        "railway": "ToyoRapid.ToyoRapid"
+        "railway": "ToyoRapid"
     },
     {
         "name": "東銀座",
         "id": "odpt.Station:Toei.Asakusa.HigashiGinza",
-        "railway": "Toei.Asakusa"
+        "railway": "Toei"
     },
     {
         "name": "東銀座",
         "id": "odpt.Station:TokyoMetro.Hibiya.HigashiGinza",
-        "railway": "TokyoMetro.Hibiya"
+        "railway": "TokyoMetro"
     },
     {
         "name": "東陽町",
         "id": "odpt.Station:TokyoMetro.Tozai.Toyocho",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "東雲",
         "id": "odpt.Station:TWR.Rinkai.Shinonome",
-        "railway": "TWR.Rinkai"
+        "railway": "TWR"
     },
     {
         "name": "東高円寺",
         "id": "odpt.Station:TokyoMetro.Marunouchi.HigashiKoenji",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "松が谷",
         "id": "odpt.Station:TamaMonorail.TamaMonorail.Matsugaya",
-        "railway": "TamaMonorail.TamaMonorail"
+        "railway": "TamaMonorail"
     },
     {
         "name": "松戸",
         "id": "odpt.Station:JR-East.JobanLocal.Matsudo",
-        "railway": "JR-East.JobanLocal"
+        "railway": "JR-East"
     },
     {
         "name": "板橋",
         "id": "odpt.Station:JR-East.SaikyoKawagoe.Itabashi",
-        "railway": "JR-East.SaikyoKawagoe"
+        "railway": "JR-East"
     },
     {
         "name": "板橋区役所前",
         "id": "odpt.Station:Toei.Mita.ItabashiKuyakushomae",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "板橋本町",
         "id": "odpt.Station:Toei.Mita.Itabashihoncho",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "柏",
         "id": "odpt.Station:JR-East.JobanLocal.Kashiwa",
-        "railway": "JR-East.JobanLocal"
+        "railway": "JR-East"
     },
     {
         "name": "柏たなか",
         "id": "odpt.Station:MIR.TsukubaExpress.KashiwaTanaka",
-        "railway": "MIR.TsukubaExpress"
+        "railway": "MIR"
     },
     {
         "name": "柏の葉キャンパス",
         "id": "odpt.Station:MIR.TsukubaExpress.KashiwanohaCampus",
-        "railway": "MIR.TsukubaExpress"
+        "railway": "MIR"
     },
     {
         "name": "柴崎体育館",
         "id": "odpt.Station:TamaMonorail.TamaMonorail.ShibasakiTaiikukan",
-        "railway": "TamaMonorail.TamaMonorail"
+        "railway": "TamaMonorail"
     },
     {
         "name": "栄町",
         "id": "odpt.Station:Toei.Arakawa.Sakaecho",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "根津",
         "id": "odpt.Station:TokyoMetro.Chiyoda.Nezu",
-        "railway": "TokyoMetro.Chiyoda"
+        "railway": "TokyoMetro"
     },
     {
         "name": "桜上水",
         "id": "odpt.Station:Keio.Keio.Sakurajosui",
-        "railway": "Keio.Keio"
+        "railway": "Keio"
     },
     {
         "name": "桜木町",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Sakuragicho",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "桜木町",
         "id": "odpt.Station:JR-East.KeihinTohokuNegishi.Sakuragicho",
-        "railway": "JR-East.KeihinTohokuNegishi"
+        "railway": "JR-East"
     },
     {
         "name": "桜田門",
         "id": "odpt.Station:TokyoMetro.Yurakucho.Sakuradamon",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "桜街道",
         "id": "odpt.Station:TamaMonorail.TamaMonorail.Sakurakaido",
-        "railway": "TamaMonorail.TamaMonorail"
+        "railway": "TamaMonorail"
     },
     {
         "name": "梶原",
         "id": "odpt.Station:Toei.Arakawa.Kajiwara",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "森下",
         "id": "odpt.Station:Toei.Oedo.Morishita",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "森下",
         "id": "odpt.Station:Toei.Shinjuku.Morishita",
-        "railway": "Toei.Shinjuku"
+        "railway": "Toei"
     },
     {
         "name": "森林公園",
         "id": "odpt.Station:Tobu.Tojo.ShinrinKoen",
-        "railway": "Tobu.Tojo"
+        "railway": "Tobu"
     },
     {
         "name": "横浜",
         "id": "odpt.Station:Sotetsu.Main.Yokohama",
-        "railway": "Sotetsu.Main"
+        "railway": "Sotetsu"
     },
     {
         "name": "横浜",
         "id": "odpt.Station:Keikyu.Main.Yokohama",
-        "railway": "Keikyu.Main"
+        "railway": "Keikyu"
     },
     {
         "name": "横浜",
         "id": "odpt.Station:Tokyu.Toyoko.Yokohama",
-        "railway": "Tokyu.Toyoko"
+        "railway": "Tokyu"
     },
     {
         "name": "横浜",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Yokohama",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "横浜",
         "id": "odpt.Station:Minatomirai.Minatomirai.Yokohama",
-        "railway": "Minatomirai.Minatomirai"
+        "railway": "Minatomirai"
     },
     {
         "name": "横浜",
         "id": "odpt.Station:JR-East.KeihinTohokuNegishi.Yokohama",
-        "railway": "JR-East.KeihinTohokuNegishi"
+        "railway": "JR-East"
     },
     {
         "name": "横浜",
         "id": "odpt.Station:JR-East.ShonanShinjuku.Yokohama",
-        "railway": "JR-East.ShonanShinjuku"
+        "railway": "JR-East"
     },
     {
         "name": "横浜",
         "id": "odpt.Station:JR-East.Tokaido.Yokohama",
-        "railway": "JR-East.Tokaido"
+        "railway": "JR-East"
     },
     {
         "name": "横浜",
         "id": "odpt.Station:JR-East.Yokosuka.Yokohama",
-        "railway": "JR-East.Yokosuka"
+        "railway": "JR-East"
     },
     {
         "name": "橋本",
         "id": "odpt.Station:Keio.Sagamihara.Hashimoto",
-        "railway": "Keio.Sagamihara"
+        "railway": "Keio"
     },
     {
         "name": "武蔵小山",
         "id": "odpt.Station:Tokyu.Meguro.MusashiKoyama",
-        "railway": "Tokyu.Meguro"
+        "railway": "Tokyu"
     },
     {
         "name": "武蔵小杉",
         "id": "odpt.Station:Tokyu.Meguro.MusashiKosugi",
-        "railway": "Tokyu.Meguro"
+        "railway": "Tokyu"
     },
     {
         "name": "武蔵小杉",
         "id": "odpt.Station:Tokyu.Toyoko.MusashiKosugi",
-        "railway": "Tokyu.Toyoko"
+        "railway": "Tokyu"
     },
     {
         "name": "武蔵浦和",
         "id": "odpt.Station:JR-East.SaikyoKawagoe.MusashiUrawa",
-        "railway": "JR-East.SaikyoKawagoe"
+        "railway": "JR-East"
     },
     {
         "name": "水天宮前",
         "id": "odpt.Station:TokyoMetro.Hanzomon.Suitengumae",
-        "railway": "TokyoMetro.Hanzomon"
+        "railway": "TokyoMetro"
     },
     {
         "name": "水道橋",
         "id": "odpt.Station:Toei.Mita.Suidobashi",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "水道橋",
         "id": "odpt.Station:JR-East.ChuoSobuLocal.Suidobashi",
-        "railway": "JR-East.ChuoSobuLocal"
+        "railway": "JR-East"
     },
     {
         "name": "氷川台",
         "id": "odpt.Station:TokyoMetro.Fukutoshin.Hikawadai",
-        "railway": "TokyoMetro.Fukutoshin"
+        "railway": "TokyoMetro"
     },
     {
         "name": "氷川台",
         "id": "odpt.Station:TokyoMetro.Yurakucho.Hikawadai",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "永田町",
         "id": "odpt.Station:TokyoMetro.Hanzomon.Nagatacho",
-        "railway": "TokyoMetro.Hanzomon"
+        "railway": "TokyoMetro"
     },
     {
         "name": "永田町",
         "id": "odpt.Station:TokyoMetro.Namboku.Nagatacho",
-        "railway": "TokyoMetro.Namboku"
+        "railway": "TokyoMetro"
     },
     {
         "name": "永田町",
         "id": "odpt.Station:TokyoMetro.Yurakucho.Nagatacho",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "汐留",
         "id": "odpt.Station:Yurikamome.Yurikamome.Shiodome",
-        "railway": "Yurikamome.Yurikamome"
+        "railway": "Yurikamome"
     },
     {
         "name": "汐留",
         "id": "odpt.Station:Toei.Oedo.Shiodome",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "江北",
         "id": "odpt.Station:Toei.NipporiToneri.Kohoku",
-        "railway": "Toei.NipporiToneri"
+        "railway": "Toei"
     },
     {
         "name": "江戸川橋",
         "id": "odpt.Station:TokyoMetro.Yurakucho.Edogawabashi",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "池袋",
         "id": "odpt.Station:Seibu.Ikebukuro.Ikebukuro",
-        "railway": "Seibu.Ikebukuro"
+        "railway": "Seibu"
     },
     {
         "name": "池袋",
         "id": "odpt.Station:Tobu.Tojo.Ikebukuro",
-        "railway": "Tobu.Tojo"
+        "railway": "Tobu"
     },
     {
         "name": "池袋",
         "id": "odpt.Station:TokyoMetro.Fukutoshin.Ikebukuro",
-        "railway": "TokyoMetro.Fukutoshin"
+        "railway": "TokyoMetro"
     },
     {
         "name": "池袋",
         "id": "odpt.Station:TokyoMetro.Marunouchi.Ikebukuro",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "池袋",
         "id": "odpt.Station:TokyoMetro.Yurakucho.Ikebukuro",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "池袋",
         "id": "odpt.Station:JR-East.SaikyoKawagoe.Ikebukuro",
-        "railway": "JR-East.SaikyoKawagoe"
+        "railway": "JR-East"
     },
     {
         "name": "池袋",
         "id": "odpt.Station:JR-East.ShonanShinjuku.Ikebukuro",
-        "railway": "JR-East.ShonanShinjuku"
+        "railway": "JR-East"
     },
     {
         "name": "池袋",
         "id": "odpt.Station:JR-East.Yamanote.Ikebukuro",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "泉体育館",
         "id": "odpt.Station:TamaMonorail.TamaMonorail.IzumiTaiikukan",
-        "railway": "TamaMonorail.TamaMonorail"
+        "railway": "TamaMonorail"
     },
     {
         "name": "泉岳寺",
         "id": "odpt.Station:Toei.Asakusa.Sengakuji",
-        "railway": "Toei.Asakusa"
+        "railway": "Toei"
     },
     {
         "name": "泉岳寺",
         "id": "odpt.Station:Keikyu.Main.Sengakuji",
-        "railway": "Keikyu.Main"
+        "railway": "Keikyu"
     },
     {
         "name": "津田沼",
         "id": "odpt.Station:JR-East.ChuoSobuLocal.Tsudanuma",
-        "railway": "JR-East.ChuoSobuLocal"
+        "railway": "JR-East"
     },
     {
         "name": "流山おおたかの森",
         "id": "odpt.Station:MIR.TsukubaExpress.NagareyamaOtakanomori",
-        "railway": "MIR.TsukubaExpress"
+        "railway": "MIR"
     },
     {
         "name": "流山おおたかの森",
         "id": "odpt.Station:Tobu.TobuUrbanPark.NagareyamaOtakanomori",
-        "railway": "Tobu.TobuUrbanPark"
+        "railway": "Tobu"
     },
     {
         "name": "流山セントラルパーク",
         "id": "odpt.Station:MIR.TsukubaExpress.NagareyamaCentralPark",
-        "railway": "MIR.TsukubaExpress"
+        "railway": "MIR"
     },
     {
         "name": "浅草",
         "id": "odpt.Station:Toei.Asakusa.Asakusa",
-        "railway": "Toei.Asakusa"
+        "railway": "Toei"
     },
     {
         "name": "浅草",
         "id": "odpt.Station:MIR.TsukubaExpress.Asakusa",
-        "railway": "MIR.TsukubaExpress"
+        "railway": "MIR"
     },
     {
         "name": "浅草",
         "id": "odpt.Station:Tobu.TobuSkytree.Asakusa",
-        "railway": "Tobu.TobuSkytree"
+        "railway": "Tobu"
     },
     {
         "name": "浅草",
         "id": "odpt.Station:TokyoMetro.Ginza.Asakusa",
-        "railway": "TokyoMetro.Ginza"
+        "railway": "TokyoMetro"
     },
     {
         "name": "浅草橋",
         "id": "odpt.Station:Toei.Asakusa.Asakusabashi",
-        "railway": "Toei.Asakusa"
+        "railway": "Toei"
     },
     {
         "name": "浅草橋",
         "id": "odpt.Station:JR-East.ChuoSobuLocal.Asakusabashi",
-        "railway": "JR-East.ChuoSobuLocal"
+        "railway": "JR-East"
     },
     {
         "name": "浜松町",
         "id": "odpt.Station:JR-East.KeihinTohokuNegishi.Hamamatsucho",
-        "railway": "JR-East.KeihinTohokuNegishi"
+        "railway": "JR-East"
     },
     {
         "name": "浜松町",
         "id": "odpt.Station:JR-East.Yamanote.Hamamatsucho",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "浜松町",
         "id": "odpt.Station:TokyoMonorail.HanedaAirport.Hamamatsucho",
-        "railway": "TokyoMonorail.HanedaAirport"
+        "railway": "TokyoMonorail"
     },
     {
         "name": "浜町",
         "id": "odpt.Station:Toei.Shinjuku.Hamacho",
-        "railway": "Toei.Shinjuku"
+        "railway": "Toei"
     },
     {
         "name": "浦和美園",
         "id": "odpt.Station:SaitamaRailway.SaitamaRailway.UrawaMisono",
-        "railway": "SaitamaRailway.SaitamaRailway"
+        "railway": "SaitamaRailway"
     },
     {
         "name": "浦安",
         "id": "odpt.Station:TokyoMetro.Tozai.Urayasu",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "浦賀",
         "id": "odpt.Station:Keikyu.Main.Uraga",
-        "railway": "Keikyu.Main"
+        "railway": "Keikyu"
     },
     {
         "name": "海老名",
         "id": "odpt.Station:Sotetsu.Main.Ebina",
-        "railway": "Sotetsu.Main"
+        "railway": "Sotetsu"
     },
     {
         "name": "海老名",
         "id": "odpt.Station:Odakyu.Odawara.Ebina",
-        "railway": "Odakyu.Odawara"
+        "railway": "Odakyu"
     },
     {
         "name": "淡路町",
         "id": "odpt.Station:TokyoMetro.Marunouchi.Awajicho",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "清澄白河",
         "id": "odpt.Station:Toei.Oedo.KiyosumiShirakawa",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "清澄白河",
         "id": "odpt.Station:TokyoMetro.Hanzomon.KiyosumiShirakawa",
-        "railway": "TokyoMetro.Hanzomon"
+        "railway": "TokyoMetro"
     },
     {
         "name": "清瀬",
         "id": "odpt.Station:Seibu.Ikebukuro.Kiyose",
-        "railway": "Seibu.Ikebukuro"
+        "railway": "Seibu"
     },
     {
         "name": "渋谷",
         "id": "odpt.Station:Tokyu.DenEnToshi.Shibuya",
-        "railway": "Tokyu.DenEnToshi"
+        "railway": "Tokyu"
     },
     {
         "name": "渋谷",
         "id": "odpt.Station:Tokyu.Toyoko.Shibuya",
-        "railway": "Tokyu.Toyoko"
+        "railway": "Tokyu"
     },
     {
         "name": "渋谷",
         "id": "odpt.Station:TokyoMetro.Fukutoshin.Shibuya",
-        "railway": "TokyoMetro.Fukutoshin"
+        "railway": "TokyoMetro"
     },
     {
         "name": "渋谷",
         "id": "odpt.Station:TokyoMetro.Ginza.Shibuya",
-        "railway": "TokyoMetro.Ginza"
+        "railway": "TokyoMetro"
     },
     {
         "name": "渋谷",
         "id": "odpt.Station:TokyoMetro.Hanzomon.Shibuya",
-        "railway": "TokyoMetro.Hanzomon"
+        "railway": "TokyoMetro"
     },
     {
         "name": "渋谷",
         "id": "odpt.Station:Keio.Inokashira.Shibuya",
-        "railway": "Keio.Inokashira"
+        "railway": "Keio"
     },
     {
         "name": "渋谷",
         "id": "odpt.Station:JR-East.SaikyoKawagoe.Shibuya",
-        "railway": "JR-East.SaikyoKawagoe"
+        "railway": "JR-East"
     },
     {
         "name": "渋谷",
         "id": "odpt.Station:JR-East.ShonanShinjuku.Shibuya",
-        "railway": "JR-East.ShonanShinjuku"
+        "railway": "JR-East"
     },
     {
         "name": "渋谷",
         "id": "odpt.Station:JR-East.Yamanote.Shibuya",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "港南中央",
         "id": "odpt.Station:YokohamaMunicipal.Blue.KonanChuo",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "湘南台",
         "id": "odpt.Station:Sotetsu.Izumino.Shonandai",
-        "railway": "Sotetsu.Izumino"
+        "railway": "Sotetsu"
     },
     {
         "name": "湘南台",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Shonandai",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "湘南台",
         "id": "odpt.Station:Odakyu.Enoshima.Shonandai",
-        "railway": "Odakyu.Enoshima"
+        "railway": "Odakyu"
     },
     {
         "name": "湯島",
         "id": "odpt.Station:TokyoMetro.Chiyoda.Yushima",
-        "railway": "TokyoMetro.Chiyoda"
+        "railway": "TokyoMetro"
     },
     {
         "name": "溜池山王",
         "id": "odpt.Station:TokyoMetro.Ginza.TameikeSanno",
-        "railway": "TokyoMetro.Ginza"
+        "railway": "TokyoMetro"
     },
     {
         "name": "溜池山王",
         "id": "odpt.Station:TokyoMetro.Namboku.TameikeSanno",
-        "railway": "TokyoMetro.Namboku"
+        "railway": "TokyoMetro"
     },
     {
         "name": "滝野川一丁目",
         "id": "odpt.Station:Toei.Arakawa.TakinogawaItchome",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "熊野前",
         "id": "odpt.Station:Toei.Arakawa.Kumanomae",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "熊野前",
         "id": "odpt.Station:Toei.NipporiToneri.Kumanomae",
-        "railway": "Toei.NipporiToneri"
+        "railway": "Toei"
     },
     {
         "name": "片倉町",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Katakuracho",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "牛込柳町",
         "id": "odpt.Station:Toei.Oedo.UshigomeYanagicho",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "牛込神楽坂",
         "id": "odpt.Station:Toei.Oedo.UshigomeKagurazaka",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "玉川上水",
         "id": "odpt.Station:TamaMonorail.TamaMonorail.TamagawaJosui",
-        "railway": "TamaMonorail.TamaMonorail"
+        "railway": "TamaMonorail"
     },
     {
         "name": "玉川上水",
         "id": "odpt.Station:Seibu.Haijima.TamagawaJosui",
-        "railway": "Seibu.Haijima"
+        "railway": "Seibu"
     },
     {
         "name": "王子",
         "id": "odpt.Station:JR-East.KeihinTohokuNegishi.Oji",
-        "railway": "JR-East.KeihinTohokuNegishi"
+        "railway": "JR-East"
     },
     {
         "name": "王子",
         "id": "odpt.Station:TokyoMetro.Namboku.Oji",
-        "railway": "TokyoMetro.Namboku"
+        "railway": "TokyoMetro"
     },
     {
         "name": "王子神谷",
         "id": "odpt.Station:TokyoMetro.Namboku.OjiKamiya",
-        "railway": "TokyoMetro.Namboku"
+        "railway": "TokyoMetro"
     },
     {
         "name": "王子駅前",
         "id": "odpt.Station:Toei.Arakawa.OjiEkimae",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "瑞江",
         "id": "odpt.Station:Toei.Shinjuku.Mizue",
-        "railway": "Toei.Shinjuku"
+        "railway": "Toei"
     },
     {
         "name": "田原町",
         "id": "odpt.Station:TokyoMetro.Ginza.Tawaramachi",
-        "railway": "TokyoMetro.Ginza"
+        "railway": "TokyoMetro"
     },
     {
         "name": "田町",
         "id": "odpt.Station:JR-East.KeihinTohokuNegishi.Tamachi",
-        "railway": "JR-East.KeihinTohokuNegishi"
+        "railway": "JR-East"
     },
     {
         "name": "田町",
         "id": "odpt.Station:JR-East.Yamanote.Tamachi",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "甲州街道",
         "id": "odpt.Station:TamaMonorail.TamaMonorail.Koshukaido",
-        "railway": "TamaMonorail.TamaMonorail"
+        "railway": "TamaMonorail"
     },
     {
         "name": "町屋",
         "id": "odpt.Station:Keisei.Main.Machiya",
-        "railway": "Keisei.Main"
+        "railway": "Keisei"
     },
     {
         "name": "町屋",
         "id": "odpt.Station:TokyoMetro.Chiyoda.Machiya",
-        "railway": "TokyoMetro.Chiyoda"
+        "railway": "TokyoMetro"
     },
     {
         "name": "町屋二丁目",
         "id": "odpt.Station:Toei.Arakawa.MachiyaNichome",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "町屋駅前",
         "id": "odpt.Station:Toei.Arakawa.MachiyaEkimae",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "町田",
         "id": "odpt.Station:Odakyu.Odawara.Machida",
-        "railway": "Odakyu.Odawara"
+        "railway": "Odakyu"
     },
     {
         "name": "白山",
         "id": "odpt.Station:Toei.Mita.Hakusan",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "白金台",
         "id": "odpt.Station:Toei.Mita.Shirokanedai",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "白金台",
         "id": "odpt.Station:TokyoMetro.Namboku.Shirokanedai",
-        "railway": "TokyoMetro.Namboku"
+        "railway": "TokyoMetro"
     },
     {
         "name": "白金高輪",
         "id": "odpt.Station:Toei.Mita.ShirokaneTakanawa",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "白金高輪",
         "id": "odpt.Station:TokyoMetro.Namboku.ShirokaneTakanawa",
-        "railway": "TokyoMetro.Namboku"
+        "railway": "TokyoMetro"
     },
     {
         "name": "目黒",
         "id": "odpt.Station:Toei.Mita.Meguro",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "目黒",
         "id": "odpt.Station:Tokyu.Meguro.Meguro",
-        "railway": "Tokyu.Meguro"
+        "railway": "Tokyu"
     },
     {
         "name": "目黒",
         "id": "odpt.Station:TokyoMetro.Namboku.Meguro",
-        "railway": "TokyoMetro.Namboku"
+        "railway": "TokyoMetro"
     },
     {
         "name": "目黒",
         "id": "odpt.Station:JR-East.Yamanote.Meguro",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "相模大野",
         "id": "odpt.Station:Odakyu.Odawara.SagamiOno",
-        "railway": "Odakyu.Odawara"
+        "railway": "Odakyu"
     },
     {
         "name": "石神井公園",
         "id": "odpt.Station:Seibu.Ikebukuro.ShakujiiKoen",
-        "railway": "Seibu.Ikebukuro"
+        "railway": "Seibu"
     },
     {
         "name": "砂川七番",
         "id": "odpt.Station:TamaMonorail.TamaMonorail.SunagawaNanaban",
-        "railway": "TamaMonorail.TamaMonorail"
+        "railway": "TamaMonorail"
     },
     {
         "name": "研究学園",
         "id": "odpt.Station:MIR.TsukubaExpress.KenkyuGakuen",
-        "railway": "MIR.TsukubaExpress"
+        "railway": "MIR"
     },
     {
         "name": "神保町",
         "id": "odpt.Station:Toei.Mita.Jimbocho",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "神保町",
         "id": "odpt.Station:Toei.Shinjuku.Jimbocho",
-        "railway": "Toei.Shinjuku"
+        "railway": "Toei"
     },
     {
         "name": "神保町",
         "id": "odpt.Station:TokyoMetro.Hanzomon.Jimbocho",
-        "railway": "TokyoMetro.Hanzomon"
+        "railway": "TokyoMetro"
     },
     {
         "name": "神奈川新町",
         "id": "odpt.Station:Keikyu.Main.KanagawaShimmachi",
-        "railway": "Keikyu.Main"
+        "railway": "Keikyu"
     },
     {
         "name": "神楽坂",
         "id": "odpt.Station:TokyoMetro.Tozai.Kagurazaka",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "神田",
         "id": "odpt.Station:JR-East.ChuoRapid.Kanda",
-        "railway": "JR-East.ChuoRapid"
+        "railway": "JR-East"
     },
     {
         "name": "神田",
         "id": "odpt.Station:JR-East.KeihinTohokuNegishi.Kanda",
-        "railway": "JR-East.KeihinTohokuNegishi"
+        "railway": "JR-East"
     },
     {
         "name": "神田",
         "id": "odpt.Station:JR-East.Yamanote.Kanda",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "神田",
         "id": "odpt.Station:TokyoMetro.Ginza.Kanda",
-        "railway": "TokyoMetro.Ginza"
+        "railway": "TokyoMetro"
     },
     {
         "name": "神谷町",
         "id": "odpt.Station:TokyoMetro.Hibiya.Kamiyacho",
-        "railway": "TokyoMetro.Hibiya"
+        "railway": "TokyoMetro"
     },
     {
         "name": "秋葉原",
         "id": "odpt.Station:MIR.TsukubaExpress.Akihabara",
-        "railway": "MIR.TsukubaExpress"
+        "railway": "MIR"
     },
     {
         "name": "秋葉原",
         "id": "odpt.Station:JR-East.ChuoSobuLocal.Akihabara",
-        "railway": "JR-East.ChuoSobuLocal"
+        "railway": "JR-East"
     },
     {
         "name": "秋葉原",
         "id": "odpt.Station:JR-East.KeihinTohokuNegishi.Akihabara",
-        "railway": "JR-East.KeihinTohokuNegishi"
+        "railway": "JR-East"
     },
     {
         "name": "秋葉原",
         "id": "odpt.Station:JR-East.Yamanote.Akihabara",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "秋葉原",
         "id": "odpt.Station:TokyoMetro.Hibiya.Akihabara",
-        "railway": "TokyoMetro.Hibiya"
+        "railway": "TokyoMetro"
     },
     {
         "name": "程久保",
         "id": "odpt.Station:TamaMonorail.TamaMonorail.Hodokubo",
-        "railway": "TamaMonorail.TamaMonorail"
+        "railway": "TamaMonorail"
     },
     {
         "name": "稲荷町",
         "id": "odpt.Station:TokyoMetro.Ginza.Inaricho",
-        "railway": "TokyoMetro.Ginza"
+        "railway": "TokyoMetro"
     },
     {
         "name": "立場",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Tateba",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "立川",
         "id": "odpt.Station:JR-East.ChuoRapid.Tachikawa",
-        "railway": "JR-East.ChuoRapid"
+        "railway": "JR-East"
     },
     {
         "name": "立川",
         "id": "odpt.Station:JR-East.Nambu.Tachikawa",
-        "railway": "JR-East.Nambu"
+        "railway": "JR-East"
     },
     {
         "name": "立川",
         "id": "odpt.Station:JR-East.Ome.Tachikawa",
-        "railway": "JR-East.Ome"
+        "railway": "JR-East"
     },
     {
         "name": "立川北",
         "id": "odpt.Station:TamaMonorail.TamaMonorail.TachikawaKita",
-        "railway": "TamaMonorail.TamaMonorail"
+        "railway": "TamaMonorail"
     },
     {
         "name": "立川南",
         "id": "odpt.Station:TamaMonorail.TamaMonorail.TachikawaMinami",
-        "railway": "TamaMonorail.TamaMonorail"
+        "railway": "TamaMonorail"
     },
     {
         "name": "立飛",
         "id": "odpt.Station:TamaMonorail.TamaMonorail.Tachihi",
-        "railway": "TamaMonorail.TamaMonorail"
+        "railway": "TamaMonorail"
     },
     {
         "name": "竹ノ塚",
         "id": "odpt.Station:Tobu.TobuSkytree.Takenotsuka",
-        "railway": "Tobu.TobuSkytree"
+        "railway": "Tobu"
     },
     {
         "name": "竹橋",
         "id": "odpt.Station:TokyoMetro.Tozai.Takebashi",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "竹芝",
         "id": "odpt.Station:Yurikamome.Yurikamome.Takeshiba",
-        "railway": "Yurikamome.Yurikamome"
+        "railway": "Yurikamome"
     },
     {
         "name": "笹塚",
         "id": "odpt.Station:Keio.KeioNew.Sasazuka",
-        "railway": "Keio.KeioNew"
+        "railway": "Keio"
     },
     {
         "name": "箱根湯本",
         "id": "odpt.Station:OdakyuHakone.HakoneTozan.HakoneYumoto",
-        "railway": "OdakyuHakone.HakoneTozan"
+        "railway": "OdakyuHakone"
     },
     {
         "name": "築地",
         "id": "odpt.Station:TokyoMetro.Hibiya.Tsukiji",
-        "railway": "TokyoMetro.Hibiya"
+        "railway": "TokyoMetro"
     },
     {
         "name": "築地市場",
         "id": "odpt.Station:Toei.Oedo.Tsukijishijo",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "篠崎",
         "id": "odpt.Station:Toei.Shinjuku.Shinozaki",
-        "railway": "Toei.Shinjuku"
+        "railway": "Toei"
     },
     {
         "name": "綾瀬",
         "id": "odpt.Station:JR-East.JobanLocal.Ayase",
-        "railway": "JR-East.JobanLocal"
+        "railway": "JR-East"
     },
     {
         "name": "綾瀬",
         "id": "odpt.Station:TokyoMetro.Chiyoda.Ayase",
-        "railway": "TokyoMetro.Chiyoda"
+        "railway": "TokyoMetro"
     },
     {
         "name": "練馬",
         "id": "odpt.Station:Seibu.Ikebukuro.Nerima",
-        "railway": "Seibu.Ikebukuro"
+        "railway": "Seibu"
     },
     {
         "name": "練馬",
         "id": "odpt.Station:Toei.Oedo.Nerima",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "練馬",
         "id": "odpt.Station:Seibu.SeibuYurakucho.Nerima",
-        "railway": "Seibu.SeibuYurakucho"
+        "railway": "Seibu"
     },
     {
         "name": "練馬",
         "id": "odpt.Station:Seibu.Toshima.Nerima",
-        "railway": "Seibu.Toshima"
+        "railway": "Seibu"
     },
     {
         "name": "練馬春日町",
         "id": "odpt.Station:Toei.Oedo.NerimaKasugacho",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "羽田空港第１・第２ターミナル",
         "id": "odpt.Station:Keikyu.Airport.HanedaAirportTerminal1and2",
-        "railway": "Keikyu.Airport"
+        "railway": "Keikyu"
     },
     {
         "name": "自由が丘",
         "id": "odpt.Station:Tokyu.Toyoko.Jiyugaoka",
-        "railway": "Tokyu.Toyoko"
+        "railway": "Tokyu"
     },
     {
         "name": "舎人",
         "id": "odpt.Station:Toei.NipporiToneri.Toneri",
-        "railway": "Toei.NipporiToneri"
+        "railway": "Toei"
     },
     {
         "name": "舎人公園",
         "id": "odpt.Station:Toei.NipporiToneri.ToneriKoen",
-        "railway": "Toei.NipporiToneri"
+        "railway": "Toei"
     },
     {
         "name": "舞岡",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Maioka",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "船堀",
         "id": "odpt.Station:Toei.Shinjuku.Funabori",
-        "railway": "Toei.Shinjuku"
+        "railway": "Toei"
     },
     {
         "name": "芝公園",
         "id": "odpt.Station:Toei.Mita.Shibakoen",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "芝山千代田",
         "id": "odpt.Station:Shibayama.Shibayama.ShibayamaChiyoda",
-        "railway": "Shibayama.Shibayama"
+        "railway": "Shibayama"
     },
     {
         "name": "芝浦ふ頭",
         "id": "odpt.Station:Yurikamome.Yurikamome.ShibauraFuto",
-        "railway": "Yurikamome.Yurikamome"
+        "railway": "Yurikamome"
     },
     {
         "name": "若松河田",
         "id": "odpt.Station:Toei.Oedo.WakamatsuKawada",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "若葉台",
         "id": "odpt.Station:Keio.Sagamihara.Wakabadai",
-        "railway": "Keio.Sagamihara"
+        "railway": "Keio"
     },
     {
         "name": "茅場町",
         "id": "odpt.Station:TokyoMetro.Hibiya.Kayabacho",
-        "railway": "TokyoMetro.Hibiya"
+        "railway": "TokyoMetro"
     },
     {
         "name": "茅場町",
         "id": "odpt.Station:TokyoMetro.Tozai.Kayabacho",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "茗荷谷",
         "id": "odpt.Station:TokyoMetro.Marunouchi.Myogadani",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "草加",
         "id": "odpt.Station:Tobu.TobuSkytree.Soka",
-        "railway": "Tobu.TobuSkytree"
+        "railway": "Tobu"
     },
     {
         "name": "荒川一中前",
         "id": "odpt.Station:Toei.Arakawa.ArakawaItchumae",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "荒川七丁目",
         "id": "odpt.Station:Toei.Arakawa.ArakawaNanachome",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "荒川二丁目",
         "id": "odpt.Station:Toei.Arakawa.ArakawaNichome",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "荒川区役所前",
         "id": "odpt.Station:Toei.Arakawa.Arakawakuyakushomae",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "荒川車庫前",
         "id": "odpt.Station:Toei.Arakawa.ArakawaShakomae",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "荒川遊園地前",
         "id": "odpt.Station:Toei.Arakawa.ArakawaYuenchimae",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "荻窪",
         "id": "odpt.Station:JR-East.ChuoSobuLocal.Ogikubo",
-        "railway": "JR-East.ChuoSobuLocal"
+        "railway": "JR-East"
     },
     {
         "name": "荻窪",
         "id": "odpt.Station:JR-East.ChuoRapid.Ogikubo",
-        "railway": "JR-East.ChuoRapid"
+        "railway": "JR-East"
     },
     {
         "name": "荻窪",
         "id": "odpt.Station:TokyoMetro.Marunouchi.Ogikubo",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "菊名",
         "id": "odpt.Station:Tokyu.Toyoko.Kikuna",
-        "railway": "Tokyu.Toyoko"
+        "railway": "Tokyu"
     },
     {
         "name": "菊川",
         "id": "odpt.Station:Toei.Shinjuku.Kikukawa",
-        "railway": "Toei.Shinjuku"
+        "railway": "Toei"
     },
     {
         "name": "落合",
         "id": "odpt.Station:TokyoMetro.Tozai.Ochiai",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "落合南長崎",
         "id": "odpt.Station:Toei.Oedo.OchiaiMinamiNagasaki",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "葛西",
         "id": "odpt.Station:TokyoMetro.Tozai.Kasai",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "蒔田",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Maita",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "蓮根",
         "id": "odpt.Station:Toei.Mita.Hasune",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "蔵前",
         "id": "odpt.Station:Toei.Asakusa.Kuramae",
-        "railway": "Toei.Asakusa"
+        "railway": "Toei"
     },
     {
         "name": "蔵前",
         "id": "odpt.Station:Toei.Oedo.Kuramae",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "虎ノ門",
         "id": "odpt.Station:TokyoMetro.Ginza.Toranomon",
-        "railway": "TokyoMetro.Ginza"
+        "railway": "TokyoMetro"
     },
     {
         "name": "虎ノ門ヒルズ",
         "id": "odpt.Station:TokyoMetro.Hibiya.ToranomonHills",
-        "railway": "TokyoMetro.Hibiya"
+        "railway": "TokyoMetro"
     },
     {
         "name": "行徳",
         "id": "odpt.Station:TokyoMetro.Tozai.Gyotoku",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "表参道",
         "id": "odpt.Station:TokyoMetro.Chiyoda.OmoteSando",
-        "railway": "TokyoMetro.Chiyoda"
+        "railway": "TokyoMetro"
     },
     {
         "name": "表参道",
         "id": "odpt.Station:TokyoMetro.Ginza.OmoteSando",
-        "railway": "TokyoMetro.Ginza"
+        "railway": "TokyoMetro"
     },
     {
         "name": "表参道",
         "id": "odpt.Station:TokyoMetro.Hanzomon.OmoteSando",
-        "railway": "TokyoMetro.Hanzomon"
+        "railway": "TokyoMetro"
     },
     {
         "name": "西ケ原",
         "id": "odpt.Station:TokyoMetro.Namboku.Nishigahara",
-        "railway": "TokyoMetro.Namboku"
+        "railway": "TokyoMetro"
     },
     {
         "name": "西ヶ原四丁目",
         "id": "odpt.Station:Toei.Arakawa.NishigaharaYonchome",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "西台",
         "id": "odpt.Station:Toei.Mita.Nishidai",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "西大島",
         "id": "odpt.Station:Toei.Shinjuku.NishiOjima",
-        "railway": "Toei.Shinjuku"
+        "railway": "Toei"
     },
     {
         "name": "西巣鴨",
         "id": "odpt.Station:Toei.Mita.NishiSugamo",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "西所沢",
         "id": "odpt.Station:Seibu.Ikebukuro.NishiTokorozawa",
-        "railway": "Seibu.Ikebukuro"
+        "railway": "Seibu"
     },
     {
         "name": "西新井大師西",
         "id": "odpt.Station:Toei.NipporiToneri.NishiaraidaishiNishi",
-        "railway": "Toei.NipporiToneri"
+        "railway": "Toei"
     },
     {
         "name": "西新宿",
         "id": "odpt.Station:TokyoMetro.Marunouchi.NishiShinjuku",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "西新宿五丁目",
         "id": "odpt.Station:Toei.Oedo.NishiShinjukuGochome",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "西日暮里",
         "id": "odpt.Station:Toei.NipporiToneri.NishiNippori",
-        "railway": "Toei.NipporiToneri"
+        "railway": "Toei"
     },
     {
         "name": "西日暮里",
         "id": "odpt.Station:JR-East.KeihinTohokuNegishi.NishiNippori",
-        "railway": "JR-East.KeihinTohokuNegishi"
+        "railway": "JR-East"
     },
     {
         "name": "西日暮里",
         "id": "odpt.Station:JR-East.Yamanote.NishiNippori",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "西日暮里",
         "id": "odpt.Station:TokyoMetro.Chiyoda.NishiNippori",
-        "railway": "TokyoMetro.Chiyoda"
+        "railway": "TokyoMetro"
     },
     {
         "name": "西早稲田",
         "id": "odpt.Station:TokyoMetro.Fukutoshin.NishiWaseda",
-        "railway": "TokyoMetro.Fukutoshin"
+        "railway": "TokyoMetro"
     },
     {
         "name": "西武新宿",
         "id": "odpt.Station:Seibu.Shinjuku.SeibuShinjuku",
-        "railway": "Seibu.Shinjuku"
+        "railway": "Seibu"
     },
     {
         "name": "西武球場前",
         "id": "odpt.Station:Seibu.Sayama.SeibukyujoMae",
-        "railway": "Seibu.Sayama"
+        "railway": "Seibu"
     },
     {
         "name": "西武秩父",
         "id": "odpt.Station:Seibu.SeibuChichibu.SeibuChichibu",
-        "railway": "Seibu.SeibuChichibu"
+        "railway": "Seibu"
     },
     {
         "name": "西船橋",
         "id": "odpt.Station:JR-East.ChuoSobuLocal.NishiFunabashi",
-        "railway": "JR-East.ChuoSobuLocal"
+        "railway": "JR-East"
     },
     {
         "name": "西船橋",
         "id": "odpt.Station:JR-East.Keiyo.NishiFunabashi",
-        "railway": "JR-East.Keiyo"
+        "railway": "JR-East"
     },
     {
         "name": "西船橋",
         "id": "odpt.Station:JR-East.Musashino.NishiFunabashi",
-        "railway": "JR-East.Musashino"
+        "railway": "JR-East"
     },
     {
         "name": "西船橋",
         "id": "odpt.Station:TokyoMetro.Tozai.NishiFunabashi",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "西船橋",
         "id": "odpt.Station:ToyoRapid.ToyoRapid.NishiFunabashi",
-        "railway": "ToyoRapid.ToyoRapid"
+        "railway": "ToyoRapid"
     },
     {
         "name": "西葛西",
         "id": "odpt.Station:TokyoMetro.Tozai.NishiKasai",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "西谷",
         "id": "odpt.Station:Sotetsu.SotetsuShinYokohama.Nishiya",
-        "railway": "Sotetsu.SotetsuShinYokohama"
+        "railway": "Sotetsu"
     },
     {
         "name": "西馬込",
         "id": "odpt.Station:Toei.Asakusa.NishiMagome",
-        "railway": "Toei.Asakusa"
+        "railway": "Toei"
     },
     {
         "name": "西高島平",
         "id": "odpt.Station:Toei.Mita.NishiTakashimadaira",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "要町",
         "id": "odpt.Station:TokyoMetro.Fukutoshin.Kanamecho",
-        "railway": "TokyoMetro.Fukutoshin"
+        "railway": "TokyoMetro"
     },
     {
         "name": "要町",
         "id": "odpt.Station:TokyoMetro.Yurakucho.Kanamecho",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "見沼代親水公園",
         "id": "odpt.Station:Toei.NipporiToneri.MinumadaiShinsuikoen",
-        "railway": "Toei.NipporiToneri"
+        "railway": "Toei"
     },
     {
         "name": "調布",
         "id": "odpt.Station:Keio.Keio.Chofu",
-        "railway": "Keio.Keio"
+        "railway": "Keio"
     },
     {
         "name": "護国寺",
         "id": "odpt.Station:TokyoMetro.Yurakucho.Gokokuji",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "谷在家",
         "id": "odpt.Station:Toei.NipporiToneri.Yazaike",
-        "railway": "Toei.NipporiToneri"
+        "railway": "Toei"
     },
     {
         "name": "豊島園",
         "id": "odpt.Station:Toei.Oedo.Toshimaen",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "豊島園",
         "id": "odpt.Station:Seibu.Toshima.Toshimaen",
-        "railway": "Seibu.Toshima"
+        "railway": "Seibu"
     },
     {
         "name": "豊洲",
         "id": "odpt.Station:Yurikamome.Yurikamome.Toyosu",
-        "railway": "Yurikamome.Yurikamome"
+        "railway": "Yurikamome"
     },
     {
         "name": "豊洲",
         "id": "odpt.Station:TokyoMetro.Yurakucho.Toyosu",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "赤土小学校前",
         "id": "odpt.Station:Toei.NipporiToneri.AkadoShogakkomae",
-        "railway": "Toei.NipporiToneri"
+        "railway": "Toei"
     },
     {
         "name": "赤坂",
         "id": "odpt.Station:TokyoMetro.Chiyoda.Akasaka",
-        "railway": "TokyoMetro.Chiyoda"
+        "railway": "TokyoMetro"
     },
     {
         "name": "赤坂見附",
         "id": "odpt.Station:TokyoMetro.Ginza.AkasakaMitsuke",
-        "railway": "TokyoMetro.Ginza"
+        "railway": "TokyoMetro"
     },
     {
         "name": "赤坂見附",
         "id": "odpt.Station:TokyoMetro.Marunouchi.AkasakaMitsuke",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "赤羽",
         "id": "odpt.Station:JR-East.SaikyoKawagoe.Akabane",
-        "railway": "JR-East.SaikyoKawagoe"
+        "railway": "JR-East"
     },
     {
         "name": "赤羽岩淵",
         "id": "odpt.Station:TokyoMetro.Namboku.AkabaneIwabuchi",
-        "railway": "TokyoMetro.Namboku"
+        "railway": "TokyoMetro"
     },
     {
         "name": "赤羽岩淵",
         "id": "odpt.Station:SaitamaRailway.SaitamaRailway.AkabaneIwabuchi",
-        "railway": "SaitamaRailway.SaitamaRailway"
+        "railway": "SaitamaRailway"
     },
     {
         "name": "赤羽橋",
         "id": "odpt.Station:Toei.Oedo.Akabanebashi",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "足立小台",
         "id": "odpt.Station:Toei.NipporiToneri.AdachiOdai",
-        "railway": "Toei.NipporiToneri"
+        "railway": "Toei"
     },
     {
         "name": "踊場",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Odoriba",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "辰巳",
         "id": "odpt.Station:TokyoMetro.Yurakucho.Tatsumi",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "逗子・葉山",
         "id": "odpt.Station:Keikyu.Zushi.ZushiHayama",
-        "railway": "Keikyu.Zushi"
+        "railway": "Keikyu"
     },
     {
         "name": "都庁前",
         "id": "odpt.Station:Toei.Oedo.Tochomae",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "都筑ふれあいの丘",
         "id": "odpt.Station:YokohamaMunicipal.Green.TsuzukiFureainooka",
-        "railway": "YokohamaMunicipal.Green"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "都電雑司ヶ谷",
         "id": "odpt.Station:Toei.Arakawa.TodenZoshigaya",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "金沢文庫",
         "id": "odpt.Station:Keikyu.Main.KanazawaBunko",
-        "railway": "Keikyu.Main"
+        "railway": "Keikyu"
     },
     {
         "name": "銀座",
         "id": "odpt.Station:TokyoMetro.Ginza.Ginza",
-        "railway": "TokyoMetro.Ginza"
+        "railway": "TokyoMetro"
     },
     {
         "name": "銀座",
         "id": "odpt.Station:TokyoMetro.Hibiya.Ginza",
-        "railway": "TokyoMetro.Hibiya"
+        "railway": "TokyoMetro"
     },
     {
         "name": "銀座",
         "id": "odpt.Station:TokyoMetro.Marunouchi.Ginza",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "銀座一丁目",
         "id": "odpt.Station:TokyoMetro.Yurakucho.GinzaItchome",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "錦糸町",
         "id": "odpt.Station:JR-East.ChuoSobuLocal.Kinshicho",
-        "railway": "JR-East.ChuoSobuLocal"
+        "railway": "JR-East"
     },
     {
         "name": "錦糸町",
         "id": "odpt.Station:JR-East.SobuRapid.Kinshicho",
-        "railway": "JR-East.SobuRapid"
+        "railway": "JR-East"
     },
     {
         "name": "錦糸町",
         "id": "odpt.Station:TokyoMetro.Hanzomon.Kinshicho",
-        "railway": "TokyoMetro.Hanzomon"
+        "railway": "TokyoMetro"
     },
     {
         "name": "長津田",
         "id": "odpt.Station:Tokyu.DenEnToshi.Nagatsuta",
-        "railway": "Tokyu.DenEnToshi"
+        "railway": "Tokyu"
     },
     {
         "name": "門前仲町",
         "id": "odpt.Station:Toei.Oedo.MonzenNakacho",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "門前仲町",
         "id": "odpt.Station:TokyoMetro.Tozai.MonzenNakacho",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "関内",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Kannai",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "関内",
         "id": "odpt.Station:JR-East.KeihinTohokuNegishi.Kannai",
-        "railway": "JR-East.KeihinTohokuNegishi"
+        "railway": "JR-East"
     },
     {
         "name": "阪東橋",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Bandobashi",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "雑司が谷",
         "id": "odpt.Station:TokyoMetro.Fukutoshin.Zoshigaya",
-        "railway": "TokyoMetro.Fukutoshin"
+        "railway": "TokyoMetro"
     },
     {
         "name": "霞ケ関",
         "id": "odpt.Station:TokyoMetro.Chiyoda.Kasumigaseki",
-        "railway": "TokyoMetro.Chiyoda"
+        "railway": "TokyoMetro"
     },
     {
         "name": "霞ケ関",
         "id": "odpt.Station:TokyoMetro.Hibiya.Kasumigaseki",
-        "railway": "TokyoMetro.Hibiya"
+        "railway": "TokyoMetro"
     },
     {
         "name": "霞ケ関",
         "id": "odpt.Station:TokyoMetro.Marunouchi.Kasumigaseki",
-        "railway": "TokyoMetro.Marunouchi"
+        "railway": "TokyoMetro"
     },
     {
         "name": "青井",
         "id": "odpt.Station:MIR.TsukubaExpress.Aoi",
-        "railway": "MIR.TsukubaExpress"
+        "railway": "MIR"
     },
     {
         "name": "青山一丁目",
         "id": "odpt.Station:Toei.Oedo.AoyamaItchome",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "青山一丁目",
         "id": "odpt.Station:TokyoMetro.Ginza.AoyamaItchome",
-        "railway": "TokyoMetro.Ginza"
+        "railway": "TokyoMetro"
     },
     {
         "name": "青山一丁目",
         "id": "odpt.Station:TokyoMetro.Hanzomon.AoyamaItchome",
-        "railway": "TokyoMetro.Hanzomon"
+        "railway": "TokyoMetro"
     },
     {
         "name": "青海",
         "id": "odpt.Station:Yurikamome.Yurikamome.Aomi",
-        "railway": "Yurikamome.Yurikamome"
+        "railway": "Yurikamome"
     },
     {
         "name": "青砥",
         "id": "odpt.Station:Keisei.Oshiage.Aoto",
-        "railway": "Keisei.Oshiage"
+        "railway": "Keisei"
     },
     {
         "name": "面影橋",
         "id": "odpt.Station:Toei.Arakawa.Omokagebashi",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "飛鳥山",
         "id": "odpt.Station:Toei.Arakawa.Asukayama",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "飯田橋",
         "id": "odpt.Station:Toei.Oedo.Iidabashi",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "飯田橋",
         "id": "odpt.Station:JR-East.ChuoSobuLocal.Iidabashi",
-        "railway": "JR-East.ChuoSobuLocal"
+        "railway": "JR-East"
     },
     {
         "name": "飯田橋",
         "id": "odpt.Station:TokyoMetro.Namboku.Iidabashi",
-        "railway": "TokyoMetro.Namboku"
+        "railway": "TokyoMetro"
     },
     {
         "name": "飯田橋",
         "id": "odpt.Station:TokyoMetro.Tozai.Iidabashi",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "飯田橋",
         "id": "odpt.Station:TokyoMetro.Yurakucho.Iidabashi",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "飯能",
         "id": "odpt.Station:Seibu.Ikebukuro.Hanno",
-        "railway": "Seibu.Ikebukuro"
+        "railway": "Seibu"
     },
     {
         "name": "馬喰横山",
         "id": "odpt.Station:Toei.Shinjuku.BakuroYokoyama",
-        "railway": "Toei.Shinjuku"
+        "railway": "Toei"
     },
     {
         "name": "馬喰町",
         "id": "odpt.Station:JR-East.SobuRapid.Bakurocho",
-        "railway": "JR-East.SobuRapid"
+        "railway": "JR-East"
     },
     {
         "name": "馬込",
         "id": "odpt.Station:Toei.Asakusa.Magome",
-        "railway": "Toei.Asakusa"
+        "railway": "Toei"
     },
     {
         "name": "駒込",
         "id": "odpt.Station:JR-East.Yamanote.Komagome",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "駒込",
         "id": "odpt.Station:TokyoMetro.Namboku.Komagome",
-        "railway": "TokyoMetro.Namboku"
+        "railway": "TokyoMetro"
     },
     {
         "name": "高尾",
         "id": "odpt.Station:Keio.Takao.Takao",
-        "railway": "Keio.Takao"
+        "railway": "Keio"
     },
     {
         "name": "高尾山口",
         "id": "odpt.Station:Keio.Takao.Takaosanguchi",
-        "railway": "Keio.Takao"
+        "railway": "Keio"
     },
     {
         "name": "高島平",
         "id": "odpt.Station:Toei.Mita.Takashimadaira",
-        "railway": "Toei.Mita"
+        "railway": "Toei"
     },
     {
         "name": "高島町",
         "id": "odpt.Station:YokohamaMunicipal.Blue.Takashimacho",
-        "railway": "YokohamaMunicipal.Blue"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "高幡不動",
         "id": "odpt.Station:TamaMonorail.TamaMonorail.Takahatafudo",
-        "railway": "TamaMonorail.TamaMonorail"
+        "railway": "TamaMonorail"
     },
     {
         "name": "高幡不動",
         "id": "odpt.Station:Keio.Dobutsuen.Takahatafudo",
-        "railway": "Keio.Dobutsuen"
+        "railway": "Keio"
     },
     {
         "name": "高幡不動",
         "id": "odpt.Station:Keio.Keio.Takahatafudo",
-        "railway": "Keio.Keio"
+        "railway": "Keio"
     },
     {
         "name": "高松",
         "id": "odpt.Station:TamaMonorail.TamaMonorail.Takamatsu",
-        "railway": "TamaMonorail.TamaMonorail"
+        "railway": "TamaMonorail"
     },
     {
         "name": "高田",
         "id": "odpt.Station:YokohamaMunicipal.Green.Takata",
-        "railway": "YokohamaMunicipal.Green"
+        "railway": "YokohamaMunicipal"
     },
     {
         "name": "高田馬場",
         "id": "odpt.Station:Seibu.Shinjuku.Takadanobaba",
-        "railway": "Seibu.Shinjuku"
+        "railway": "Seibu"
     },
     {
         "name": "高田馬場",
         "id": "odpt.Station:TokyoMetro.Tozai.Takadanobaba",
-        "railway": "TokyoMetro.Tozai"
+        "railway": "TokyoMetro"
     },
     {
         "name": "高田馬場",
         "id": "odpt.Station:JR-East.Yamanote.Takadanobaba",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "高輪ゲートウェイ",
         "id": "odpt.Station:JR-East.KeihinTohokuNegishi.TakanawaGateway",
-        "railway": "JR-East.KeihinTohokuNegishi"
+        "railway": "JR-East"
     },
     {
         "name": "高輪ゲートウェイ",
         "id": "odpt.Station:JR-East.Yamanote.TakanawaGateway",
-        "railway": "JR-East.Yamanote"
+        "railway": "JR-East"
     },
     {
         "name": "高輪台",
         "id": "odpt.Station:Toei.Asakusa.Takanawadai",
-        "railway": "Toei.Asakusa"
+        "railway": "Toei"
     },
     {
         "name": "高野",
         "id": "odpt.Station:Toei.NipporiToneri.Koya",
-        "railway": "Toei.NipporiToneri"
+        "railway": "Toei"
     },
     {
         "name": "鬼子母神前",
         "id": "odpt.Station:Toei.Arakawa.Kishibojimmae",
-        "railway": "Toei.Arakawa"
+        "railway": "Toei"
     },
     {
         "name": "鳩ヶ谷",
         "id": "odpt.Station:SaitamaRailway.SaitamaRailway.Hatogaya",
-        "railway": "SaitamaRailway.SaitamaRailway"
+        "railway": "SaitamaRailway"
     },
     {
         "name": "鷺沼",
         "id": "odpt.Station:Tokyu.DenEnToshi.Saginuma",
-        "railway": "Tokyu.DenEnToshi"
+        "railway": "Tokyu"
     },
     {
         "name": "麴町",
         "id": "odpt.Station:TokyoMetro.Yurakucho.Kojimachi",
-        "railway": "TokyoMetro.Yurakucho"
+        "railway": "TokyoMetro"
     },
     {
         "name": "麻布十番",
         "id": "odpt.Station:Toei.Oedo.AzabuJuban",
-        "railway": "Toei.Oedo"
+        "railway": "Toei"
     },
     {
         "name": "麻布十番",
         "id": "odpt.Station:TokyoMetro.Namboku.AzabuJuban",
-        "railway": "TokyoMetro.Namboku"
+        "railway": "TokyoMetro"
     },
 ]
