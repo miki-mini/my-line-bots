@@ -62,35 +62,26 @@
 
 ## 🏗 アーキテクチャ (Architecture)
 
-```mermaid
 graph TD
     User((User))
 
     subgraph Google Cloud Platform
-        CR[Cloud Run <br/> (FastAPI)]
-        Gemini[Gemini 2.5 Flash <br/> (STT & Generate)]
-        GCS[Cloud Storage <br/> (WAV File Hosting)]
+        CR[Cloud Run / FastAPI]
+        Gemini[Gemini 2.5 Flash]
+        GCS[Cloud Storage]
     end
 
     subgraph External Service
-        VV[VOICEVOX Engine <br/> (TTS)]
+        VV[VOICEVOX Engine]
     end
 
-    %% Flow: Audio
-    User -- "1. 音声入力 (Audio)" --> CR
+    User -- "1. 音声入力" --> CR
     CR -- "音声データ" --> Gemini
-    Gemini -- "2. 返答テキスト (猫語尾)" --> CR
+    Gemini -- "2. 返答テキスト" --> CR
     CR -- "テキスト" --> VV
-    VV -- "音声データ (WAV)" --> CR
+    VV -- "WAVデータ" --> CR
     CR -- "WAV保存" --> GCS
-    GCS -- "Public URL" --> CR
-    CR -- "3. 音声メッセージ返信" --> User
-
-    %% Flow: Text
-    User -- "A. テキスト入力" --> CR
-    CR -- "テキスト" --> Gemini
-    Gemini -- "B. 返答テキスト" --> CR
-    CR -- "C. テキスト返信" --> User
-```
+    GCS -- "公開URL" --> CR
+    CR -- "3. 音声返信" --> User
 ---
 Developed by miki-mini
