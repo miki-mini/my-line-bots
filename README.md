@@ -47,7 +47,7 @@ my-line-bots/
 ---
 
 
-([# 🤖 My LINE Bots Collection (どうぶつAIボット集一覧へ)](https://github.com/miki-mini/my-line-bots/tree/main/animals))
+# ([ 🤖 My LINE Bots Collection (どうぶつAIボット集一覧へ)](https://github.com/miki-mini/my-line-bots/tree/main/animals))
 
 
 ---
