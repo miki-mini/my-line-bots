@@ -61,7 +61,7 @@
 ---
 
 ## 🏗 アーキテクチャ (Architecture)
-
+```mermaid
 graph TD
     User((User))
 
@@ -83,5 +83,6 @@ graph TD
     CR -- "WAV保存" --> GCS
     GCS -- "公開URL" --> CR
     CR -- "3. 音声返信" --> User
+```
 ---
 Developed by miki-mini
