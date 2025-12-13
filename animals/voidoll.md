@@ -1,4 +1,3 @@
-```markdown
 # 🤖 おしゃべり Voidoll (猫モード搭載型) / Chatty Voidoll Cat Ver.
 
 | 通常モード（旧） | **猫耳モード（新）** |
