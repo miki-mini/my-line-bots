@@ -74,9 +74,6 @@ from animals.whale import register_whale_handler
 
 # ========================================
 
-# ========================================
-# 🔍 検索モデルラッパー（ここに追加！）
-# ========================================
 class SearchModelWrapper:
     """動物たちが今まで通り使えるようにするラッパー"""
 
@@ -90,20 +87,32 @@ class SearchModelWrapper:
             location=location
         )
         self.model_name = "gemini-2.5-flash"
-        self.config = types.GenerateContentConfig(
-            tools=[types.Tool(google_search=types.GoogleSearch())]
-        )
+        self.types = types  # typesを保存しておく
 
-    def generate_content(self, prompt):
+    def generate_content(self, prompt, generation_config=None):
         """今まで通りの呼び出し方で使える"""
+        from google.genai import types
+
+        # 検索ツールの設定
+        config_dict = {
+            "tools": [types.Tool(google_search=types.GoogleSearch())]
+        }
+
+        # generation_config があればマージ
+        if generation_config:
+            if "temperature" in generation_config:
+                config_dict["temperature"] = generation_config["temperature"]
+            if "max_output_tokens" in generation_config:
+                config_dict["max_output_tokens"] = generation_config["max_output_tokens"]
+
+        config = types.GenerateContentConfig(**config_dict)
+
         response = self.client.models.generate_content(
             model=self.model_name,
             contents=prompt,
-            config=self.config
+            config=config
         )
         return response
-
-# ========================================
 
 
 # --- グローバル変数 ---
