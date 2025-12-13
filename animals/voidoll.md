@@ -1,12 +1,12 @@
-# 🤖 おしゃべり Voidoll (猫モード搭載型) / Chatty Voidoll Cat Ver.
+# 🤖 おしゃべり Voidoll (猫モード搭載型) 🐱/ Chatty Voidoll Cat Ver.
 
-| 通常モード（旧） | **猫耳モード（新）** |
+| 通常モード（旧） | **猫耳モード（新）**🐱
 | :---: | :---: |
 | <img src="images/voidoll2.jpg" width="120" alt="Cool Mode"> | <img src="images/voidoll.jpg" width="120" alt="Cat Mode"> |
 | **知的でクールな女性** | **クールなのに語尾が「にゃ」** |
 
 **「音声認識」×「音声合成」×「人格生成」** を組み合わせた、対話型AIボットです。
-当初はクールな秘書AIとして開発されましたが、アップデートにより**「猫耳」**が生えました。
+当初はクールな秘書AIとして開発されましたが、アップデートにより「猫耳」🐱が生えました。
 高度な知能を持ちながら、どうしても語尾に「にゃ」がついてしまう愛らしいアンドロイドとして、あなたと音声＆テキストでお話しします。
 
 ---
@@ -14,11 +14,11 @@
 ## 🆙 進化ポイント (Evolution Highlights)
 
 ### 🚀 1. マルチモーダル対話へ進化
-以前は「音声」しか聞き取れませんでしたが、現在は**「テキストチャット」**にも対応しました。
+以前は「音声」しか聞き取れませんでしたが、現在は「テキストチャット」にも対応しました。
 電車の中では文字で、お家では声で。いつでもVoidoll猫ちゃんと会話が可能です。
 
 ### 🐈 2. 「猫語翻訳」機能の実装
-ユーザーが「ニャー」「ミャー」と鳴き真似をして音声を送ると、Geminiの高度な推論能力で**「猫語」を翻訳**して返事をします。
+ユーザーが「ニャー」「ミャー」と鳴き真似をして音声を送ると、Geminiの高度な推論能力で「猫語」を翻訳して返事をします。
 （例：「お腹が空いたんですにゃ？ しょうがないご主人様だにゃ...」）
 
 ---
@@ -54,7 +54,7 @@
 * **Language:** Python 3.10+
 * **Framework:** FastAPI
 * **AI Model:** Google Gemini 2.5 Flash (Multimodal)
-* **Voice Engine:** VOICEVOX (Speaker ID: 89 / 58)
+* **Voice Engine:** VOICEVOX (Speaker ID: 89)
 * **Cloud Storage:** Google Cloud Storage (Audio hosting)
 * **Interface:** LINE Messaging API
 
