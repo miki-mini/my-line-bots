@@ -8,7 +8,8 @@
 
 > [!NOTE]
 > ✨ **[Live Demo Portal / デモサイトはこちら](https://usagi-oekaki-service-1032484155743.asia-northeast1.run.app)** ✨
-> ボットたちが集まるポータルサイトを公開しました！(PC / Mobile 対応)
+><br>
+> BOTたちが集まるポータルサイトを公開しました！(PC / Mobile 対応)
 
 ## API Documentation
 
