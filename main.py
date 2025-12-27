@@ -365,7 +365,6 @@ async def rabbit_page():
         with open("static/rabbit.html", "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read(), headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"})
     except FileNotFoundError:
-    except FileNotFoundError:
         return HTMLResponse(content="<h1>Page Not Found</h1>", status_code=404)
 
 @app.get("/capybara", response_class=HTMLResponse)
