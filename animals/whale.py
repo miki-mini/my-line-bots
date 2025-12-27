@@ -114,8 +114,15 @@ def get_whale_reply_content(user_text: str, model=None) -> list:
             results.append({"type": "text", "text": "宇宙船からの応答がありませんでした...🐋💦"})
 
     elif "火星" in user_text:
-        # 火星 (現在機能停止中)
-        results.append({"type": "text", "text": "申し訳ありません...火星との通信は現在、宇宙嵐の影響で途絶えています。🐋🌪️\n（※システム調整のため機能停止中です）"})
+        # 火星API呼び出し
+        mars_data = _get_mars_photo()
+        if mars_data and mars_data.get("url"):
+            rover = mars_data.get("rover", "Unknown Rover")
+            camera = mars_data.get("camera", "Unknown Camera")
+            results.append({"type": "text", "text": f"赤い星から、新しい景色が届きましたよ...🐋🔴\n\n📸 Rover: {rover}\n📷 Camera: {camera}"})
+            results.append({"type": "image", "url": mars_data["url"]})
+        else:
+            results.append({"type": "text", "text": "火星からの通信が少し乱れているようです...🐋🌪️"})
 
     else:
         # === Geminiによる動的返信 (with Fallback) ===
@@ -273,7 +280,7 @@ def _get_mars_photo():
     backup_photos = [
         {"url": "https://upload.wikimedia.org/wikipedia/commons/d/d8/NASA_Mars_Rover.jpg", "rover": "Perseverance", "camera": "SuperCam"},
         {"url": "https://upload.wikimedia.org/wikipedia/commons/f/f4/Curiosity_Self-Portrait_at_Big_Sky_Drilling_Site.jpg", "rover": "Curiosity", "camera": "Mastcam"},
-        {"url": "https://upload.wikimedia.org/wikipedia/commons/a/a2/PIA25178-Perseverance_Rover%27s_Selfie_at_Rochette.jpg", "rover": "Perseverance", "camera": "Mastcam-Z"},
+        {"url": "https://mars.nasa.gov/system/resources/detail_files/26180_PIA24836-web.jpg", "rover": "Perseverance", "camera": "Mastcam-Z"},
         {"url": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Ingenuity_helicopter_on_Mars_surface.jpg", "rover": "Ingenuity", "camera": "Color Camera"},
         {"url": "https://upload.wikimedia.org/wikipedia/commons/e/ea/Mars_Sunset.jpg", "rover": "Curiosity", "camera": "Navigation Camera"},
     ]
