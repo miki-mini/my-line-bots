@@ -277,12 +277,9 @@ def _get_mars_photo():
     print(f"🐋 Mars API Key: {masked_key} (Length: {len(api_key)})")
 
     # バックアップ写真リスト（Wikimedia Commonsなど、LINEが確実に読めるURL）
+    base_url = "https://usagi-oekaki-service-1032484155743.asia-northeast1.run.app"
     backup_photos = [
-        {"url": "https://upload.wikimedia.org/wikipedia/commons/d/d8/NASA_Mars_Rover.jpg", "rover": "Perseverance", "camera": "SuperCam"},
-        {"url": "https://upload.wikimedia.org/wikipedia/commons/f/f4/Curiosity_Self-Portrait_at_Big_Sky_Drilling_Site.jpg", "rover": "Curiosity", "camera": "Mastcam"},
-        {"url": "https://upload.wikimedia.org/wikipedia/commons/c/c2/Mars_Perseverance_Rover_Selfie_at_Rochette.jpg", "rover": "Perseverance", "camera": "Mastcam-Z"},
-        {"url": "https://upload.wikimedia.org/wikipedia/commons/8/86/Ingenuity_helicopter_on_sol_39.jpg", "rover": "Ingenuity", "camera": "Color Camera"},
-        {"url": "https://upload.wikimedia.org/wikipedia/commons/e/ea/Mars_Sunset.jpg", "rover": "Curiosity", "camera": "Navigation Camera"},
+        {"url": f"{base_url}/static/mars_images/backup_mars.jpg", "rover": "Perseverance", "camera": "SuperCam (Backup)"}
     ]
 
     # API試行関数（キーを指定して実行）

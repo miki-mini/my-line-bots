@@ -225,6 +225,9 @@ handler_rabbit = WebhookHandler(RABBIT_CHANNEL_SECRET) if RABBIT_CHANNEL_SECRET 
 # Helper for debugging
 GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID")
 
+# Static Files Mount (Ensure images/CSS are served)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 @app.on_event("startup")
 def startup_event():
     global text_model, db, storage_client, GCS_BUCKET_NAME
