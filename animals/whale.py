@@ -278,11 +278,11 @@ def _get_mars_photo():
 
     # バックアップ写真リスト（Wikimedia Commonsなど、LINEが確実に読めるURL）
     backup_photos = [
-        {"url": "https://mars.nasa.gov/system/resources/detail_files/8727_PIA23727-web.jpg", "rover": "Perseverance", "camera": "Concept Art"},
-        {"url": "https://mars.nasa.gov/system/resources/detail_files/5657_PIA19808-web.jpg", "rover": "Curiosity", "camera": "Mastcam"},
-        {"url": "https://mars.nasa.gov/system/resources/detail_files/26180_PIA24836-web.jpg", "rover": "Perseverance", "camera": "Mastcam-Z"},
-        {"url": "https://mars.nasa.gov/system/resources/detail_files/25927_PIA24653-web.jpg", "rover": "Ingenuity", "camera": "Color Camera"},
-        {"url": "https://mars.nasa.gov/system/resources/detail_files/6453_PIA20748-web.jpg", "rover": "Curiosity", "camera": "Mastcam"},
+        {"url": "https://upload.wikimedia.org/wikipedia/commons/d/d8/NASA_Mars_Rover.jpg", "rover": "Perseverance", "camera": "SuperCam"},
+        {"url": "https://upload.wikimedia.org/wikipedia/commons/f/f4/Curiosity_Self-Portrait_at_Big_Sky_Drilling_Site.jpg", "rover": "Curiosity", "camera": "Mastcam"},
+        {"url": "https://upload.wikimedia.org/wikipedia/commons/c/c2/Mars_Perseverance_Rover_Selfie_at_Rochette.jpg", "rover": "Perseverance", "camera": "Mastcam-Z"},
+        {"url": "https://upload.wikimedia.org/wikipedia/commons/8/86/Ingenuity_helicopter_on_sol_39.jpg", "rover": "Ingenuity", "camera": "Color Camera"},
+        {"url": "https://upload.wikimedia.org/wikipedia/commons/e/ea/Mars_Sunset.jpg", "rover": "Curiosity", "camera": "Navigation Camera"},
     ]
 
     # API試行関数（キーを指定して実行）
