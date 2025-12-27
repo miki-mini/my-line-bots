@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My LINE Bots Portal</title>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            /* Premium Dark Gradient */
+            font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* Fullscreen Canvas for Sparkles */
+        canvas#sparkleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Container */
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        /* Header */
+        header {
+            margin-bottom: 4rem;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            margin: 0;
+            background: linear-gradient(to right, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(165, 180, 252, 0.3);
+            letter-spacing: -1px;
+        }
+
+        p.subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            font-weight: 300;
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            padding: 1rem;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: left;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.02);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: 0.5s;
+        }
+
+        .card:hover::before {
+            left: 100%;
+        }
+
+        .icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover .icon {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        /* status dot */
+        .status {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 10px;
+            height: 10px;
+            background-color: #4ade80;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #4ade80;
+        }
+
+        .status.inactive {
+            background-color: #94a3b8;
+            box-shadow: none;
+        }
+
+        h2 {
+            margin: 0.5rem 0;
+            font-size: 1.5rem;
+            color: #fff;
+        }
+
+        p.desc {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Animation Keyframes */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .container {
+                padding: 2rem 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="sparkleCanvas"></canvas>
+
+    <div class="container">
+        <header>
+            <h1>My LINE Bots</h1>
+            <p class="subtitle">Personal Assistant Collection</p>
+        </header>
+
+        <div class="grid">
+            <!-- Beaver -->
+            <div class="card">
+                <div class="status" title="Active"></div>
+                <div class="icon">🦫</div>
+                <h2>Beaver</h2>
+                <p class="desc">まめなビーバーメモ<br>プリント画像から予定を抽出＆リマインド通知。</p>
+            </div>
+
+            <!-- Bat -->
+            <div class="card">
+                <div class="status" title="Active"></div>
+                <div class="icon">🦇</div>
+                <h2>Bat</h2>
+                <p class="desc">コウモリの番組お知らせ<br>見たい番組を見逃さないようにチェック。</p>
+            </div>
+
+            <!-- Whale -->
+            <a href="/star-whale" class="card" style="text-decoration: none; color: inherit; display: block;">
+                <div class="status" title="Active"></div>
+                <div class="icon">🐋</div>
+                <h2>Star Whale</h2>
+                <p class="desc">星くじらからの光の便り<br>NASAの美麗な写真や、ISSの位置を届けます</p>
+            </a>
+
+            <!-- Owl -->
+            <a href="/owl" class="card" style="text-decoration: none; color: inherit; display: block;">
+                <div class="status"></div>
+                <div class="icon">🦉</div>
+                <h2>Owl</h2>
+                <p class="desc">フクロウ教授画像生成<br>画像生成や、カロリー計算・体重管理のグラフ化を行います。</p>
+            </a>
+
+            <!-- Meerkat -->
+            <div class="card">
+                <div class="status"></div>
+                <div class="icon">🦦</div>
+                <h2>Meerkat</h2>
+                <p class="desc">ミーアキャットの地震警備<br>素早く情報をキャッチして安全をサポート。</p>
+            </div>
+
+            <!-- Rabbit -->
+            <a href="/rabbit" class="card" style="text-decoration: none; color: inherit; display: block;">
+                <div class="status"></div>
+                <div class="icon">🐇</div>
+                <h2>Rabbit</h2>
+                <p class="desc">気ままなウサギ。<br>たまに遊んでくれるかもしれないゲームBot。</p>
+            </a>
+
+            <!-- Frog -->
+            <div class="card">
+                <div class="status"></div>
+                <div class="icon">🐸</div>
+                <h2>Frog</h2>
+                <p class="desc">カエルくんのお天気予報<br>毎朝の天気予報と、現在地の天気をお知らせ。</p>
+            </div>
+
+            <!-- Penguin -->
+            <div class="card">
+                <div class="status"></div>
+                <div class="icon">🐧</div>
+                <h2>Penguin</h2>
+                <p class="desc">スーパー秘書ペンギン<br>メールの下書き作成や、接待のお店選びをサポート。</p>
+            </div>
+
+            <!-- Mole -->
+            <div class="card">
+                <div class="status"></div>
+                <div class="icon">🦡</div>
+                <h2>Mole</h2>
+                <p class="desc">もぐら駅長<br>駅の時刻表検索や、目的地へのルート案内が得意。</p>
+            </div>
+
+            <!-- Capybara -->
+            <a href="/capybara" class="card" style="text-decoration: none; color: inherit; display: block;">
+                <div class="status"></div>
+                <div class="icon">🛀</div>
+                <h2>Capybara</h2>
+                <p class="desc">情報通のカピバラ。<br>最新のAIニュースやトピックを解説してくれます。</p>
+            </a>
+
+            <!-- Fox -->
+            <div class="card">
+                <div class="status inactive"></div>
+                <div class="icon">🦊</div>
+                <h2>Fox</h2>
+                <p class="desc">キツネくんの動画要約<br>YouTube動画要約してくれる</p>
+            </div>
+
+            <!-- Voidoll -->
+            <div class="card">
+                <div class="status inactive"></div>
+                <div class="icon">🤖</div>
+                <h2>Voidoll</h2>
+                <p class="desc">おしゃべりVoidollねこ<br>音声でのやりとりが得意。</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('sparkleCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let particles = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
+                this.alpha = Math.random();
+                this.fadeSpeed = Math.random() * 0.02 + 0.005;
+                this.fadingOut = true;
+                this.color = `hsl(${Math.random() * 60 + 200}, 100%, 80%)`;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.fadingOut) {
+                    this.alpha -= this.fadeSpeed;
+                    if (this.alpha <= 0) {
+                        this.fadingOut = false;
+                        this.reset();
+                        this.alpha = 0;
+                    }
+                } else {
+                    this.alpha += this.fadeSpeed;
+                    if (this.alpha >= 1) {
+                        this.fadingOut = true;
+                    }
+                }
+
+                if (this.x > width) this.x = 0;
+                if (this.x < 0) this.x = width;
+                if (this.y > height) this.y = 0;
+                if (this.y < 0) this.y = height;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.alpha;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function init() {
+            resize();
+            for (let i = 0; i < 200; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', resize);
+        init();
+        animate();
+    </script>
+</body>
+
+</html>

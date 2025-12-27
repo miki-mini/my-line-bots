@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>フクロウ教授の研究室 | 健康管理ダッシュボード</title>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: #1a1c20;
+            --card-bg: #2d3035;
+            --accent: #d4a373;
+            /* Owl Brown */
+            --highlight: #ccd5ae;
+            /* Greenish */
+            --text-main: #e9edc9;
+            --text-sub: #a8a8a8;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            /* Premium Dark Gradient */
+            font-family: 'Zen Maru Gothic', sans-serif;
+            color: var(--text-main);
+            overflow-x: hidden;
+            text-align: center;
+        }
+
+        /* Fullscreen Canvas for Sparkles */
+        canvas#sparkleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 800px;
+            margin: 0 auto;
+            display: grid;
+            gap: 20px;
+            padding: 4rem 2rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            text-align: left;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: var(--highlight);
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Forms */
+        input[type="number"],
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #555;
+            background: #222;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--accent);
+            border: none;
+            border-radius: 8px;
+            color: #1a1c20;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            font-size: 1rem;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        /* Graph Images */
+        .graph-container {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .graph-container img {
+            max-width: 100%;
+            border-radius: 8px;
+            border: 1px solid #555;
+        }
+
+        /* Result Area */
+        .result-box {
+            margin-top: 15px;
+            padding: 15px;
+            background: #222;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result-box.success {
+            border-left: 4px solid var(--highlight);
+            display: block;
+        }
+
+        .result-box.error {
+            border-left: 4px solid #ff6b6b;
+            display: block;
+        }
+
+        .loading {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="sparkleCanvas"></canvas>
+
+    <div class="container">
+        <h1>🦉 フクロウ教授の研究室</h1>
+
+        <div class="container">
+
+            <!-- 1. Image Analysis -->
+            <div class="card">
+                <h2>📸 食事の分析 (カロリー計算)</h2>
+                <p style="color: var(--text-sub); font-size: 0.9rem;">
+                    食事の写真をアップロードすると、教授がカロリーを推測して記録します。
+                </p>
+                <input type="file" id="imageInput" accept="image/*">
+                <button onclick="analyzeImage()">分析開始</button>
+                <div id="analysisResult" class="result-box"></div>
+            </div>
+
+            <!-- 2. Weight Recording -->
+            <div class="card">
+                <h2>⚖️ 体重の記録</h2>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="weightInput" placeholder="例: 60.5" step="0.1">
+                    <button onclick="recordWeight()" style="width: 30%;">記録</button>
+                </div>
+                <div id="weightResult" class="result-box"></div>
+            </div>
+
+            <!-- 3. Graphs -->
+            <div class="card">
+                <h2>📊 健康グラフ</h2>
+                <button onclick="refreshGraphs()"
+                    style="background-color: #444; color: white; margin-bottom: 10px;">グラフを更新</button>
+
+                <div class="graph-container">
+                    <h3>体重推移 (過去7日)</h3>
+                    <img id="weightGraph" src="/api/owl/graph/weight"
+                        onerror="this.src='data:image/svg+xml;base64,...'">
+                </div>
+
+                <div class="graph-container">
+                    <h3>摂取カロリー (過去30食)</h3>
+                    <img id="calorieGraph" src="/api/owl/graph/calories"
+                        onerror="this.src='data:image/svg+xml;base64,...'">
+                </div>
+            </div>
+
+        </div>
+
+        <script>
+            async function analyzeImage() {
+                const input = document.getElementById('imageInput');
+                const resultBox = document.getElementById('analysisResult');
+
+                if (!input.files[0]) {
+                    alert("画像を選択してください！");
+                    return;
+                }
+
+                resultBox.className = "result-box";
+                resultBox.innerHTML = "🦉 分析中... 少々お待ちを...";
+                resultBox.style.display = "block";
+
+                const formData = new FormData();
+                formData.append("image_file", input.files[0]);
+
+                try {
+                    const res = await fetch('/api/owl/analyze_image', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!res.ok) throw new Error("API Error");
+                    const data = await res.json();
+
+                    resultBox.className = "result-box success";
+                    resultBox.innerHTML = `<strong>✅ 分析完了:</strong><br>${data.analysis.replace(/\n/g, '<br>')}`;
+
+                    refreshGraphs();
+
+                } catch (err) {
+                    resultBox.className = "result-box error";
+                    resultBox.innerText = "❌ 分析に失敗しました: " + err.message;
+                }
+            }
+
+            async function recordWeight() {
+                const weight = document.getElementById('weightInput').value;
+                const resultBox = document.getElementById('weightResult');
+
+                if (!weight) {
+                    alert("体重を入力してください");
+                    return;
+                }
+
+                resultBox.className = "result-box";
+                resultBox.innerText = "記録中...";
+                resultBox.style.display = "block";
+
+                try {
+                    const res = await fetch('/api/owl/record_weight', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ weight: parseFloat(weight) })
+                    });
+
+                    if (!res.ok) throw new Error("API Error");
+                    const data = await res.json();
+
+                    resultBox.className = "result-box success";
+                    resultBox.innerText = data.message;
+
+                    refreshGraphs();
+
+                } catch (err) {
+                    resultBox.className = "result-box error";
+                    resultBox.innerText = "❌ 記録失敗: " + err.message;
+                }
+            }
+
+            function refreshGraphs() {
+                // Add timestamp to prevent caching
+                const ts = new Date().getTime();
+                document.getElementById('weightGraph').src = `/api/owl/graph/weight?t=${ts}`;
+                document.getElementById('calorieGraph').src = `/api/owl/graph/calories?t=${ts}`;
+            }
+        </script>
+</body>
+
+</html>

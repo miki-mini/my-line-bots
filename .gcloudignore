@@ -1,0 +1,7 @@
+.git
+.env
+__pycache__
+*.pyc
+.conda
+main_backup.py
+main_full_broken.py

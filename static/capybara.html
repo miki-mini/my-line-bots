@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>カピバラ ニュース&スパ | AI News</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f7f3e8;
+            /* Cream */
+            --primary: #d4a373;
+            /* Wood */
+            --secondary: #ccd5ae;
+            /* Green Tea */
+            --accent: #e9edc9;
+            /* Light Green */
+            --text: #4a403a;
+            /* Coffee */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text);
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* 温泉っぽい湯気アニメーション */
+        .steam-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .steam {
+            position: absolute;
+            bottom: -50px;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            filter: blur(20px);
+            animation: rise 8s infinite ease-in;
+        }
+
+        @keyframes rise {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: translateY(-800px) scale(3);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .icon-large {
+            font-size: 5rem;
+            margin: 10px;
+            animation: bob 3s infinite ease-in-out;
+        }
+
+        @keyframes bob {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 10px rgba(166, 140, 118, 0.2);
+            text-align: left;
+        }
+
+        .card h2 {
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 10px;
+            color: var(--primary);
+            margin-top: 0;
+        }
+
+        button {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            background-color: #b7c296;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            font-family: inherit;
+        }
+
+        .news-content ul,
+        .news-content p {
+            line-height: 1.6;
+        }
+
+        #newsResult,
+        #chatResult {
+            margin-top: 15px;
+            white-space: pre-wrap;
+        }
+
+        .loading {
+            color: #999;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="steam-container" id="steamArea"></div>
+
+    <div class="container">
+        <div class="icon-large">🛀</div>
+        <h1>カピバラ ニュース&スパ</h1>
+        <p>最新の技術ニュースに疲れたら、ここでのんびり。</p>
+
+        <!-- 1. Daily News -->
+        <div class="card">
+            <h2>🗞️ 今日のAIニュース</h2>
+            <p>カピバラが最新のAIトレンドをピックアップして解説します。</p>
+            <button onclick="fetchNews()">今日のニュースを聞く</button>
+            <div id="newsResult"></div>
+        </div>
+
+        <!-- 2. Chat/Search -->
+        <div class="card">
+            <h2>🧼 なんでも相談</h2>
+            <p>気になる用語やニュースを入力してください。</p>
+            <input type="text" id="chatInput" placeholder="例: 今日の株価は？ Geminiって何？">
+            <button onclick="sendChat()" style="background-color: var(--primary);">検索して解説してもらう</button>
+            <div id="chatResult"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // Steam Animation
+        const steamArea = document.getElementById('steamArea');
+        for (let i = 0; i < 10; i++) {
+            const span = document.createElement('span');
+            span.className = 'steam';
+            span.style.left = Math.random() * 100 + '%';
+            span.style.animationDelay = Math.random() * 5 + 's';
+            span.style.width = (Math.random() * 40 + 40) + 'px';
+            steamArea.appendChild(span);
+        }
+
+        async function fetchNews() {
+            const resDiv = document.getElementById('newsResult');
+            resDiv.innerHTML = '<span class="loading">🔍 検索中だっぴ... (10~20秒かかります)</span>';
+
+            try {
+                const res = await fetch('/api/capybara/news');
+                const data = await res.json();
+                resDiv.innerHTML = data.news;
+            } catch (e) {
+                resDiv.innerHTML = '❌ エラーだっぴ...';
+            }
+        }
+
+        async function sendChat() {
+            const input = document.getElementById('chatInput');
+            const resDiv = document.getElementById('chatResult');
+            const msg = input.value.trim();
+
+            if (!msg) return;
+
+            resDiv.innerHTML = '<span class="loading">🛁 考え中だっぴ...</span>';
+
+            try {
+                const res = await fetch('/api/capybara/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg })
+                });
+                const data = await res.json();
+                resDiv.innerText = data.reply;
+            } catch (e) {
+                resDiv.innerHTML = '❌ エラーだっぴ...';
+            }
+        }
+    </script>
+</body>
+
+</html>
