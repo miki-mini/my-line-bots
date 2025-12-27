@@ -29,7 +29,7 @@
 
 | アイコン | 名前 | 役割・機能 | 技術スタック |
 | :---: | :--- | :--- | :--- |
-| <img src="animals/images/beaver.jpg" width="40"> | **まめなビーバー**<br>[(Beaver)](animals/beaver.md) | **予定管理 & OCR**<br>学校のプリントを写真で送るだけで、AIが予定を抽出してリマインド。 | `Gemini Vision` `Firestore` `GAS` |
+| <img src="animals/images/beaver.jpg" width="40"> | **まめなビーバーメモ🦫**<br>[(Beaver)](animals/beaver.md) | **予定管理 & OCR**<br>学校のプリントを写真で送るだけで、AIが予定を抽出してリマインド。 | `Gemini Vision` `Firestore` `GAS` |
 | <img src="animals/images/fox.png" width="40"> | **キツネくん**<br>[(Fox)](animals/fox.md) | **動画要約 & 検索**<br>YouTube動画の内容を要約し、関連情報を検索して深掘り解説。 | `GenAI SDK` `Grounding with Search` |
 | <img src="animals/images/owl.jpg" width="40"> | **フクロウ教授**<br>[(Owl)](animals/owl.md) | **画像生成 & 健康**<br>「〜の絵を描いて」で即座に画像生成。カロリー計算もお手の物。 | `Imagen 3` `Matplotlib` |
 | <img src="animals/images/frog.jpg" width="40"> | **カエルくん**<br>[(Frog)](animals/frog.md) | **天気 & 外出支援**<br>毎朝の天気予報と、位置情報から周辺のおすすめスポットを紹介。 | `Google Maps API` `GAS` |
