@@ -10,6 +10,12 @@
 > ✨ **[Live Demo Portal / デモサイトはこちら](https://usagi-oekaki-service-1032484155743.asia-northeast1.run.app)** ✨
 > ボットたちが集まるポータルサイトを公開しました！(PC / Mobile 対応)
 
+## API Documentation
+
+📖 [Swagger UI](https://usagi-oekaki-service-1032484155743.asia-northeast1.run.app/docs)
+
+※一部のAPIはデモ用にレート制限をかけています
+
 **個性豊かなAIどうぶつたちが、あなたのLINE生活をサポートします。**
 
 このリポジトリは、Google Gemini 2.5 (Flash/Pro) と Google Cloud (Cloud Run, Firestore, Vertex AI) をフル活用した、実用的なLINEボットの集合体です。
