@@ -30,15 +30,15 @@
 | アイコン | 名前 | 役割・機能 | 技術スタック |
 | :---: | :--- | :--- | :--- |
 | <img src="animals/images/beaver.jpg" width="40"> | **まめなビーバーメモ🦫**<br>[(Beaver)](animals/beaver.md) | **予定管理 & OCR**<br>学校のプリントを写真で送るだけで、AIが予定を抽出してリマインド。 | `Gemini Vision` `Firestore` `GAS` |
-| <img src="animals/images/fox.png" width="40"> | **キツネくん**<br>[(Fox)](animals/fox.md) | **動画要約 & 検索**<br>YouTube動画の内容を要約し、関連情報を検索して深掘り解説。 | `GenAI SDK` `Grounding with Search` |
-| <img src="animals/images/owl.jpg" width="40"> | **フクロウ教授**<br>[(Owl)](animals/owl.md) | **画像生成 & 健康**<br>「〜の絵を描いて」で即座に画像生成。カロリー計算もお手の物。 | `Imagen 3` `Matplotlib` |
-| <img src="animals/images/frog.jpg" width="40"> | **カエルくん**<br>[(Frog)](animals/frog.md) | **天気 & 外出支援**<br>毎朝の天気予報と、位置情報から周辺のおすすめスポットを紹介。 | `Google Maps API` `GAS` |
-| <img src="animals/images/penguin.jpg" width="40"> | **秘書ペンギン**<br>[(Penguin)](animals/penguin.md) | **メール代行 & 接待**<br>用件を送るだけでビジネスメールを作成・送信。接待のお店選びも。 | `Gmail API` `Search` |
-| <img src="animals/images/capybara.jpg" width="40"> | **カピバラ**<br>[(Capybara)](animals/capybara.md) | **ニュース解説**<br>最新のAIニュースなどを検索し、分かりやすく要約・解説。 | `Google Search` |
+| <img src="animals/images/fox.png" width="40"> | **キツネくんの動画要約🦊**<br>[(Fox)](animals/fox.md) | **動画要約 & 検索**<br>YouTube動画の内容を要約し、関連情報を検索して深掘り解説。 | `GenAI SDK` `Grounding with Search` |
+| <img src="animals/images/owl.jpg" width="40"> | **フクロウ教授画像生成🦉**<br>[(Owl)](animals/owl.md) | **画像生成 & 健康**<br>「〜の絵を描いて」で即座に画像生成。カロリー計算もお手の物。 | `Imagen 3` `Matplotlib` |
+| <img src="animals/images/frog.jpg" width="40"> | **☀️カエルくんのお天気予報🐸**<br>[(Frog)](animals/frog.md) | **天気 & 外出支援**<br>毎朝の天気予報と、位置情報から周辺のおすすめスポットを紹介。 | `Google Maps API` `GAS` |
+| <img src="animals/images/penguin.jpg" width="40"> | **スーパー秘書ペンギン🐧**<br>[(Penguin)](animals/penguin.md) | **メール代行 & 接待**<br>用件を送るだけでビジネスメールを作成・送信。接待のお店選びも。 | `Gmail API` `Search` |
+| <img src="animals/images/capybara.jpg" width="40"> | **AIトピックのカピバラ解説**<br>[(Capybara)](animals/capybara.md) | **ニュース解説**<br>最新のAIニュースなどを検索し、分かりやすく要約・解説。 | `Google Search` |
 | <img src="animals/images/mole.jpg" width="40"> | **もぐら駅長**<br>[(Mole)](animals/mole.md) | **交通案内**<br>駅の時刻表や乗り換え案内をサポート。 | `Train Logic` |
-| <img src="animals/images/voidoll.jpg" width="40"> | **Voidoll**<br>[(Voidoll)](animals/voidoll.md) | **音声対話**<br>テキストだけでなく、音声ファイルでの自然な会話が可能。 | `Audio Processing` |
-| <img src="animals/images/whale.jpg" width="40"> | **星くじら**<br>[(Whale)](animals/whale.md) | **癒やし & 宇宙**<br>NASAのAPIを使って、美しい宇宙の写真や情報を届ける。 | `NASA API` |
-| <img src="animals/images/bat.jpg" width="40"> | **TVコウモリ**<br>[(Bat)](animals/bat.md) | **番組通知**<br>指定したタレントやキーワードのTV出演情報を毎朝通知。 | `Web Scraping` |
+| <img src="animals/images/voidoll.jpg" width="40"> | **🤖おしゃべりVoidollねこ🐱**<br>[(Voidoll)](animals/voidoll.md) | **音声対話**<br>テキストだけでなく、音声ファイルでの自然な会話が可能。 | `Audio Processing` |
+| <img src="animals/images/whale.jpg" width="40"> | **星くじらからの光の便り🐋💫**<br>[(Whale)](animals/whale.md) | **癒やし & 宇宙**<br>NASAのAPIを使って、美しい宇宙の写真や情報を届ける。 | `NASA API` |
+| <img src="animals/images/bat.jpg" width="40"> | **コウモリの番組お知らせ🦇**<br>[(Bat)](animals/bat.md) | **番組通知**<br>指定したタレントやキーワードのTV出演情報を毎朝通知。 | `Web Scraping` |
 
 👉 **[詳細ドキュメントとデモはこちら (animals/README.md)](animals/README.md)**
 
