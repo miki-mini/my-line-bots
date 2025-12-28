@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ビーバーのタスク管理ダム</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Zen+Maru+Gothic:wght@400;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Zen Maru Gothic', sans-serif;
+            background-color: #8D6E63;
+            /* Beaver brown */
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%236d4c41' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            color: #3E2723;
+        }
+
+        .wood-texture {
+            background-color: #D7CCC8;
+            border: 4px solid #5D4037;
+            border-radius: 16px;
+            box-shadow: 8px 8px 0px #3E2723;
+        }
+
+        .btn-beaver {
+            background-color: #FF7043;
+            color: white;
+            transition: all 0.2s;
+            box-shadow: 4px 4px 0px #BF360C;
+        }
+
+        .btn-beaver:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px #BF360C;
+        }
+
+        .btn-delete {
+            background-color: #8D6E63;
+            color: white;
+            box-shadow: 2px 2px 0px #5D4037;
+        }
+
+        .btn-delete:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px #5D4037;
+        }
+
+        .memo-card {
+            background-color: #FFF3E0;
+            border-left: 8px solid #FF7043;
+            transition: transform 0.2s;
+        }
+
+        .memo-card:hover {
+            transform: translateY(-2px);
+        }
+
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            text-shadow: 4px 4px 0px #3E2723;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen py-8 px-4">
+
+    <div class="max-w-md mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8 animate-bounce">
+            <div class="text-6xl mb-2">🦫</div>
+            <h1 class="text-4xl text-white tracking-wider">BEAVER DAM</h1>
+            <p class="text-white mt-2 font-bold opacity-90">タスクを積み上げるでヤンス！</p>
+        </div>
+
+        <!-- Login / User ID Input -->
+        <div id="login-area" class="wood-texture p-6 mb-8">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <span class="text-2xl mr-2">🪵</span> 誰のダム？
+            </h2>
+            <p class="text-sm mb-4 opacity-80">
+                LINEのユーザーIDを入力して、自分のタスクを表示するでヤンス。
+            </p>
+            <input type="text" id="userIdInput" placeholder="Enter User ID (U...)"
+                class="w-full p-3 rounded-lg border-2 border-[#8D6E63] bg-[#EFEBE9] focus:outline-none focus:border-[#FF7043] mb-4 font-mono">
+
+            <button onclick="loadMemos()" class="btn-beaver w-full py-3 rounded-lg font-bold text-lg">
+                ダムを見に行く 🏗️
+            </button>
+        </div>
+
+        <!-- Main Dashboard (Hidden by default) -->
+        <div id="dashboard" class="hidden">
+
+            <!-- New Memo Form -->
+            <div class="wood-texture p-6 mb-8">
+                <h2 class="text-xl font-bold mb-4 flex items-center">
+                    <span class="text-2xl mr-2">📝</span> 新しい木（タスク）
+                </h2>
+                <textarea id="memoText" placeholder="何を忘れないようにするでヤンス？"
+                    class="w-full p-3 rounded-lg border-2 border-[#8D6E63] bg-[#EFEBE9] focus:outline-none focus:border-[#FF7043] mb-4 h-24 resize-none"></textarea>
+
+                <div class="flex gap-2 mb-4">
+                    <input type="date" id="memoDate"
+                        class="flex-1 p-2 rounded-lg border-2 border-[#8D6E63] bg-[#EFEBE9]">
+                    <input type="time" id="memoTime"
+                        class="flex-1 p-2 rounded-lg border-2 border-[#8D6E63] bg-[#EFEBE9]">
+                </div>
+
+                <button onclick="addMemo()" class="btn-beaver w-full py-3 rounded-lg font-bold text-lg">
+                    積み上げる！ 🪵
+                </button>
+            </div>
+
+            <!-- Memo List -->
+            <div class="mb-4 flex justify-between items-center text-white">
+                <h2 class="text-2xl font-bold">現在のダム状況</h2>
+                <button onclick="loadMemos()" class="bg-white/20 hover:bg-white/30 p-2 rounded-full transition">
+                    🔄
+                </button>
+            </div>
+
+            <div id="memoList" class="space-y-4 pb-12">
+                <!-- Memos will act here -->
+                <div class="text-center text-white/60 py-8">読み込み中...</div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let currentUserId = localStorage.getItem('beaver_user_id') || '';
+
+        // Initial Load
+        if (currentUserId) {
+            document.getElementById('userIdInput').value = currentUserId;
+        }
+
+        async function loadMemos() {
+            const userId = document.getElementById('userIdInput').value.trim();
+            if (!userId) {
+                alert('ユーザーIDを入れてほしいでヤンス！💦');
+                return;
+            }
+
+            currentUserId = userId;
+            localStorage.setItem('beaver_user_id', currentUserId);
+
+            // UI switching
+            document.getElementById('login-area').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+
+            const listEl = document.getElementById('memoList');
+            listEl.innerHTML = '<div class="text-center text-white/80 py-8 animate-pulse">川底を捜索中でヤンス...🌊</div>';
+
+            try {
+                const res = await fetch(`/get-memos/${currentUserId}`);
+                const data = await res.json();
+
+                renderMemos(data.memos);
+            } catch (e) {
+                console.error(e);
+                listEl.innerHTML = '<div class="text-center text-red-200 py-8">通信エラーでヤンス...📡</div>';
+            }
+        }
+
+        function renderMemos(memos) {
+            const listEl = document.getElementById('memoList');
+            listEl.innerHTML = '';
+
+            if (!memos || memos.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center text-white/80 py-8">
+                        <div class="text-4xl mb-2">🍃</div>
+                        <p>予定は空っぽでヤンス！平和でヤンスね〜</p>
+                    </div>`;
+                return;
+            }
+
+            // Sort by time? ensuring recent ones first or based on Reminder Time
+            // Let's sort manually if needed, but Firestore usually returns in some order.
+            // Let's just render.
+
+            memos.forEach((memo, index) => {
+                const isNoTime = !memo.reminder_time || memo.reminder_time === 'NO_TIME' || memo.reminder_time === '';
+                const timeStr = isNoTime ? '⏰ 指定なし' : `⏰ ${memo.reminder_time}`;
+
+                const html = `
+                    <div class="memo-card p-4 rounded-r-lg shadow-md flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="text-xs font-bold text-[#FF7043] mb-1 tracking-wider uppercase">${timeStr}</div>
+                            <div class="text-[#3E2723] font-medium leading-relaxed whitespace-pre-wrap">${escapeHtml(memo.text)}</div>
+                        </div>
+                        <button onclick="deleteMemo('${memo.memo_id}')" class="btn-delete ml-3 p-2 rounded text-xs shrink-0" title="削除">
+                            🗑️
+                        </button>
+                    </div>
+                `;
+                listEl.insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+        async function addMemo() {
+            const text = document.getElementById('memoText').value.trim();
+            if (!text) return;
+
+            const dateVal = document.getElementById('memoDate').value;
+            const timeVal = document.getElementById('memoTime').value;
+
+            let reminderTime = "NO_TIME";
+            if (dateVal) {
+                // If time is not set, default to 08:00
+                const t = timeVal || "08:00";
+                reminderTime = `${dateVal} ${t}`;
+            }
+
+            const btn = document.querySelector('button[onclick="addMemo()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '積み上げ中...🧱';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/add-memo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: currentUserId,
+                        memo_text: text,
+                        reminder_time: reminderTime
+                    })
+                });
+
+                if (res.ok) {
+                    // Reset form
+                    document.getElementById('memoText').value = '';
+                    document.getElementById('memoDate').value = '';
+                    document.getElementById('memoTime').value = '';
+                    // Reload list
+                    await loadMemos();
+                } else {
+                    alert('保存に失敗したでヤンス...💦');
+                }
+
+            } catch (e) {
+                alert('エラーだでヤンス...💦');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function deleteMemo(memoId) {
+            if (!confirm('本当に崩して（削除して）いいでヤンスか？🪵')) return;
+
+            try {
+                const res = await fetch(`/delete-memo/${memoId}`, { method: 'DELETE' });
+                if (res.ok) {
+                    await loadMemos();
+                }
+            } catch (e) {
+                alert('削除できなかったでヤンス...💦');
+            }
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+
+</html>

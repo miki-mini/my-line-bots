@@ -15,6 +15,15 @@ async def index():
     except FileNotFoundError:
         return HTMLResponse(content="<h1>Page Not Found</h1>", status_code=404)
 
+@router.get("/beaver", response_class=HTMLResponse, dependencies=[Depends(get_current_username)])
+async def beaver_page():
+    """ビーバーのタスク管理ダム（要認証）"""
+    try:
+        with open("static/beaver.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read(), headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"})
+    except FileNotFoundError:
+        return HTMLResponse(content="<h1>Page Not Found</h1>", status_code=404)
+
 @router.get("/star-whale", response_class=HTMLResponse)
 async def star_whale_page():
     """星くじらWeb体験版ページ"""
@@ -38,6 +47,15 @@ async def capybara_page():
     """カピバラニュース（認証なし）"""
     try:
         with open("static/capybara.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read(), headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"})
+    except FileNotFoundError:
+        return HTMLResponse(content="<h1>Page Not Found</h1>", status_code=404)
+
+@router.get("/bat", response_class=HTMLResponse, dependencies=[Depends(get_current_username)])
+async def bat_page():
+    """コウモリの監視塔（要認証）"""
+    try:
+        with open("static/bat.html", "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read(), headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"})
     except FileNotFoundError:
         return HTMLResponse(content="<h1>Page Not Found</h1>", status_code=404)

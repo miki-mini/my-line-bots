@@ -160,6 +160,35 @@ def register_bat_handler(app, handler_bat, configuration_bat, search_model, db):
 
         return {"status": "ok", "message": f"Sent notifications for: {len(found_shows)} shows"}
 
+    # ==========================================
+    # 🦇 Web App API (Watchlist Management)
+    # ==========================================
+    class BatUnknownRequest(BaseModel):
+        user_id: str
+        keyword: str
+
+    from pydantic import BaseModel
+    class WatchListRequest(BaseModel):
+        user_id: str
+        keyword: str
+
+    @app.get("/api/bat/keywords/{user_id}")
+    async def get_bat_keywords(user_id: str):
+        keywords = _get_user_watch_list(db, user_id)
+        return {"keywords": keywords}
+
+    @app.post("/api/bat/keywords")
+    async def add_bat_keyword(req: WatchListRequest):
+        _add_to_watch_list(db, req.user_id, req.keyword)
+        return {"status": "success", "keyword": req.keyword}
+
+    @app.delete("/api/bat/keywords")
+    async def remove_bat_keyword(req: WatchListRequest):
+        if _remove_from_watch_list(db, req.user_id, req.keyword):
+            return {"status": "success", "keyword": req.keyword}
+        else:
+            return {"status": "not_found", "message": "Keyword not in list"}
+
 
 # ==========================================
 # 🔥 Firestore ヘルパー関数

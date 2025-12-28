@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>コウモリの監視塔 🦇</title>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=M+PLUS+Rounded+1c:wght@400;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background-color: #121212;
+            background-image: radial-gradient(#2c2c2c 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: #E0E0E0;
+        }
+
+        .gothic-font {
+            font-family: 'Creepster', cursive;
+            letter-spacing: 0.1em;
+        }
+
+        .bat-card {
+            background: rgba(30, 30, 30, 0.9);
+            border: 1px solid #333;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.2);
+            /* Purple glow */
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-bat {
+            background: linear-gradient(135deg, #6200EA, #3700B3);
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-bat:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(98, 0, 234, 0.4);
+        }
+
+        .radar-scan {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .radar-scan::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00E5FF, transparent);
+            animation: scan 2s linear infinite;
+        }
+
+        @keyframes scan {
+            0% {
+                left: -100%;
+            }
+
+            100% {
+                left: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen p-4 flex flex-col items-center">
+
+    <div class="max-w-md w-full mt-8">
+        <!-- Header -->
+        <div class="text-center mb-10">
+            <div class="text-6xl mb-4 animate-pulse">🦇</div>
+            <h1 class="text-4xl text-[#BB86FC] gothic-font mb-2">BAT RADAR</h1>
+            <p class="text-gray-400 text-sm">Targeting TV Shows...</p>
+        </div>
+
+        <!-- Login / User ID -->
+        <div id="login-area" class="bat-card rounded-xl p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4 text-[#03DAC6] flex items-center">
+                <span class="mr-2">🔐</span> ACCESS
+            </h2>
+            <p class="text-xs text-gray-400 mb-4">
+                Enter your ID to access the surveillance network.
+            </p>
+            <input type="text" id="userIdInput" placeholder="User ID"
+                class="w-full bg-[#2C2C2C] border border-[#444] rounded p-3 text-white focus:border-[#BB86FC] focus:outline-none mb-4 font-mono">
+
+            <button onclick="loadKeywords()" class="btn-bat w-full py-3 rounded-lg font-bold tracking-wider">
+                CONNECT
+            </button>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" class="hidden">
+
+            <!-- Add Keyword -->
+            <div class="bat-card rounded-xl p-6 mb-6 radar-scan">
+                <h2 class="text-lg font-bold mb-4 text-[#BB86FC] flex items-center">
+                    <span class="mr-2">📡</span> NEW TARGET
+                </h2>
+                <div class="flex gap-2">
+                    <input type="text" id="newKeyword" placeholder="番組名 (例: ジブリ)"
+                        class="flex-1 bg-[#2C2C2C] border border-[#444] rounded p-3 text-white focus:border-[#BB86FC] focus:outline-none">
+                    <button onclick="addKeyword()"
+                        class="bg-[#03DAC6] text-black font-bold px-4 rounded hover:bg-[#018786] transition">
+                        ADD
+                    </button>
+                </div>
+            </div>
+
+            <!-- List -->
+            <div class="mb-2 flex justify-between items-end px-2">
+                <h3 class="text-gray-400 text-sm">WATCHLIST</h3>
+                <span id="countBadge" class="bg-[#333] text-xs px-2 py-1 rounded text-gray-300">0 targets</span>
+            </div>
+
+            <div id="keywordList" class="space-y-3 pb-12">
+                <div class="text-center text-gray-600 py-8">Scanning...</div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let currentUserId = localStorage.getItem('bat_user_id') || '';
+
+        if (currentUserId) {
+            document.getElementById('userIdInput').value = currentUserId;
+        }
+
+        async function loadKeywords() {
+            const userId = document.getElementById('userIdInput').value.trim();
+            if (!userId) {
+                alert('ID Required.');
+                return;
+            }
+
+            currentUserId = userId;
+            localStorage.setItem('bat_user_id', currentUserId);
+
+            document.getElementById('login-area').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+
+            renderList([], true); // Show loading
+
+            try {
+                const res = await fetch(`/api/bat/keywords/${currentUserId}`);
+                const data = await res.json();
+                renderList(data.keywords || []);
+            } catch (e) {
+                console.error(e);
+                alert('Connection Failed');
+            }
+        }
+
+        function renderList(keywords, isLoading = false) {
+            const listEl = document.getElementById('keywordList');
+            const badge = document.getElementById('countBadge');
+
+            if (isLoading) {
+                listEl.innerHTML = '<div class="text-center text-[#BB86FC] py-8 animate-pulse">Scanning Frequencies...</div>';
+                return;
+            }
+
+            badge.textContent = `${keywords.length} targets`;
+            listEl.innerHTML = '';
+
+            if (keywords.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center text-gray-600 py-8 border border-dashed border-gray-700 rounded-lg">
+                        <div class="text-2xl mb-2">🌑</div>
+                        <p>No Targets Set</p>
+                    </div>`;
+                return;
+            }
+
+            keywords.forEach(k => {
+                const html = `
+                    <div class="bat-card p-4 rounded-lg flex justify-between items-center group hover:border-[#BB86FC] transition">
+                        <div class="font-bold text-lg tracking-wide text-gray-200">
+                            ${escapeHtml(k)}
+                        </div>
+                        <button onclick="removeKeyword('${escapeHtml(k)}')"
+                            class="text-gray-500 hover:text-red-500 opacity-50 group-hover:opacity-100 transition p-2">
+                            ✕
+                        </button>
+                    </div>
+                `;
+                listEl.insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+        async function addKeyword() {
+            const input = document.getElementById('newKeyword');
+            const keyword = input.value.trim();
+            if (!keyword) return;
+
+            const btn = document.querySelector('button[onclick="addKeyword()"]');
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/bat/keywords', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: currentUserId, keyword: keyword })
+                });
+
+                if (res.ok) {
+                    input.value = '';
+                    loadKeywords(); // Reload
+                }
+            } catch (e) {
+                alert('Add Failed');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function removeKeyword(keyword) {
+            if (!confirm(`Stop tracking "${keyword}"?`)) return;
+
+            try {
+                const res = await fetch('/api/bat/keywords', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: currentUserId, keyword: keyword })
+                });
+
+                if (res.ok) {
+                    loadKeywords();
+                }
+            } catch (e) {
+                alert('Remove Failed');
+            }
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+
+</html>
