@@ -1,10 +1,11 @@
+
 from fastapi import APIRouter, Depends
 from fastapi.responses import HTMLResponse
-from core.security import get_current_username
+from core.auth_handler import get_current_username
 
 router = APIRouter()
 
-@app_router_get_slash = router.get("/", response_class=HTMLResponse)
+@router.get("/", response_class=HTMLResponse)
 async def index():
     """Botのポータル画面を表示"""
     try:

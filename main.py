@@ -1,7 +1,9 @@
 import os
 import uvicorn
-from fastapi import FastAPI, Request, BackgroundTasks
+from fastapi import FastAPI, Request, BackgroundTasks, Depends
+from core.auth_handler import get_current_username
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -31,7 +33,7 @@ from animals.whale import register_whale_handler, get_whale_reply_content # Impo
 from animals.beaver import register_beaver_handler
 from animals.bat import register_bat_handler
 from animals.owl import register_owl_handler
-from animals.rabbit import register_rabbit_handler
+
 from routers import web_apps
 
 # Google Cloud Imports
@@ -167,8 +169,8 @@ OWL_CHANNEL_SECRET = os.getenv("OWL_CHANNEL_SECRET")
 # Based on register_owl_handler(app), it doesn't take config args.
 
 from routers import web_apps
-from core.security import get_current_username, get_current_username_rabbit
-from fastapi import Depends, HTTPException, status, HTMLResponse # Re-importing for local use if needed, or remove if fully moved
+
+
 
 # 🐰 Rabbit (Moon) Bot Settings
 RABBIT_ACCESS_TOKEN = os.getenv("RABBIT_ACCESS_TOKEN")
@@ -265,9 +267,7 @@ def startup_event():
             register_owl_handler(app, auth_dependency=Depends(get_current_username))
             print("🦉 Owl Registered!", flush=True)
 
-            # 11. Rabbit (4 args)
-            register_rabbit_handler(app, handler_rabbit, configuration_rabbit, auth_dependency=Depends(get_current_username_rabbit))
-            print("🐰 Rabbit Registered!", flush=True)
+
 
         else:
             print("⚠️ GCP_PROJECT_ID not set, skipping AI init", flush=True)
