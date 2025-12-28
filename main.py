@@ -1,11 +1,9 @@
 import os
 import uvicorn
-from fastapi import FastAPI, Request, Depends, HTTPException, status
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Request, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import secrets
 from dotenv import load_dotenv
 
 # Line Bot Imports
@@ -34,6 +32,7 @@ from animals.beaver import register_beaver_handler
 from animals.bat import register_bat_handler
 from animals.owl import register_owl_handler
 from animals.rabbit import register_rabbit_handler
+from routers import web_apps
 
 # Google Cloud Imports
 from google.cloud import storage
@@ -45,7 +44,7 @@ from google.cloud import firestore
 # GLOBAL VARIABLES
 # ---------------------------------------------------------------------------
 app = FastAPI()
-security = HTTPBasic()
+app.include_router(web_apps.router)
 db = None
 storage_client = None
 text_model = None
@@ -55,55 +54,7 @@ startup_errors = []
 # ---------------------------------------------------------------------------
 # AUTHENTICATION (Basic Auth)
 # ---------------------------------------------------------------------------
-def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
-    """Basic Auth for Owl Web App"""
-    # Get credentials from env or use defaults
-    # Get credentials from env
-    correct_username = os.getenv("OWL_USER")
-    correct_password = os.getenv("OWL_PASS")
-
-    if not correct_username or not correct_password:
-        print("❌ Error: OWL_USER or OWL_PASS not set in environment variables.")
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="System configuration error: Authentication not configured."
-        )
-
-    # Secure comparison
-    is_correct_username = secrets.compare_digest(credentials.username, correct_username)
-    is_correct_password = secrets.compare_digest(credentials.password, correct_password)
-
-    if not (is_correct_username and is_correct_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Basic"},
-        )
-    return credentials.username
-
-def get_current_username_rabbit(credentials: HTTPBasicCredentials = Depends(security)):
-    """Basic Auth for Rabbit Web App"""
-    # Get credentials from env
-    correct_username = os.getenv("RABBIT_USER")
-    correct_password = os.getenv("RABBIT_PASS")
-
-    if not correct_username or not correct_password:
-        print("❌ Error: RABBIT_USER or RABBIT_PASS not set in environment variables.")
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="System configuration error: Authentication not configured."
-        )
-
-    is_correct_username = secrets.compare_digest(credentials.username, correct_username)
-    is_correct_password = secrets.compare_digest(credentials.password, correct_password)
-
-    if not (is_correct_username and is_correct_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Basic"},
-        )
-    return credentials.username
+# Authentication logic moved to core/security.py
 
 # ---------------------------------------------------------------------------
 # SEARCH MODEL WRAPPER (Restored for Owl/Search features)
@@ -212,9 +163,12 @@ handler_bat = WebhookHandler(BAT_CHANNEL_SECRET) if BAT_CHANNEL_SECRET else None
 # Owl uses HTTP endpoints mostly, but may have LINE settings for future use
 OWL_ACCESS_TOKEN = os.getenv("OWL_ACCESS_TOKEN")
 OWL_CHANNEL_SECRET = os.getenv("OWL_CHANNEL_SECRET")
-# Owl handler registration might differ, checking main_backup for consistency
 # Backup didn't show Owl config vars, but we can define them for safety or skip.
 # Based on register_owl_handler(app), it doesn't take config args.
+
+from routers import web_apps
+from core.security import get_current_username, get_current_username_rabbit
+from fastapi import Depends, HTTPException, status, HTMLResponse # Re-importing for local use if needed, or remove if fully moved
 
 # 🐰 Rabbit (Moon) Bot Settings
 RABBIT_ACCESS_TOKEN = os.getenv("RABBIT_ACCESS_TOKEN")
@@ -224,13 +178,15 @@ handler_rabbit = WebhookHandler(RABBIT_CHANNEL_SECRET) if RABBIT_CHANNEL_SECRET 
 
 # Helper for debugging
 GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID")
+# Include Routers
+app.include_router(web_apps.router)
 
 # Static Files Mount (Ensure images/CSS are served)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.on_event("startup")
 def startup_event():
-    global text_model, db, storage_client, GCS_BUCKET_NAME
+    global text_model, db, storage_client, GCS_BUCKET_NAME, search_model
     try:
         print("🚀 PHASE 1 RESTORATION STARTUP...", flush=True)
 
@@ -285,11 +241,11 @@ def startup_event():
 
             # 5. Voidoll (3 args: app, handler, config)
             register_voidoll_handler(app, handler_voidoll, configuration_voidoll)
-            print("� Voidoll Registered!", flush=True)
+            print(" Voidoll Registered!", flush=True)
 
             # 6. Capybara (5 args: app, handler, config, search_model, text_model)
             register_capybara_handler(app, handler_capybara, configuration_capybara, search_model, text_model)
-            print("� Capybara Registered!", flush=True)
+            print(" Capybara Registered!", flush=True)
 
             # 7. Whale (4 args: app, handler, config, model) -> Passing text_model
             register_whale_handler(app, handler_whale, configuration_whale, text_model)
@@ -352,41 +308,8 @@ async def chat_whale(request: WhaleChatRequest):
     response = get_whale_reply_content(request.text, text_model)
     return {"results": response}
 
-@app.get("/owl", response_class=HTMLResponse, dependencies=[Depends(get_current_username)])
-async def owl_page():
-    """フクロウ教授のWebアプリ（要認証）"""
-    try:
-        with open("static/owl.html", "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read(), headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"})
-    except FileNotFoundError:
-        return HTMLResponse(content="<h1>Page Not Found</h1>", status_code=404)
-
-@app.get("/rabbit", response_class=HTMLResponse, dependencies=[Depends(get_current_username_rabbit)])
-async def rabbit_page():
-    """月うさぎのWebアプリ（要認証）"""
-    try:
-        with open("static/rabbit.html", "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read(), headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"})
-    except FileNotFoundError:
-        return HTMLResponse(content="<h1>Page Not Found</h1>", status_code=404)
-
-@app.get("/capybara", response_class=HTMLResponse)
-async def capybara_page():
-    """カピバラニュース（認証なし）"""
-    try:
-        with open("static/capybara.html", "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read(), headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"})
-    except FileNotFoundError:
-        return HTMLResponse(content="<h1>Page Not Found</h1>", status_code=404)
-
-@app.get("/star-whale", response_class=HTMLResponse)
-async def star_whale_page():
-    """星くじらWeb体験版ページ"""
-    try:
-        with open("static/star_whale.html", "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read(), headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"})
-    except FileNotFoundError:
-        return HTMLResponse(content="<h1>Page Not Found</h1>", status_code=404)
+# Endpoints (Web Apps moved to routers/web_apps.py)
+# Authentication logic moved to core/security.py
 
 @app.get("/", response_class=HTMLResponse)
 def index():
