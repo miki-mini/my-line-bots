@@ -1,0 +1,158 @@
+[2025-12-29T22:00:28.989433Z] UNKNOWN usagi-oekaki-service-00434-s5q
+[2025-12-29 22:00:28 +0000] [5] [INFO] Booting worker with pid: 5
+----------------------------------------
+[2025-12-29T22:00:28.981898Z] INFO usagi-oekaki-service-00434-s5q
+Default STARTUP TCP probe succeeded after 1 attempt for container "usagi-oekaki-service-1" on port 8080.
+----------------------------------------
+[2025-12-29T22:00:28.965304Z] UNKNOWN usagi-oekaki-service-00434-s5q
+[2025-12-29 22:00:28 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker
+----------------------------------------
+[2025-12-29T22:00:28.965252Z] UNKNOWN usagi-oekaki-service-00434-s5q
+[2025-12-29 22:00:28 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+----------------------------------------
+[2025-12-29T22:00:28.964128Z] UNKNOWN usagi-oekaki-service-00434-s5q
+[2025-12-29 22:00:28 +0000] [1] [INFO] Starting gunicorn 23.0.0
+----------------------------------------
+[2025-12-29T22:00:27.840705Z] INFO usagi-oekaki-service-00434-s5q
+Starting new instance. Reason: AUTOSCALING - Instance started due to configured scaling factors (e.g. CPU utilization, request throughput, etc.) or no existing capacity for current traffic.
+----------------------------------------
+[2025-12-29T22:00:27.229001Z] UNKNOWN usagi-oekaki-service-00434-s5q
+[2025-12-29 22:00:27 +0000] [1] [ERROR] Reason: Worker failed to boot.
+----------------------------------------
+[2025-12-29T22:00:27.228967Z] UNKNOWN usagi-oekaki-service-00434-s5q
+[2025-12-29 22:00:27 +0000] [1] [ERROR] Shutting down: Master
+----------------------------------------
+[2025-12-29T22:00:27.228189Z] UNKNOWN usagi-oekaki-service-00434-s5q
+[2025-12-29 22:00:27 +0000] [1] [ERROR] Worker (pid:5) exited with code 3
+----------------------------------------
+[2025-12-29T22:00:25.934202Z] UNKNOWN usagi-oekaki-service-00434-s5q
+[2025-12-29 22:00:25 +0000] [5] [INFO] Worker exiting (pid: 5)
+----------------------------------------
+[2025-12-29T22:00:25.934015Z] ERROR usagi-oekaki-service-00434-s5q
+Traceback (most recent call last):
+  File "/layers/google.python.pip/pip/lib/python3.13/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "/layers/google.python.pip/pip/lib/python3.13/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+    ~~~~~~~~~~~~~~^^
+  File "/layers/google.python.pip/pip/lib/python3.13/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ~~~~~~~~~~~~~^^
+  File "/layers/google.python.pip/pip/lib/python3.13/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ~~~~~~~~~^^
+  File "/layers/google.python.pip/pip/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/layers/google.python.pip/pip/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/layers/google.python.pip/pip/lib/python3.13/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/layers/google.python.runtime/python/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/workspace/main.py", line 26, in <module>
+    from animals.mole import register_mole_handler
+  File "/workspace/animals/mole.py", line 8, in <module>
+    import google.generativeai as genai
+ModuleNotFoundError: No module named 'google.generativeai'
+----------------------------------------
+[2025-12-29T22:00:25.933958Z] UNKNOWN usagi-oekaki-service-00434-s5q
+[2025-12-29 22:00:25 +0000] [5] [ERROR] Exception in worker process
+----------------------------------------
+[2025-12-29T22:00:11.772146Z] ERROR usagi-oekaki-service-00434-s5q
+The request failed because either the HTTP response was malformed or connection to the instance had an error. Additional troubleshooting documentation can be found at: https://cloud.google.com/run/docs/troubleshooting#malformed-response-or-connection-error
+----------------------------------------
+[2025-12-29T21:59:38.903854Z] UNKNOWN usagi-oekaki-service-00434-s5q
+[2025-12-29 21:59:38 +0000] [5] [INFO] Booting worker with pid: 5
+----------------------------------------
+[2025-12-29T21:59:38.899693Z] INFO usagi-oekaki-service-00434-s5q
+Default STARTUP TCP probe succeeded after 1 attempt for container "usagi-oekaki-service-1" on port 8080.
+----------------------------------------
+[2025-12-29T21:59:38.883425Z] UNKNOWN usagi-oekaki-service-00434-s5q
+[2025-12-29 21:59:38 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker
+----------------------------------------
+[2025-12-29T21:59:38.883371Z] UNKNOWN usagi-oekaki-service-00434-s5q
+[2025-12-29 21:59:38 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+----------------------------------------
+[2025-12-29T21:59:38.882242Z] UNKNOWN usagi-oekaki-service-00434-s5q
+[2025-12-29 21:59:38 +0000] [1] [INFO] Starting gunicorn 23.0.0
+----------------------------------------
+[2025-12-29T21:59:37.838703Z] INFO usagi-oekaki-service-00434-s5q
+Starting new instance. Reason: AUTOSCALING - Instance started due to configured scaling factors (e.g. CPU utilization, request throughput, etc.) or no existing capacity for current traffic.
+----------------------------------------
+[2025-12-29T21:59:37.291138Z] UNKNOWN usagi-oekaki-service-00434-s5q
+[2025-12-29 21:59:37 +0000] [1] [ERROR] Reason: Worker failed to boot.
+----------------------------------------
+[2025-12-29T21:59:37.291106Z] UNKNOWN usagi-oekaki-service-00434-s5q
+[2025-12-29 21:59:37 +0000] [1] [ERROR] Shutting down: Master
+----------------------------------------
+[2025-12-29T21:59:37.290372Z] UNKNOWN usagi-oekaki-service-00434-s5q
+[2025-12-29 21:59:37 +0000] [1] [ERROR] Worker (pid:5) exited with code 3
+----------------------------------------
+[2025-12-29T21:59:36.104514Z] UNKNOWN usagi-oekaki-service-00434-s5q
+[2025-12-29 21:59:36 +0000] [5] [INFO] Worker exiting (pid: 5)
+----------------------------------------
+[2025-12-29T21:59:36.104364Z] ERROR usagi-oekaki-service-00434-s5q
+Traceback (most recent call last):
+  File "/layers/google.python.pip/pip/lib/python3.13/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "/layers/google.python.pip/pip/lib/python3.13/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+    ~~~~~~~~~~~~~~^^
+  File "/layers/google.python.pip/pip/lib/python3.13/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ~~~~~~~~~~~~~^^
+  File "/layers/google.python.pip/pip/lib/python3.13/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ~~~~~~~~~^^
+  File "/layers/google.python.pip/pip/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/layers/google.python.pip/pip/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/layers/google.python.pip/pip/lib/python3.13/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/layers/google.python.runtime/python/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1023, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/workspace/main.py", line 26, in <module>
+    from animals.mole import register_mole_handler
+  File "/workspace/animals/mole.py", line 8, in <module>
+    import google.generativeai as genai
+ModuleNotFoundError: No module named 'google.generativeai'
+----------------------------------------
+[2025-12-29T21:59:36.104300Z] UNKNOWN usagi-oekaki-service-00434-s5q
+[2025-12-29 21:59:36 +0000] [5] [ERROR] Exception in worker process
+----------------------------------------
+[2025-12-29T21:59:27.208104Z] ERROR usagi-oekaki-service-00434-s5q
+The request failed because either the HTTP response was malformed or connection to the instance had an error. Additional troubleshooting documentation can be found at: https://cloud.google.com/run/docs/troubleshooting#malformed-response-or-connection-error
+----------------------------------------
+[2025-12-29T21:56:36.895234Z] UNKNOWN usagi-oekaki-service-00434-s5q
+[2025-12-29 21:56:36 +0000] [5] [INFO] Booting worker with pid: 5
+----------------------------------------
+[2025-12-29T21:56:36.882085Z] INFO usagi-oekaki-service-00434-s5q
+Default STARTUP TCP probe succeeded after 1 attempt for container "usagi-oekaki-service-1" on port 8080.
+----------------------------------------
+[2025-12-29T21:56:36.877399Z] UNKNOWN usagi-oekaki-service-00434-s5q
+[2025-12-29 21:56:36 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker
+----------------------------------------
+[2025-12-29T21:56:36.877353Z] UNKNOWN usagi-oekaki-service-00434-s5q
+[2025-12-29 21:56:36 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+----------------------------------------

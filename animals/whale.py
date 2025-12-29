@@ -32,9 +32,6 @@ def register_whale_handler(app, handler_whale, configuration_whale, model):
     # ==========================================
     # 🐋 テキストメッセージ処理
     # ==========================================
-    # ==========================================
-    # 🐋 テキストメッセージ処理
-    # ==========================================
     @handler_whale.add(MessageEvent, message=TextMessageContent)
     def handle_whale_message(event):
         user_text = event.message.text
@@ -56,8 +53,6 @@ def register_whale_handler(app, handler_whale, configuration_whale, model):
 
         # LINEに返信
         _send_reply_messages(event, configuration_whale, reply_messages)
-
-    print("🐋 星くじらハンドラー登録完了（NASA APOD/Mars/ISS/Astros対応 + Robust Fallback）")
 
 
 # ==========================================
@@ -170,8 +165,6 @@ def get_whale_reply_content(user_text: str, model=None) -> list:
         results.append({"type": "text", "text": reply_text})
 
     return results
-
-    print("🐋 星くじらハンドラー登録完了（NASA APOD/Mars/ISS/Astros対応 + Robust Fallback）")
 
 
 # ==========================================

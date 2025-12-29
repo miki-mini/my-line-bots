@@ -5,7 +5,6 @@ mole.py - 🦡 もぐら駅長の時刻表BOT
 import os
 import requests
 import datetime
-import google.generativeai as genai
 import googlemaps
 from linebot.v3.messaging import (
     ApiClient,
@@ -361,4 +360,3 @@ def get_timetable(station_data: dict) -> str:
             # 見つかったけどデータがない場合
             msg = get_timetable(found_stations[0])
             return {"status": "success", "message": msg}
-```
