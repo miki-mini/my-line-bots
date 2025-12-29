@@ -11,7 +11,7 @@ async def index():
     try:
         with open("static/index.html", "r", encoding="utf-8") as f:
             html_content = f.read()
-        return HTMLResponse(content=html_content, headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"})
+        return HTMLResponse(content=html_content, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
     except FileNotFoundError:
         return HTMLResponse(content="<h1>Page Not Found</h1>", status_code=404)
 

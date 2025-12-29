@@ -180,8 +180,8 @@ handler_rabbit = WebhookHandler(RABBIT_CHANNEL_SECRET) if RABBIT_CHANNEL_SECRET 
 
 # Helper for debugging
 GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID")
-# Include Routers
-app.include_router(web_apps.router)
+# Include Routers (Available at startup)
+# app.include_router(web_apps.router) is already included at the top
 
 # Static Files Mount (Ensure images/CSS are served)
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -311,15 +311,7 @@ async def chat_whale(request: WhaleChatRequest):
 # Endpoints (Web Apps moved to routers/web_apps.py)
 # Authentication logic moved to core/security.py
 
-@app.get("/", response_class=HTMLResponse)
-def index():
-    """Botのポータル画面を表示"""
-    try:
-        with open("static/index.html", "r", encoding="utf-8") as f:
-            html_content = f.read()
-        return HTMLResponse(content=html_content, headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"})
-    except FileNotFoundError:
-        return HTMLResponse(content="<h1>Portal Not Found</h1>", status_code=404)
+# Index route is handled by web_apps.py
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8080))
