@@ -320,3 +320,45 @@ def get_timetable(station_data: dict) -> str:
         import traceback
         print(traceback.format_exc())
         return f"🦡 エラーが起きたモグ...💦\n{str(e)}"
+
+    # ==========================================
+    # 🦡 Web App API
+    # ==========================================
+    from pydantic import BaseModel
+    class MoleRequest(BaseModel):
+        station: str
+
+    @app.post("/api/mole/timetable")
+    async def mole_web_timetable(req: MoleRequest):
+        """Webからの時刻表リクエスト処理"""
+        print(f"🦡 Web Request: {req.station}")
+
+        extracted = req.station.replace("駅", "").strip()
+
+        # 駅検索ロジック（既存再利用）
+        found_stations = []
+        for s in STATIONS:
+            if s["name"] == extracted:
+                found_stations.append(s)
+
+        if not found_stations:
+            for s in STATIONS:
+                if extracted in s["name"]:
+                    found_stations.append(s)
+
+        if not found_stations:
+            return {"status": "error", "message": f"「{extracted}」は見つからないモグ...💦"}
+
+        all_timetables = []
+        for station in found_stations:
+            timetable = get_timetable(station)
+            if timetable and "もう電車がないモグ" not in timetable and "データがないモグ" not in timetable:
+                all_timetables.append(timetable)
+
+        if all_timetables:
+            return {"status": "success", "message": "\n\n".join(all_timetables)}
+        else:
+            # 見つかったけどデータがない場合
+            msg = get_timetable(found_stations[0])
+            return {"status": "success", "message": msg}
+```

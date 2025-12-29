@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>スーパー秘書ペンギン 🐧</title>
+    <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Shippori Mincho', serif;
+            background-color: #ECEFF1;
+            color: #263238;
+        }
+
+        .butler-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .tab-active {
+            border-bottom: 2px solid #0277BD;
+            color: #0277BD;
+            font-weight: bold;
+        }
+
+        .tab-inactive {
+            color: #78909C;
+            cursor: pointer;
+        }
+
+        .btn-penguin {
+            background-color: #0277BD;
+            color: white;
+            transition: background 0.3s;
+        }
+
+        .btn-penguin:hover {
+            background-color: #01579B;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen p-4 flex flex-col items-center">
+
+    <div class="max-w-2xl w-full mt-8">
+        <!-- Header -->
+        <div class="flex items-center justify-center mb-8 gap-4">
+            <div class="text-5xl">🐧</div>
+            <div>
+                <h1 class="text-2xl font-bold">Super Secretary Penguin</h1>
+                <p class="text-sm text-gray-500">あなたの有能な秘書ですペン。</p>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex border-b border-gray-300 mb-6">
+            <div id="tabEmail" onclick="switchTab('email')" class="tab-active flex-1 text-center py-3">
+                📧 メール作成
+            </div>
+            <div id="tabShop" onclick="switchTab('shop')" class="tab-inactive flex-1 text-center py-3">
+                🍽️ お店検索
+            </div>
+        </div>
+
+        <!-- Email Section -->
+        <div id="sectionEmail" class="block">
+            <div class="butler-card p-6">
+                <input type="text" id="emailTo" placeholder="To (宛先)"
+                    class="w-full border-b border-gray-200 p-2 mb-4 focus:outline-none focus:border-blue-500">
+                <input type="text" id="emailSubject" placeholder="件名: 明日の会議について"
+                    class="w-full border-b border-gray-200 p-2 mb-4 focus:outline-none focus:border-blue-500">
+                <textarea id="emailBody" placeholder="本文の要点: 14時からに変更したい。場所は第2会議室。"
+                    class="w-full border rounded bg-gray-50 p-3 h-32 mb-4 focus:outline-none focus:border-blue-500"></textarea>
+
+                <div class="flex justify-end gap-2">
+                    <button onclick="draftEmail()" class="btn-penguin px-6 py-2 rounded">
+                        下書き作成 ✍️
+                    </button>
+                    <!-- 送信機能はリスク回避のため、まずは下書き確認のみにするか、確認後送信ボタンを出す -->
+                </div>
+
+                <div id="draftResult" class="hidden mt-6 bg-gray-50 p-4 rounded border border-gray-200">
+                    <h3 class="font-bold mb-2 text-sm text-gray-500">修正案</h3>
+                    <div class="mb-2 font-bold" id="resSubject"></div>
+                    <div class="whitespace-pre-wrap" id="resBody"></div>
+
+                    <button onclick="sendRealEmail()" id="btnSendReal"
+                        class="mt-4 bg-green-600 text-white px-6 py-2 rounded hidden hover:bg-green-700 w-full">
+                        これで送信する 🚀
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shop Section -->
+        <div id="sectionShop" class="hidden">
+            <div class="butler-card p-6">
+                <div class="flex gap-2 mb-6">
+                    <input type="text" id="shopQuery" placeholder="例: 新宿で静かな和食、デート向き"
+                        class="flex-1 border-b border-gray-200 p-2 focus:outline-none focus:border-blue-500">
+                    <button onclick="searchShop()" class="btn-penguin px-6 py-2 rounded">
+                        検索 🔍
+                    </button>
+                </div>
+
+                <div id="shopResult" class="space-y-4">
+                    <!-- Results here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            if (tab === 'email') {
+                document.getElementById('sectionEmail').classList.remove('hidden');
+                document.getElementById('sectionShop').classList.add('hidden');
+                document.getElementById('tabEmail').className = 'tab-active flex-1 text-center py-3';
+                document.getElementById('tabShop').className = 'tab-inactive flex-1 text-center py-3';
+            } else {
+                document.getElementById('sectionEmail').classList.add('hidden');
+                document.getElementById('sectionShop').classList.remove('hidden');
+                document.getElementById('tabEmail').className = 'tab-inactive flex-1 text-center py-3';
+                document.getElementById('tabShop').className = 'tab-active flex-1 text-center py-3';
+            }
+        }
+
+        async function draftEmail() {
+            const to = document.getElementById('emailTo').value;
+            const sub = document.getElementById('emailSubject').value;
+            const body = document.getElementById('emailBody').value;
+
+            if (!sub || !body) return alert('件名と本文の要点を入れてペン！');
+
+            document.getElementById('draftResult').classList.remove('hidden');
+            document.getElementById('resBody').textContent = '執筆中だペン...🖋️';
+            document.getElementById('btnSendReal').classList.add('hidden');
+
+            try {
+                const res = await fetch('/api/penguin/email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ to: to, subject: sub, body: body })
+                });
+                const data = await res.json();
+
+                document.getElementById('resSubject').textContent = data.subject;
+                document.getElementById('resBody').textContent = data.body;
+
+                // データ保持用
+                window.lastEmailData = { to: to, subject: data.subject, body: data.body };
+                document.getElementById('btnSendReal').classList.remove('hidden');
+
+            } catch (e) {
+                alert('エラーだペン...');
+            }
+        }
+
+        async function sendRealEmail() {
+            if (!confirm('本当に送信してもいいペン？')) return;
+
+            const btn = document.getElementById('btnSendReal');
+            btn.disabled = true;
+            btn.textContent = '送信中...';
+
+            try {
+                const res = await fetch('/api/penguin/send_email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(window.lastEmailData)
+                });
+                const data = await res.json();
+                alert(data.message);
+                if (data.status === 'success') {
+                    btn.textContent = '送信完了！';
+                }
+            } catch (e) {
+                alert('送信失敗だペン...');
+                btn.disabled = false;
+            }
+        }
+
+        async function searchShop() {
+            const query = document.getElementById('shopQuery').value;
+            if (!query) return;
+
+            const list = document.getElementById('shopResult');
+            list.innerHTML = '<div class="text-center py-8">リサーチ中だペン...🕵️</div>';
+
+            try {
+                const res = await fetch('/api/penguin/concierge', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: query })
+                });
+                const data = await res.json();
+
+                list.innerHTML = `<div class="p-4 bg-blue-50 rounded text-sm mb-4">${data.intro}</div>`;
+
+                if (data.shops) {
+                    data.shops.forEach(shop => {
+                        const html = `
+                            <div class="border border-gray-200 rounded p-4 flex justify-between items-start">
+                                <div>
+                                    <h3 class="font-bold text-lg">${shop.name}</h3>
+                                    <p class="text-sm text-gray-600 mt-1">${shop.description}</p>
+                                </div>
+                                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shop.search_keyword)}"
+                                   target="_blank"
+                                   class="text-blue-500 text-sm hover:underline shrink-0 ml-4">
+                                   地図 🗺️
+                                </a>
+                            </div>
+                        `;
+                        list.insertAdjacentHTML('beforeend', html);
+                    });
+                }
+            } catch (e) {
+                list.innerHTML = 'エラーだペン...';
+            }
+        }
+    </script>
+</body>
+
+</html>

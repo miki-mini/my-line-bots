@@ -204,3 +204,33 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
                 pass
 
     print("🤖 ボイドールハンドラー登録完了")
+
+    # ==========================================
+    # 🤖 Web App API
+    # ==========================================
+    from pydantic import BaseModel
+    class VoidollRequest(BaseModel):
+        text: str
+
+    @app.post("/api/voidoll/chat")
+    async def voidoll_web_chat(req: VoidollRequest):
+        """Webからのチャット"""
+        try:
+            # プロンプト（猫モード）既存ロジック再利用
+            system_prompt = """
+            あなたは高度な知能を持つ「ネコ型アンドロイド」です。
+
+            【話し方のルール】
+            * **語尾:** 必ず「〜だにゃ」「〜にゃ」「〜にゃん」をつけてください。
+            * **絵文字:** 文末にたまに猫の絵文字（🐈, 🐾, 🌙）をつけてください。
+            * **性格:** 知的で役に立つことを言いますが、猫なので少し気まぐれでもOKです。
+            """
+
+            model = genai.GenerativeModel("gemini-2.5-flash")
+            response = model.generate_content([
+                system_prompt,
+                f"ユーザーのメッセージ: {req.text}",
+            ])
+            return {"status": "success", "message": response.text}
+        except Exception as e:
+            return {"status": "error", "message": f"エラーだにゃ...😿 {e}"}

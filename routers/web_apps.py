@@ -59,3 +59,21 @@ async def bat_page():
             return HTMLResponse(content=f.read(), headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"})
     except FileNotFoundError:
         return HTMLResponse(content="<h1>Page Not Found</h1>", status_code=404)
+
+@router.get("/fox", response_class=HTMLResponse)
+async def fox_page():
+    """キツネの動画要約（認証なし）"""
+    try:
+        with open("static/fox.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read(), headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"})
+    except FileNotFoundError:
+        return HTMLResponse(content="<h1>Page Not Found</h1>", status_code=404)
+
+@router.get("/frog", response_class=HTMLResponse)
+async def frog_page():
+    """お天気ケロくん（認証なし）"""
+    try:
+        with open("static/frog.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read(), headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"})
+    except FileNotFoundError:
+        return HTMLResponse(content="<h1>Page Not Found</h1>", status_code=404)

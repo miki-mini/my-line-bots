@@ -302,3 +302,38 @@ def send_email_via_gas(to, sub, body):
         return (True, "OK") if res.status_code in [200, 302] else (False, res.text)
     except Exception as e:
         return False, str(e)
+
+    # ==========================================
+    # 🐧 Web App API
+    # ==========================================
+    from pydantic import BaseModel
+
+    class PenguinEmailRequest(BaseModel):
+        to: str
+        subject: str
+        body: str
+
+    class PenguinConciergeRequest(BaseModel):
+        query: str
+
+    @app.post("/api/penguin/email")
+    async def penguin_web_email(req: PenguinEmailRequest):
+        """Webからのメール下書き生成"""
+        subject, body = call_gemini_email(req.subject, req.body, text_model)
+        # Web版では即時送信ではなく、生成結果を返すだけにする（確認用）
+        return {"status": "success", "subject": subject, "body": body}
+
+    @app.post("/api/penguin/send_email")
+    async def penguin_web_send_email(req: PenguinEmailRequest):
+        """Webからメール送信（GAS連携）"""
+        success, msg = send_email_via_gas(req.to, req.subject, req.body)
+        if success:
+            return {"status": "success", "message": "送信完了だペン！🐧✨"}
+        else:
+            return {"status": "error", "message": f"送信失敗... {msg}"}
+
+    @app.post("/api/penguin/concierge")
+    async def penguin_web_concierge(req: PenguinConciergeRequest):
+        """Webからのお店検索"""
+        shops, intro = call_gemini_concierge_list(req.query, text_model)
+        return {"status": "success", "intro": intro, "shops": shops}

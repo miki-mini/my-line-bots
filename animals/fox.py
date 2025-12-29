@@ -241,3 +241,27 @@ def summarize_youtube_with_search(video_id: str, search_model, text_model) -> st
     except Exception as e:
         print(f"❌ エラー: {e}")
         return "🦊 エラーだコン..."
+
+    # ==========================================
+    # 🦊 Web App API
+    # ==========================================
+    from pydantic import BaseModel
+    class FoxRequest(BaseModel):
+        url: str
+
+    @app.post("/api/fox/summary")
+    async def fox_web_summary(req: FoxRequest):
+        """Webからの要約リクエスト処理"""
+        url = req.url
+        print(f"🦊 Web Request: {url}")
+
+        # URLからID抽出
+        youtube_regex = r"(?:https?://)?(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]+)"
+        match = re.search(youtube_regex, url)
+
+        if match:
+            video_id = match.group(1)
+            summary = summarize_youtube_with_search(video_id, search_model, text_model)
+            return {"status": "success", "summary": summary}
+        else:
+            return {"status": "error", "message": "YouTubeのURLじゃないコン...💦"}

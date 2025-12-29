@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>もぐら駅長 🦡</title>
+    <link href="https://fonts.googleapis.com/css2?family=Train+One&family=M+PLUS+1p:wght@400;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'M PLUS 1p', sans-serif;
+            background-color: #3E2723;
+            background-image: repeating-linear-gradient(45deg, #4E342E 0, #4E342E 10px, #3E2723 10px, #3E2723 20px);
+            color: #FFECB3;
+        }
+
+        .sign-board {
+            background-color: #004D40;
+            border: 4px solid #FFECB3;
+            box-shadow: 0 0 10px black;
+            font-family: 'Train One', cursive;
+        }
+
+        .timetable-board {
+            background-color: #212121;
+            border: 2px solid #757575;
+            font-family: 'Courier New', monospace;
+            color: #00FF00;
+            /* LED Green */
+            text-shadow: 0 0 5px #00FF00;
+        }
+
+        .btn-mole {
+            background-color: #FFC107;
+            color: #3E2723;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #FF6F00;
+        }
+
+        .btn-mole:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full">
+        <!-- Sign -->
+        <div class="sign-board p-4 text-center rounded-lg mb-8 transform -rotate-1">
+            <div class="text-4xl mb-2">🦡</div>
+            <h1 class="text-3xl text-white tracking-widest">MOLE STATION</h1>
+            <p class="text-[#80CBC4] text-xs mt-1">Underground Timetable Service</p>
+        </div>
+
+        <!-- Input -->
+        <div class="bg-[#5D4037] p-6 rounded-lg shadow-xl mb-6 border-b-8 border-[#3E2723]">
+            <label class="block text-sm mb-2 opacity-80">駅名を入力するモグ！</label>
+            <div class="flex gap-2">
+                <input type="text" id="stationInput" placeholder="例: 吉祥寺"
+                    class="flex-1 bg-[#3E2723] border border-[#8D6E63] text-white p-3 rounded focus:outline-none focus:border-[#FFC107]">
+                <button onclick="searchTrain()" id="searchBtn" class="btn-mole px-6 rounded">
+                    検索
+                </button>
+            </div>
+        </div>
+
+        <!-- Result -->
+        <div id="resultArea" class="hidden timetable-board p-4 rounded-lg min-h-[150px]">
+            <div id="resultText" class="whitespace-pre-wrap leading-relaxed"></div>
+        </div>
+
+    </div>
+
+    <script>
+        async function searchTrain() {
+            const station = document.getElementById('stationInput').value.trim();
+            if (!station) return;
+
+            const btn = document.getElementById('searchBtn');
+            const resultArea = document.getElementById('resultArea');
+            const resultText = document.getElementById('resultText');
+
+            btn.disabled = true;
+            btn.innerHTML = '...';
+            resultArea.classList.remove('hidden');
+            resultText.innerHTML = 'Searching underground...';
+
+            try {
+                const res = await fetch('/api/mole/timetable', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ station: station })
+                });
+                const data = await res.json();
+
+                if (data.status === 'success') {
+                    resultText.textContent = data.message;
+                } else {
+                    resultText.textContent = data.message || "ERROR";
+                }
+
+            } catch (e) {
+                resultText.textContent = "COMMUNICATION ERROR";
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '検索';
+            }
+        }
+    </script>
+</body>
+
+</html>

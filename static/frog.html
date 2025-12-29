@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>お天気ケロくん 🐸</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Kiwi Maru', serif;
+            background-color: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .frog-container {
+            max-width: 600px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(46, 125, 50, 0.15);
+            width: 100%;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .btn-geo {
+            background-color: #4CAF50;
+            color: white;
+            box-shadow: 0 4px 0 #2E7D32;
+            transition: all 0.1s;
+        }
+
+        .btn-geo:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #2E7D32;
+        }
+
+        .btn-ask {
+            background-color: #81C784;
+            color: white;
+        }
+
+        .weather-result {
+            white-space: pre-wrap;
+            line-height: 1.8;
+            border-top: 2px dashed #A5D6A7;
+            margin-top: 1rem;
+            padding-top: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="frog-container">
+        <!-- Icon -->
+        <div class="text-6xl mb-4 animate-bounce">🐸</div>
+        <h1 class="text-2xl font-bold mb-8 text-[#1B5E20]">お天気ケロくん予報</h1>
+
+        <div class="card p-6 mb-6">
+            <h2 class="text-lg font-bold mb-4 flex items-center">
+                <span class="mr-2">📍</span> 今いる場所の天気
+            </h2>
+            <p class="text-sm text-gray-600 mb-4">
+                「Webでも現在地ボタン」は使えますケロ！<br>
+                下のボタンを押すと、GPSで場所を特定して天気を調べるケロ。
+            </p>
+            <button onclick="useCurrentLocation()" id="geoBtn"
+                class="btn-geo w-full py-4 rounded-xl font-bold text-lg flex justify-center items-center gap-2">
+                <span>📍</span> 現在地で調べる
+            </button>
+            <p id="geoStatus" class="text-xs text-center mt-2 text-gray-500 h-4"></p>
+        </div>
+
+        <div class="card p-6 mb-6">
+            <h2 class="text-lg font-bold mb-4 flex items-center">
+                <span class="mr-2">🔍</span> 場所名や質問で調べる
+            </h2>
+            <div class="flex gap-2">
+                <input type="text" id="textInput" placeholder="例: 北海道の雪情報、週末の東京"
+                    class="flex-1 bg-green-50 border border-green-200 rounded-lg p-3 focus:outline-none focus:border-green-500">
+                <button onclick="askText()" id="textBtn"
+                    class="bg-[#66BB6A] text-white px-6 rounded-lg font-bold hover:bg-[#43A047]">
+                    聞く
+                </button>
+            </div>
+        </div>
+
+        <!-- Result -->
+        <div id="resultArea" class="hidden w-full card p-6 bg-white/90">
+            <h3 class="font-bold text-[#2E7D32] mb-2">予報結果</h3>
+            <div id="resultText" class="weather-result text-gray-700"></div>
+        </div>
+    </div>
+
+    <script>
+        async function useCurrentLocation() {
+            const status = document.getElementById('geoStatus');
+            const btn = document.getElementById('geoBtn');
+
+            if (!navigator.geolocation) {
+                status.textContent = "このブラウザはGPSに対応していないケロ...💦";
+                return;
+            }
+
+            status.textContent = "GPSで場所を探しているケロ...📡";
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    status.textContent = `見つけたケロ！ (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+
+                    await fetchWeather({ lat: lat, lon: lon });
+
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50');
+                    status.textContent = "";
+                },
+                (error) => {
+                    console.error(error);
+                    let msg = "場所がわからなかったケロ...💦";
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED: msg = "位置情報の許可をしてほしいケロ！"; break;
+                        case error.POSITION_UNAVAILABLE: msg = "電波が悪いみたいだケロ..."; break;
+                        case error.TIMEOUT: msg = "タイムアウトしたケロ..."; break;
+                    }
+                    status.textContent = msg;
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50');
+                }
+            );
+        }
+
+        async function askText() {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) return;
+
+            await fetchWeather({ text: text });
+        }
+
+        async function fetchWeather(payload) {
+            const resultArea = document.getElementById('resultArea');
+            const resultText = document.getElementById('resultText');
+
+            resultArea.classList.remove('hidden');
+            resultText.innerHTML = '<div class="text-center animate-pulse">カエルが空を見上げているケロ...🐸⛅</div>';
+
+            try {
+                const res = await fetch('/api/frog/weather', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (data.status === 'success') {
+                    resultText.textContent = data.message;
+                } else {
+                    resultText.textContent = data.message || "エラーだケロ...💦";
+                }
+
+            } catch (e) {
+                resultText.textContent = "通信エラーだケロ...💦";
+            }
+        }
+    </script>
+</body>
+
+</html>

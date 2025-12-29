@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voidoll Chat 🤖</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background-color: #000;
+            color: #00FF00;
+        }
+
+        .chat-container {
+            max-width: 600px;
+            margin: 0 auto;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-window {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background: linear-gradient(180deg, rgba(0, 255, 0, 0.05) 0%, rgba(0, 0, 0, 0) 100%);
+        }
+
+        .message-bubble {
+            max-width: 80%;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            font-family: sans-serif;
+            /* Readability */
+        }
+
+        .msg-user {
+            background-color: #1A1A1A;
+            color: #DDD;
+            margin-left: auto;
+            border: 1px solid #333;
+        }
+
+        .msg-bot {
+            background-color: #003300;
+            color: #00FF00;
+            margin-right: auto;
+            border: 1px solid #005500;
+            box-shadow: 0 0 5px #00FF00;
+        }
+
+        .input-area {
+            padding: 1rem;
+            border-top: 1px solid #333;
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="chat-container">
+        <!-- Header -->
+        <div class="p-4 border-b border-[#00FF00] flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-widest">VOIDOLL SYSTEM</h1>
+            <div class="text-xs animate-pulse">● ONLINE</div>
+        </div>
+
+        <!-- Chat -->
+        <div id="chatWindow" class="chat-window">
+            <div class="msg-bot message-bubble">
+                Voidollシステム、起動。ご用件をどうぞだにゃ。🤖🐈
+            </div>
+        </div>
+
+        <!-- Input -->
+        <div class="input-area">
+            <input type="text" id="chatInput" placeholder="Message..."
+                class="flex-1 bg-[#111] border border-[#333] text-white p-3 rounded focus:outline-none focus:border-[#00FF00]"
+                onkeypress="if(event.key === 'Enter') send()">
+            <button onclick="send()" class="bg-[#00FF00] text-black font-bold px-6 rounded hover:bg-[#00CC00]">
+                SEND
+            </button>
+        </div>
+    </div>
+
+    <script>
+        async function send() {
+            const input = document.getElementById('chatInput');
+            const windowEl = document.getElementById('chatWindow');
+            const text = input.value.trim();
+            if (!text) return;
+
+            // User msg
+            windowEl.insertAdjacentHTML('beforeend', `<div class="msg-user message-bubble">${escapeHtml(text)}</div>`);
+            input.value = '';
+            windowEl.scrollTop = windowEl.scrollHeight;
+
+            // Bot Typing
+            const loadingId = 'loading-' + Date.now();
+            windowEl.insertAdjacentHTML('beforeend', `<div id="${loadingId}" class="msg-bot message-bubble opacity-50">...</div>`);
+            windowEl.scrollTop = windowEl.scrollHeight;
+
+            try {
+                const res = await fetch('/api/voidoll/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+                const data = await res.json();
+
+                document.getElementById(loadingId).remove();
+
+                if (data.status === 'success') {
+                    windowEl.insertAdjacentHTML('beforeend', `<div class="msg-bot message-bubble">${escapeHtml(data.message)}</div>`);
+                } else {
+                    windowEl.insertAdjacentHTML('beforeend', `<div class="msg-bot message-bubble text-red-500">Error: ${data.message}</div>`);
+                }
+
+            } catch (e) {
+                document.getElementById(loadingId).remove();
+                windowEl.insertAdjacentHTML('beforeend', `<div class="msg-bot message-bubble text-red-500">Communication Error</div>`);
+            }
+            windowEl.scrollTop = windowEl.scrollHeight;
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+
+</html>

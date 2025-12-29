@@ -511,3 +511,75 @@ def create_google_maps_link(location: str, use_api: bool = False) -> str:
     # APIなしの簡易リンク（デフォルト）
     encoded_location = urllib.parse.quote(location)
     return f"https://www.google.com/maps/search/?api=1&query={encoded_location}"
+
+
+    # ==========================================
+    # 🐸 Web App API
+    # ==========================================
+    from pydantic import BaseModel
+    from typing import Optional
+
+    class FrogRequest(BaseModel):
+        text: Optional[str] = None
+        lat: Optional[float] = None
+        lon: Optional[float] = None
+
+    @app.post("/api/frog/weather")
+    async def frog_web_weather(req: FrogRequest):
+        """Webからの天気リクエスト処理"""
+        print(f"🐸 Web Request: {req}")
+
+        # 位置情報がある場合
+        if req.lat is not None and req.lon is not None:
+            # 住所取得（既存関数再利用）
+            address = get_location_name_from_coords(req.lat, req.lon)
+            if not address:
+                address = f"緯度{req.lat}, 経度{req.lon}"
+
+            # 天気取得（既存関数再利用 - handle_location_message）
+            # ただし handle_location_message は内部で LINE 固有の処理をしていないので再利用しやすいが、
+            # prompt生成部分が関数内にあるので、ここでも似たロジックを呼ぶ必要がある。
+            # 今回は handle_location_message を少しリファクタリングするのではなく、
+            # ロジックをコピーしてWeb用にアジャストするのが安全（既存LINE Botを壊さないため）。
+
+            try:
+                # Web用プロンプト
+                today = dt.date.today().strftime("%Y年%m月%d日")
+                maps_link = f"https://www.google.com/maps/search/?api=1&query={req.lat},{req.lon}"
+
+                model = search_model if search_model else text_model
+                prompt = f"""現在日時: {today}
+場所: {address}
+Googleマップ: {maps_link}
+
+あなたは天気予報が得意なカエル「お天気ケロくん」です。
+この場所の最新の天気情報をGoogle検索で調べて教えてください。 HTMLタグは使わず、シンプルなテキストで答えてください。
+
+回答形式：
+📍 場所: {address}
+
+【今日の天気】
+- 天気
+- 気温（最高/最低）
+- 降水確率
+- 一言アドバイス
+
+語尾は「ケロ」で、絵文字（🐸）をふんだんに使ってください。
+"""
+                response = model.generate_content(prompt)
+                return {"status": "success", "message": response.text}
+            except Exception as e:
+                return {"status": "error", "message": f"エラーだケロ...💦 {e}"}
+
+        # テキストの場合
+        elif req.text:
+            text = req.text
+            # 既存の handle_text_message は内部で LINE返信はしていないが、
+            # print文が多いので、ここでも検索ロジックを呼び出す形にする。
+            # handle_text_message を呼ぶのが一番早いが、戻り値が string なので使える。
+
+            reply = handle_text_message(text, search_model, text_model)
+            return {"status": "success", "message": reply}
+
+        else:
+            return {"status": "error", "message": "場所かテキストを送ってほしいケロ！"}
