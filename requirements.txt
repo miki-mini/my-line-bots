@@ -4,7 +4,7 @@ gunicorn
 line-bot-sdk>=3.0.0
 google-cloud-firestore
 google-cloud-storage
-
+google-genai
 google-cloud-aiplatform==1.71.0
 google-generativeai==0.8.3
 japanize-matplotlib

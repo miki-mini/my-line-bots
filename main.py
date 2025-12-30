@@ -72,28 +72,38 @@ class SearchModelWrapper:
     """動物たちが今まで通り使えるようにするラッパー"""
 
     def __init__(self, project_id, location="asia-northeast1"):
-        import google.generativeai as genai
+        from google import genai
+        from google.genai import types
 
-        # APIキーで初期化
-        api_key = os.getenv("GEMINI_API_KEY")
-        if not api_key:
-            raise ValueError("GEMINI_API_KEY not found in environment variables")
-
-        genai.configure(api_key=api_key)
-        self.genai = genai
+        self.client = genai.Client(
+            vertexai=True,
+            project=project_id,
+            location=location
+        )
         self.model_name = "gemini-2.5-flash"
+        self.types = types
 
     def generate_content(self, prompt, generation_config=None):
         """今まで通りの呼び出し方で使える"""
+        from google.genai import types
 
-        # Google検索を有効にしたモデルを作成
-        model = self.genai.GenerativeModel(
-            self.model_name,
-            tools='google_search_retrieval'
+        config_dict = {
+            "tools": [types.Tool(google_search=types.GoogleSearch())]
+        }
+
+        if generation_config:
+            if "temperature" in generation_config:
+                config_dict["temperature"] = generation_config["temperature"]
+            if "max_output_tokens" in generation_config:
+                config_dict["max_output_tokens"] = generation_config["max_output_tokens"]
+
+        config = types.GenerateContentConfig(**config_dict)
+
+        response = self.client.models.generate_content(
+            model=self.model_name,
+            contents=prompt,
+            config=config
         )
-
-        # レスポンスを生成
-        response = model.generate_content(prompt)
         return response
 
 load_dotenv()
