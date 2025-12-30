@@ -16,7 +16,7 @@ from linebot.v3.webhook import MessageEvent
 from linebot.v3.webhooks import TextMessageContent, LocationMessageContent
 from linebot.v3.exceptions import InvalidSignatureError
 from fastapi import Request, HTTPException
-from datetime import datetime, timedelta, timezone
+import datetime
 
 # 駅データをインポート
 try:
