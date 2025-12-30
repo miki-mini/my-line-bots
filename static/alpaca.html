@@ -5,33 +5,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>アルパカのまつエクサロン🦙</title>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #f8c291;
-            --secondary-color: #6a89cc;
-            --accent-color: #82ccdd;
-            --bg-color: #fdf2e9;
-            --text-color: #2f3542;
+            --primary-gold: #D4AF37;
+            --primary-soft: #fcf0e1;
+            --secondary-soft: #fce4ec;
+            --text-dark: #4a4a4a;
+            --shadow-soft: 0 10px 30px rgba(212, 175, 55, 0.15);
         }
 
         body {
-            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            font-family: 'Zen Old Mincho', serif;
+            background: linear-gradient(135deg, #fdfbf7 0%, #fff1f2 100%);
+            color: var(--text-dark);
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Fluffy Background Elements */
+        .fluff {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            filter: blur(20px);
+            animation: float 10s infinite ease-in-out;
+        }
+
+        .fluff:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            top: -50px;
+            left: -50px;
+            animation-delay: 0s;
+            background: rgba(252, 228, 236, 0.6);
+        }
+
+        .fluff:nth-child(2) {
+            width: 400px;
+            height: 400px;
+            bottom: -100px;
+            right: -100px;
+            animation-delay: 2s;
+            background: rgba(243, 230, 255, 0.5);
+        }
+
+        .fluff:nth-child(3) {
+            width: 200px;
+            height: 200px;
+            top: 40%;
+            left: 80%;
+            animation-delay: 4s;
+            background: rgba(255, 248, 225, 0.6);
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-20px) scale(1.05);
+            }
         }
 
         header {
-            background-color: #fff;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
             width: 100%;
-            padding: 1rem 0;
+            padding: 1.2rem 0;
             text-align: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -39,8 +93,14 @@
 
         h1 {
             margin: 0;
-            color: var(--secondary-color);
-            font-size: 1.5rem;
+            color: var(--text-dark);
+            font-size: 1.4rem;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+        }
+
+        h1 span {
+            color: var(--primary-gold);
         }
 
         .container {
@@ -51,17 +111,30 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            z-index: 10;
+            padding-bottom: 40px;
+        }
+
+        .camera-frame {
+            padding: 15px;
+            background: #fff;
+            border-radius: 50% 50% 45% 45% / 60% 60% 40% 40%;
+            /* Organic/Fluffy shape */
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 20px;
+            position: relative;
         }
 
         .camera-container {
             position: relative;
-            width: 90%;
-            max-width: 400px;
-            border-radius: 20px;
+            width: 85vw;
+            max-width: 350px;
+            border-radius: 200px;
+            /* Very rounded, oval-like */
             overflow: hidden;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
             background-color: #000;
             aspect-ratio: 3/4;
+            border: 4px solid #fff;
         }
 
         video {
@@ -69,84 +142,87 @@
             height: 100%;
             object-fit: cover;
             transform: scaleX(-1);
-            /* Mirror effect */
-        }
-
-        .canvas-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
         }
 
         .eyelash-overlay {
             position: absolute;
             width: 200px;
-            /* Default size */
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             mix-blend-mode: multiply;
-            /* Make white background transparent */
             pointer-events: auto;
-            /* Allow dragging */
             cursor: grab;
             filter: contrast(1.2);
-        }
-
-        .eyelash-overlay:active {
-            cursor: grabbing;
+            z-index: 20;
         }
 
         .controls {
-            margin-top: 20px;
-            width: 90%;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            width: 85%;
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
+            flex-direction: column;
+            gap: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .label {
+            font-size: 0.9rem;
+            color: #888;
+            font-weight: bold;
         }
 
         .btn-group {
             display: flex;
-            gap: 5px;
+            gap: 8px;
+        }
+
+        button.style-btn {
+            border: 1px solid #eee;
             background: #fff;
-            padding: 5px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-
-        button {
-            border: none;
-            background: transparent;
-            padding: 8px 12px;
-            border-radius: 8px;
+            padding: 8px 15px;
+            border-radius: 20px;
             cursor: pointer;
-            font-weight: bold;
-            color: var(--text-color);
-            transition: all 0.2s;
+            font-family: inherit;
+            color: #666;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
         }
 
-        button:hover {
-            background-color: var(--accent-color);
-            color: #fff;
+        button.style-btn:hover {
+            transform: translateY(-2px);
         }
 
-        button.active {
-            background-color: var(--secondary-color);
-            color: #fff;
+        button.style-btn.active {
+            background: var(--primary-soft);
+            color: var(--text-dark);
+            border-color: var(--primary-gold);
+            box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2);
         }
 
         .capture-btn {
-            background-color: var(--primary-color);
+            background: linear-gradient(45deg, #d4af37, #f3d069);
             color: #fff;
-            font-size: 1.2rem;
-            padding: 15px 40px;
+            font-size: 1.1rem;
+            padding: 18px 50px;
+            border: none;
             border-radius: 50px;
-            margin-top: 20px;
-            box-shadow: 0 4px 10px rgba(248, 194, 145, 0.4);
+            margin-top: 30px;
+            box-shadow: 0 10px 25px rgba(212, 175, 55, 0.3);
+            cursor: pointer;
+            font-family: inherit;
+            letter-spacing: 0.1em;
+            transition: transform 0.2s;
         }
 
         .capture-btn:active {
@@ -154,61 +230,112 @@
         }
 
         .tips {
-            background-color: #fff;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px;
-            width: 80%;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: #aaa;
             text-align: center;
-            font-size: 0.9rem;
-            color: #7f8c8d;
         }
 
         .hidden {
             display: none;
+        }
+
+        /* Modal for result */
+        .result-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .result-modal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .result-img {
+            max-width: 80%;
+            max-height: 60vh;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            border: 10px solid #fff;
+        }
+
+        .close-btn {
+            margin-top: 20px;
+            background: transparent;
+            border: 1px solid #ccc;
+            padding: 10px 30px;
+            border-radius: 30px;
+            cursor: pointer;
         }
     </style>
 </head>
 
 <body>
 
+    <div class="fluff"></div>
+    <div class="fluff"></div>
+    <div class="fluff"></div>
+
     <header>
-        <h1>アルパカのまつエクサロン🦙</h1>
+        <h1><span>アルパカ</span>のまつエクサロン🦙</h1>
     </header>
 
     <div class="container">
-        <div class="camera-container" id="cameraContainer">
-            <video id="video" autoplay playsinline></video>
-            <!-- The overlay image -->
-            <img src="/static/eyelashes.png" id="lashLeft" class="eyelash-overlay" style="left: 35%;" alt="Left Lash">
-            <img src="/static/eyelashes.png" id="lashRight" class="eyelash-overlay"
-                style="transform: translate(-50%, -50%) scaleX(-1); left: 65%;" alt="Right Lash">
+        <div class="camera-frame">
+            <div class="camera-container" id="cameraContainer">
+                <video id="video" autoplay playsinline></video>
+                <img src="/static/eyelashes.png" id="lashLeft" class="eyelash-overlay" style="left: 35%;"
+                    alt="Left Lash">
+                <img src="/static/eyelashes.png" id="lashRight" class="eyelash-overlay"
+                    style="transform: translate(-50%, -50%) scaleX(-1); left: 65%;" alt="Right Lash">
+            </div>
         </div>
 
         <div class="controls">
-            <div class="btn-group">
-                <button onclick="setVolume(60)" class="active">60本</button>
-                <button onclick="setVolume(80)">80本</button>
-                <button onclick="setVolume(100)">100本</button>
+            <div class="control-row">
+                <div class="label">本数 (Volume)</div>
+                <div class="btn-group">
+                    <button onclick="setVolume(60)" class="style-btn active">60本</button>
+                    <button onclick="setVolume(80)" class="style-btn">80本</button>
+                    <button onclick="setVolume(100)" class="style-btn">100本</button>
+                </div>
             </div>
-            <div class="btn-group">
-                <button onclick="setCurl('J')" class="active">Jカール</button>
-                <button onclick="setCurl('C')">Cカール</button>
-                <button onclick="setCurl('D')">Dカール</button>
+            <div class="control-row">
+                <div class="label">カール (Curl)</div>
+                <div class="btn-group">
+                    <button onclick="setCurl('J')" class="style-btn active">J</button>
+                    <button onclick="setCurl('C')" class="style-btn">C</button>
+                    <button onclick="setCurl('D')" class="style-btn">D</button>
+                </div>
             </div>
         </div>
+        <div class="tips">✨ まつげをドラッグして位置を調整してください ✨</div>
 
-        <div class="tips">
-            <p>💡 ヒント: まつげの位置は指でドラッグして調整できます！</p>
-        </div>
+        <button class="capture-btn" onclick="takeSnapshot()">完成写真をとる</button>
 
-        <button class="capture-btn" onclick="takeSnapshot()">📸 撮影する</button>
-
+        <!-- Hidden Canvas -->
         <canvas id="snapshotCanvas" class="hidden"></canvas>
-        <img id="snapshotImg" class="hidden"
-            style="max-width: 90%; border-radius: 20px; margin-top:20px; box-shadow: 0 8px 20px rgba(0,0,0,0.2);">
-        <a id="downloadLink" class="hidden"
-            style="margin-top: 10px; display: inline-block; text-decoration: none; color: var(--secondary-color); font-weight: bold;">画像を保存</a>
+    </div>
+
+    <!-- Result Modal -->
+    <div id="resultModal" class="result-modal">
+        <h2 style="color:var(--text-dark); margin-bottom:20px; font-size:1.2rem;">✨ Beautiful! ✨</h2>
+        <img id="snapshotImg" class="result-img">
+        <a id="downloadLink" class="capture-btn"
+            style="text-decoration:none; display:inline-block; font-size:0.9rem; padding:12px 30px; margin-top:20px;">画像を保存</a>
+        <button class="close-btn" onclick="closeModal()">戻る</button>
     </div>
 
     <script>
@@ -225,13 +352,12 @@
                 });
                 video.srcObject = stream;
             } catch (err) {
-                alert("カメラへのアクセスが許可されていません。\n設定を確認してください。");
-                console.error("Camera Error:", err);
+                alert("カメラへのアクセスが許可されていません。");
             }
         }
         startCamera();
 
-        // Drag Logic (Touch & Mouse)
+        // Drag Logic (Touch & Mouse) - Same as before
         function makeDraggable(el) {
             let isDragging = false;
             let startX, startY, initialLeft, initialTop;
@@ -244,7 +370,7 @@
                 startY = clientY;
                 initialLeft = el.offsetLeft;
                 initialTop = el.offsetTop;
-                el.style.cursor = 'grabbing';
+                el.style.opacity = 0.5; // Drag feedback
                 e.preventDefault();
             };
 
@@ -260,7 +386,7 @@
 
             const end = () => {
                 isDragging = false;
-                el.style.cursor = 'grab';
+                updateStyle(); // Reset opacity correct
             };
 
             el.addEventListener('mousedown', start);
@@ -279,21 +405,17 @@
         let currentCurl = 'J';
 
         function updateStyle() {
-            // Simple simulation logic
-            let opacity = 0.7; // default for 60
-            let scaleY = 1.0;  // default for J
+            let opacity = 0.7;
+            let scaleY = 1.0;
 
-            // Volume logic
             if (currentVolume === 80) opacity = 0.85;
             if (currentVolume === 100) opacity = 1.0;
 
-            // Curl logic
             if (currentCurl === 'C') scaleY = 1.2;
             if (currentCurl === 'D') scaleY = 1.4;
 
             [lashLeft, lashRight].forEach(lash => {
                 lash.style.opacity = opacity;
-                // Maintain the flip for the right lash
                 const isRight = lash.id === 'lashRight';
                 const flip = isRight ? 'scaleX(-1)' : '';
                 lash.style.transform = `translate(-50%, -50%) ${flip} scaleY(${scaleY})`;
@@ -302,20 +424,20 @@
 
         window.setVolume = (vol) => {
             currentVolume = vol;
-            // Update generic button UI
-            document.querySelectorAll('.btn-group:first-of-type button').forEach(b => b.classList.remove('active'));
+            const btns = document.querySelectorAll('.control-row:nth-child(1) .style-btn');
+            btns.forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
             updateStyle();
         };
 
         window.setCurl = (curl) => {
             currentCurl = curl;
-            document.querySelectorAll('.btn-group:last-of-type button').forEach(b => b.classList.remove('active'));
+            const btns = document.querySelectorAll('.control-row:nth-child(2) .style-btn');
+            btns.forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
             updateStyle();
         };
 
-        // Initial call
         updateStyle();
 
         // Snapshot Logic
@@ -325,31 +447,23 @@
             const width = video.videoWidth;
             const height = video.videoHeight;
 
-            // Set canvas dimensions to match video
             canvas.width = width;
             canvas.height = height;
 
-            // Draw video (Mirrored)
+            // Draw Video
             context.save();
             context.scale(-1, 1);
             context.drawImage(video, -width, 0, width, height);
             context.restore();
 
-            // Draw overlays manually mapping DOM position to Canvas position
-            // Note: This is tricky because DOM is responsive. simplified approach:
-            // Just take screenshot of the .camera-container using html2canvas if possible,
-            // OR better (simpler for this demo): Just pause video and hide UI?
-            // Let's try to map the DOM position to canvas coordinates relative to the video size.
-
+            // Draw Images
             const containerRect = document.querySelector('.camera-container').getBoundingClientRect();
 
             [lashLeft, lashRight].forEach(lash => {
                 const lashRect = lash.getBoundingClientRect();
-                // Calculate relative position within the container
                 const relativeLeft = lashRect.left - containerRect.left;
                 const relativeTop = lashRect.top - containerRect.top;
 
-                // Scale factor between displayed video and actual video resolution
                 const scaleX = width / containerRect.width;
                 const scaleY = height / containerRect.height;
 
@@ -358,18 +472,14 @@
                 const drawW = lashRect.width * scaleX;
                 const drawH = lashRect.height * scaleY;
 
-                // Check if flipped
                 const isRight = lash.id === 'lashRight';
 
                 context.globalAlpha = lash.style.opacity || 0.7;
                 context.save();
-                context.globalCompositeOperation = 'multiply'; // Simulate mix-blend-mode
+                context.globalCompositeOperation = 'multiply';
 
-                // Move to center of image to apply transforms
                 context.translate(drawX + drawW / 2, drawY + drawH / 2);
 
-                // Re-apply style transforms
-                // Note: extracting matrix is hard, let's just re-apply known logic
                 let scaleYParam = 1.0;
                 if (currentCurl === 'C') scaleYParam = 1.2;
                 if (currentCurl === 'D') scaleYParam = 1.4;
@@ -377,8 +487,7 @@
                 const flip = isRight ? -1 : 1;
                 context.scale(flip, scaleYParam);
 
-                // Draw image centered
-                context.drawImage(lash, -drawW / 2, -drawH / 2, drawW, drawH); // Lash image already loaded in DOM
+                context.drawImage(lash, -drawW / 2, -drawH / 2, drawW, drawH);
 
                 context.restore();
                 context.globalAlpha = 1.0;
@@ -386,17 +495,15 @@
 
             // Show result
             const dataURL = canvas.toDataURL('image/png');
-            const img = document.getElementById('snapshotImg');
-            img.src = dataURL;
-            img.classList.remove('hidden');
+            document.getElementById('snapshotImg').src = dataURL;
+            document.getElementById('downloadLink').href = dataURL;
+            document.getElementById('downloadLink').download = `alpaca_salon_${Date.now()}.png`;
 
-            const link = document.getElementById('downloadLink');
-            link.href = dataURL;
-            link.download = `alpaca_lashes_${Date.now()}.png`;
-            link.classList.remove('hidden');
+            document.getElementById('resultModal').classList.add('show');
+        };
 
-            // Scroll to result
-            img.scrollIntoView({ behavior: 'smooth' });
+        window.closeModal = () => {
+            document.getElementById('resultModal').classList.remove('show');
         };
 
     </script>
