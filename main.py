@@ -35,6 +35,7 @@ from animals.bat import register_bat_handler
 from animals.owl import register_owl_handler
 
 from routers import web_apps
+from animals import beaver, fox, bat, mole, frog
 
 # Google Cloud Imports
 from google.cloud import storage
@@ -47,6 +48,11 @@ from google.cloud import firestore
 # ---------------------------------------------------------------------------
 app = FastAPI()
 app.include_router(web_apps.router)
+app.include_router(beaver.router)
+app.include_router(fox.router)
+app.include_router(bat.router)
+app.include_router(mole.router)
+app.include_router(frog.router)
 db = None
 storage_client = None
 text_model = None

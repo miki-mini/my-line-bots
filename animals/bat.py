@@ -23,12 +23,15 @@ from pydantic import BaseModel
 # Firestore Collection Name
 COLLECTION_NAME = "tv_watch_lists"
 
-def register_bat_handler(app, handler_bat, configuration_bat, search_model, db):
+def register_bat_handler(app, handler, configuration, search_model, db):
     """
-    テレビコウモリのハンドラーを登録
+    コウモリボット登録
     Parameters:
         db: Firestore Client
     """
+    global _db, _search_model
+    _db = db
+    _search_model = search_model
 
     # ==========================================
     # 🦇 Webhook エンドポイント
@@ -39,7 +42,7 @@ def register_bat_handler(app, handler_bat, configuration_bat, search_model, db):
         body = await request.body()
 
         try:
-            handler_bat.handle(body.decode("utf-8"), signature)
+            handler.handle(body.decode("utf-8"), signature)
         except InvalidSignatureError:
             raise HTTPException(status_code=400, detail="Invalid signature")
         except Exception as e:
@@ -50,7 +53,7 @@ def register_bat_handler(app, handler_bat, configuration_bat, search_model, db):
     # ==========================================
     # 🦇 メッセージ処理
     # ==========================================
-    @handler_bat.add(MessageEvent, message=TextMessageContent)
+    @handler.add(MessageEvent, message=TextMessageContent)
     def handle_bat_message(event):
         text = event.message.text.strip()
         print(f"🦇 受信: {text}")
@@ -161,30 +164,36 @@ def register_bat_handler(app, handler_bat, configuration_bat, search_model, db):
 
         return {"status": "ok", "message": f"Sent notifications for: {len(found_shows)} shows"}
 
-    # ==========================================
-    # 🦇 Web App API (Watchlist Management)
-    # ==========================================
+    print("🦇 コウモリハンドラー登録完了")
 
-    class WatchListRequest(BaseModel):
-        user_id: str
-        keyword: str
+# ==========================================
+# 🦇 Web App API (Router)
+# ==========================================
+from fastapi import APIRouter
+from pydantic import BaseModel
 
-    @app.get("/api/bat/keywords/{user_id}")
-    async def get_bat_keywords(user_id: str):
-        keywords = _get_user_watch_list(db, user_id)
-        return {"keywords": keywords}
+router = APIRouter()
 
-    @app.post("/api/bat/keywords")
-    async def add_bat_keyword(req: WatchListRequest):
-        _add_to_watch_list(db, req.user_id, req.keyword)
+class WatchListRequest(BaseModel):
+    user_id: str
+    keyword: str
+
+@router.get("/api/bat/keywords/{user_id}")
+async def get_bat_keywords(user_id: str):
+    keywords = _get_user_watch_list(_db, user_id)
+    return {"keywords": keywords}
+
+@router.post("/api/bat/keywords")
+async def add_bat_keyword(req: WatchListRequest):
+    _add_to_watch_list(_db, req.user_id, req.keyword)
+    return {"status": "success", "keyword": req.keyword}
+
+@router.delete("/api/bat/keywords")
+async def remove_bat_keyword(req: WatchListRequest):
+    if _remove_from_watch_list(_db, req.user_id, req.keyword):
         return {"status": "success", "keyword": req.keyword}
-
-    @app.delete("/api/bat/keywords")
-    async def remove_bat_keyword(req: WatchListRequest):
-        if _remove_from_watch_list(db, req.user_id, req.keyword):
-            return {"status": "success", "keyword": req.keyword}
-        else:
-            return {"status": "not_found", "message": "Keyword not in list"}
+    else:
+        return {"status": "not_found", "message": "Keyword not in list"}
 
 
 # ==========================================

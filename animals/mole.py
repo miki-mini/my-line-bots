@@ -60,8 +60,10 @@ def register_mole_handler(app, handler_mole, configuration_mole, text_model):
     """
 
     # Google Maps クライアント
-    GMAPS_API_KEY = os.getenv("GMAPS_API_KEY")
-    gmaps = googlemaps.Client(key=GMAPS_API_KEY) if GMAPS_API_KEY else None
+    global _gmaps, _text_model
+    _gmaps = googlemaps.Client(key=os.getenv("GMAPS_API_KEY")) if os.getenv("GMAPS_API_KEY") else None
+    _text_model = text_model
+
 
     @app.post("/callback_train")
     async def callback_train(request: Request):
@@ -175,11 +177,11 @@ def register_mole_handler(app, handler_mole, configuration_mole, text_model):
         print(f"📍 位置情報受信: ({event.message.latitude}, {event.message.longitude})")
 
         try:
-            if not gmaps:
+            if not _gmaps:
                 msg = "🦡 Google Maps APIが設定されてないモグ...💦"
             else:
                 # 最寄り駅を検索
-                res = gmaps.places_nearby(
+                res = _gmaps.places_nearby(
                     location=(event.message.latitude, event.message.longitude),
                     rank_by="distance",
                     type="train_station",
@@ -323,40 +325,51 @@ def get_timetable(station_data: dict) -> str:
     # ==========================================
     # 🦡 Web App API
     # ==========================================
-    from pydantic import BaseModel
-    class MoleRequest(BaseModel):
-        station: str
+    print("🦡 もぐらハンドラー登録完了")
 
-    @app.post("/api/mole/timetable")
-    async def mole_web_timetable(req: MoleRequest):
-        """Webからの時刻表リクエスト処理"""
-        print(f"🦡 Web Request: {req.station}")
+# ==========================================
+# 🦡 Web App API (Router)
+# ==========================================
+from fastapi import APIRouter
+from pydantic import BaseModel
 
-        extracted = req.station.replace("駅", "").strip()
+router = APIRouter()
+_gmaps = None
+_text_model = None
 
-        # 駅検索ロジック（既存再利用）
-        found_stations = []
+class MoleRequest(BaseModel):
+    station: str
+
+@router.post("/api/mole/timetable")
+async def mole_web_timetable(req: MoleRequest):
+    """Webからの時刻表リクエスト処理"""
+    print(f"🦡 Web Request: {req.station}")
+
+    extracted = req.station.replace("駅", "").strip()
+
+    # 駅検索ロジック（既存再利用）
+    found_stations = []
+    for s in STATIONS:
+        if s["name"] == extracted:
+            found_stations.append(s)
+
+    if not found_stations:
         for s in STATIONS:
-            if s["name"] == extracted:
+            if extracted in s["name"]:
                 found_stations.append(s)
 
-        if not found_stations:
-            for s in STATIONS:
-                if extracted in s["name"]:
-                    found_stations.append(s)
+    if not found_stations:
+        return {"status": "error", "message": f"「{extracted}」は見つからないモグ...💦"}
 
-        if not found_stations:
-            return {"status": "error", "message": f"「{extracted}」は見つからないモグ...💦"}
+    all_timetables = []
+    for station in found_stations:
+        timetable = get_timetable(station)
+        if timetable and "もう電車がないモグ" not in timetable and "データがないモグ" not in timetable:
+            all_timetables.append(timetable)
 
-        all_timetables = []
-        for station in found_stations:
-            timetable = get_timetable(station)
-            if timetable and "もう電車がないモグ" not in timetable and "データがないモグ" not in timetable:
-                all_timetables.append(timetable)
-
-        if all_timetables:
-            return {"status": "success", "message": "\n\n".join(all_timetables)}
-        else:
-            # 見つかったけどデータがない場合
-            msg = get_timetable(found_stations[0])
-            return {"status": "success", "message": msg}
+    if all_timetables:
+        return {"status": "success", "message": "\n\n".join(all_timetables)}
+    else:
+        # 見つかったけどデータがない場合
+        msg = get_timetable(found_stations[0])
+        return {"status": "success", "message": msg}

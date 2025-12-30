@@ -29,7 +29,15 @@ from google.cloud import firestore
 # グローバル変数（register時に設定）
 # ========================================
 _db = None
+_db = None
 _text_model = None
+
+# ========================================
+# API Router definition
+# ========================================
+from fastapi import APIRouter
+router = APIRouter()
+
 
 
 # ========================================
@@ -220,38 +228,44 @@ def register_beaver_handler(app, handler, configuration, db, text_model=None):
     # ========================================
     # API エンドポイント群（GAS連携用）
     # ========================================
-    @app.post("/add-memo")
-    async def add_memo(r: MemoRequest):
-        if _db:
-            _db.collection("memos").add({
-                "user_id": r.user_id,
-                "text": r.memo_text,
-                "reminder_time": r.reminder_time,
-                "timestamp": firestore.SERVER_TIMESTAMP,
-            })
-        return {"status": "success"}
+    print("🦫 ビーバーハンドラー登録完了")
 
-    @app.get("/get-memos/{user_id}")
-    async def get_memos(user_id: str):
-        if not _db:
-            return {"memos": []}
-        docs = _db.collection("memos").where("user_id", "==", user_id).stream()
-        return {
-            "memos": [
-                {
-                    "memo_id": d.id,
-                    "text": d.to_dict().get("text"),
-                    "reminder_time": d.to_dict().get("reminder_time"),
-                }
-                for d in docs
-            ]
-        }
 
-    @app.delete("/delete-memo/{memo_id}")
-    async def delete_memo(memo_id: str):
-        if _db:
-            _db.collection("memos").document(memo_id).delete()
-        return {"status": "success"}
+# ========================================
+# API エンドポイント群（Router）
+# ========================================
+@router.post("/add-memo")
+async def add_memo(r: MemoRequest):
+    if _db:
+        _db.collection("memos").add({
+            "user_id": r.user_id,
+            "text": r.memo_text,
+            "reminder_time": r.reminder_time,
+            "timestamp": firestore.SERVER_TIMESTAMP,
+        })
+    return {"status": "success"}
+
+@router.get("/get-memos/{user_id}")
+async def get_memos(user_id: str):
+    if not _db:
+        return {"memos": []}
+    docs = _db.collection("memos").where("user_id", "==", user_id).stream()
+    return {
+        "memos": [
+            {
+                "memo_id": d.id,
+                "text": d.to_dict().get("text"),
+                "reminder_time": d.to_dict().get("reminder_time"),
+            }
+            for d in docs
+        ]
+    }
+
+@router.delete("/delete-memo/{memo_id}")
+async def delete_memo(memo_id: str):
+    if _db:
+        _db.collection("memos").document(memo_id).delete()
+    return {"status": "success"}
 
     @app.get("/get-due-memos")
     def get_due_memos():

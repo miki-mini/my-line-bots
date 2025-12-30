@@ -16,11 +16,19 @@ from linebot.v3.webhooks import TextMessageContent
 from linebot.v3.exceptions import InvalidSignatureError
 from fastapi import Request, HTTPException
 
+# Globals for API access
+_search_model = None
+_text_model = None
+
+
 
 def register_fox_handler(app, handler_fox, configuration_fox, search_model, text_model):
     """
     キツネのハンドラーを登録
     """
+    global _search_model, _text_model
+    _search_model = search_model
+    _text_model = text_model
 
     @app.post("/callback_fox")
     async def callback_fox(request: Request):
@@ -242,26 +250,33 @@ def summarize_youtube_with_search(video_id: str, search_model, text_model) -> st
         print(f"❌ エラー: {e}")
         return "🦊 エラーだコン..."
 
-    # ==========================================
-    # 🦊 Web App API
-    # ==========================================
-    from pydantic import BaseModel
-    class FoxRequest(BaseModel):
-        url: str
+    print("🦊 キツネハンドラー登録完了")
 
-    @app.post("/api/fox/summary")
-    async def fox_web_summary(req: FoxRequest):
-        """Webからの要約リクエスト処理"""
-        url = req.url
-        print(f"🦊 Web Request: {url}")
+# ==========================================
+# 🦊 Web App API (Router)
+# ==========================================
+from fastapi import APIRouter
+from pydantic import BaseModel
 
-        # URLからID抽出
-        youtube_regex = r"(?:https?://)?(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]+)"
-        match = re.search(youtube_regex, url)
+router = APIRouter()
 
-        if match:
-            video_id = match.group(1)
-            summary = summarize_youtube_with_search(video_id, search_model, text_model)
-            return {"status": "success", "summary": summary}
-        else:
-            return {"status": "error", "message": "YouTubeのURLじゃないコン...💦"}
+class FoxRequest(BaseModel):
+    url: str
+
+@router.post("/api/fox/summary")
+async def fox_web_summary(req: FoxRequest):
+    """Webからの要約リクエスト処理"""
+    url = req.url
+    print(f"🦊 Web Request: {url}")
+
+    # URLからID抽出
+    youtube_regex = r"(?:https?://)?(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]+)"
+    match = re.search(youtube_regex, url)
+
+    if match:
+        video_id = match.group(1)
+        # Use globals initialized by register handler
+        summary = summarize_youtube_with_search(video_id, _search_model, _text_model)
+        return {"status": "success", "summary": summary}
+    else:
+        return {"status": "error", "message": "YouTubeのURLじゃないコン...💦"}
