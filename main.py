@@ -35,7 +35,7 @@ from animals.bat import register_bat_handler
 from animals.owl import register_owl_handler
 
 from routers import web_apps
-from animals import beaver, fox, bat, mole, frog, capybara
+from animals import beaver, fox, bat, mole, frog, capybara, penguin, owl
 
 # Google Cloud Imports
 from google.cloud import storage
@@ -53,7 +53,10 @@ app.include_router(fox.router)
 app.include_router(bat.router)
 app.include_router(mole.router)
 app.include_router(frog.router)
+
 app.include_router(capybara.router)
+app.include_router(penguin.router)
+app.include_router(owl.router)
 db = None
 storage_client = None
 text_model = None
@@ -248,8 +251,11 @@ def startup_event():
             register_penguin_handler(app, handler_penguin, configuration_penguin, text_model)
             print("🐧 Penguin Registered!", flush=True)
 
-            # 5. Voidoll (3 args: app, handler, config)
-            register_voidoll_handler(app, handler_voidoll, configuration_voidoll)
+            # 7. Owl (フクロウ) - Router化済みのため関数呼び出し不要 (Deprecated)
+            # register_owl_handler(app, None)
+
+            # 8. Voidoll (ボイドール)
+            register_voidoll_handler(app, handler_voidoll, text_model)
             print(" Voidoll Registered!", flush=True)
 
             # 6. Capybara (5 args: app, handler, config, search_model, text_model)
@@ -268,11 +274,7 @@ def startup_event():
             register_bat_handler(app, handler_bat, configuration_bat, search_model, db)
             print("🦇 Bat Registered!", flush=True)
 
-            # 10. Owl (1 arg: app)
-            # 10. Owl (1 arg: app, 2nd arg: auth_dependency)
-            # Pass auth dependency for Secured Routes
-            register_owl_handler(app, auth_dependency=Depends(get_current_username))
-            print("🦉 Owl Registered!", flush=True)
+
 
 
 

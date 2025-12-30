@@ -25,8 +25,15 @@ from fastapi import Request, HTTPException
 # ユーザーごとのメール下書きを一時保存
 pending_emails = {}
 
+# Globals
+_configuration_penguin = None
+_text_model = None
+
 
 def register_penguin_handler(app, handler_penguin, configuration_penguin, text_model):
+    global _configuration_penguin, _text_model
+    _configuration_penguin = configuration_penguin
+    _text_model = text_model
 
     @app.post("/callback_penguin")
     async def callback_penguin(request: Request):
@@ -304,36 +311,49 @@ def send_email_via_gas(to, sub, body):
         return False, str(e)
 
     # ==========================================
-    # 🐧 Web App API
+    # 🐧 Web App API (Router)
     # ==========================================
-    from pydantic import BaseModel
+    # Moved to module level below
+    pass
 
-    class PenguinEmailRequest(BaseModel):
-        to: str
-        subject: str
-        body: str
+from fastapi import APIRouter
+from pydantic import BaseModel
 
-    class PenguinConciergeRequest(BaseModel):
-        query: str
+router = APIRouter()
 
-    @app.post("/api/penguin/email")
-    async def penguin_web_email(req: PenguinEmailRequest):
-        """Webからのメール下書き生成"""
-        subject, body = call_gemini_email(req.subject, req.body, text_model)
-        # Web版では即時送信ではなく、生成結果を返すだけにする（確認用）
-        return {"status": "success", "subject": subject, "body": body}
+class PenguinEmailRequest(BaseModel):
+    to: str
+    subject: str
+    body: str
 
-    @app.post("/api/penguin/send_email")
-    async def penguin_web_send_email(req: PenguinEmailRequest):
-        """Webからメール送信（GAS連携）"""
-        success, msg = send_email_via_gas(req.to, req.subject, req.body)
-        if success:
-            return {"status": "success", "message": "送信完了だペン！🐧✨"}
-        else:
-            return {"status": "error", "message": f"送信失敗... {msg}"}
+class PenguinConciergeRequest(BaseModel):
+    query: str
 
-    @app.post("/api/penguin/concierge")
-    async def penguin_web_concierge(req: PenguinConciergeRequest):
-        """Webからのお店検索"""
-        shops, intro = call_gemini_concierge_list(req.query, text_model)
-        return {"status": "success", "intro": intro, "shops": shops}
+@router.post("/api/penguin/email")
+async def penguin_web_email(req: PenguinEmailRequest):
+    """Webからのメール下書き生成"""
+    # モデルがロードされていない場合のハンドリング
+    if not _text_model:
+        return {"status": "error", "subject": req.subject, "body": "現在AIモデルが準備中です...💦"}
+
+    subject, body = call_gemini_email(req.subject, req.body, _text_model)
+    # Web版では即時送信ではなく、生成結果を返すだけにする（確認用）
+    return {"status": "success", "subject": subject, "body": body}
+
+@router.post("/api/penguin/send_email")
+async def penguin_web_send_email(req: PenguinEmailRequest):
+    """Webからメール送信（GAS連携）"""
+    success, msg = send_email_via_gas(req.to, req.subject, req.body)
+    if success:
+        return {"status": "success", "message": "送信完了だペン！🐧✨"}
+    else:
+        return {"status": "error", "message": f"送信失敗... {msg}"}
+
+@router.post("/api/penguin/concierge")
+async def penguin_web_concierge(req: PenguinConciergeRequest):
+    """Webからのお店検索"""
+    if not _text_model:
+        return {"status": "error", "intro": "準備中だペン...", "shops": []}
+
+    shops, intro = call_gemini_concierge_list(req.query, _text_model)
+    return {"status": "success", "intro": intro, "shops": shops}
