@@ -16,9 +16,10 @@ Python と Google Gemini API を活用した、多機能なLINEボットたち�
 | <img src="images/owl.jpg" width="40"> | **フクロウ教授画像生成🦉**<br>(Professor Owl)<br>![WebApp](https://img.shields.io/badge/WEBアプリ！-orange) | **画像生成 & 健康管理**<br>画像生成や、カロリー計算・体重管理のグラフ化を行います。 | [🐍 Python](owl.py)<br>[📜 説明書](owl.md)<br> [🚀 GAS](gas/owl.gs)<br>[📘 Zenn](https://zenn.dev/miki_mini/articles/fbfec817389ea2) |
 | <img src="images/voidoll.jpg" width="40"> | **🤖おしゃべりVoidollねこ🐱**<br>(Chat Voidoll) | **音声会話**<br>テキストだけでなく、音声での自然な会話が楽しめます。 | [🐍 Python](voidoll.py)<br>[📜 説明書](voidoll.md)<br>[📘 Zenn](https://zenn.dev/miki_mini/articles/fca9c087522f71) |
 | <img src="images/mole.jpg" width="40"> | **もぐら駅長🦡**<br>(Station Master Mole) | **時刻表 & 駅検索**<br>駅名の時刻表や、Googleマップでの場所案内をします。 | [🐍 Python](mole.py)<br>[📜 説明書](mole.md)<br>[📘 Zenn](https://zenn.dev/miki_mini/articles/fb9c9485664daf) |
-| <img src="images/whale.jpg" width="40"> | **星くじらからの光の便り🐋💫**<br>(Star Whale)<br>![WebApp](https://img.shields.io/badge/WEBアプリ！-blue) | **天体観測 & 宇宙旅行**<br>NASAの美麗な写真や、ISSの位置・火星の風景を届けます。 | [🐍 Python](whale.py)<br>[📜 説明書](whale.md)<br>[📘 Zenn](https://zenn.dev/miki_mini/articles/9ea3f0a17c4606) |
+| <img src="images/whale.jpg" width="40"> | **星くじらからの光の便り🐋💫**<br>(Star Whale)<br>![WebApp](https://img.shields.io/badge/WEBアプリ！-blue) | **天体観測 & 宇宙旅行**<br>NASAの美丽な写真や、ISSの位置・火星の風景を届けます。 | [🐍 Python](whale.py)<br>[📜 説明書](whale.md)<br>[📘 Zenn](https://zenn.dev/miki_mini/articles/9ea3f0a17c4606) |
 | <img src="images/bat.jpg" width="40"> | **コウモリの番組お知らせ🦇**<br>(TV Bat) | **TV番組検索 & 通知**<br>「ジブリやる？」で検索。見たい番組を登録すると自動で通知します。スクレイピング不使用。 | [🐍 Python](bat.py)<br>[📜 説明書](bat.md)<br>[📘 Zenn](https://zenn.dev/miki_mini/articles/a70b65b67b5c93) |
 | <img src="images/meerkat.jpg" width="40"> | **ミーアキャットの地震警備🦦**<br>(Meerkat Quake) | **地震速報 & サイト死活監視**<br>震度3以上の地震をLINE通知。登録サイトの異常も監視します。 | [🦦 GitHub](https://github.com/miki-mini/meerkat-quake)<br>[📘 Zenn](https://zenn.dev/miki_mini/articles/4cb43007f402a1) |
+| <img src="images/alpaca.jpg" width="40"> | **アルパカのまつエクサロン🦙**<br>(Alpaca Salon)<br>![WebApp](https://img.shields.io/badge/WEBアプリ！-pink) | **まつエク試着シミュレーション**<br>カメラで撮影した顔に、まつエクを重ねて仕上がりをイメージできます。 | [🐍 Python](alpaca.py)<br>[� 説明書](alpaca.md) |
 
 ## 🛠 全体で使用している技術
 
