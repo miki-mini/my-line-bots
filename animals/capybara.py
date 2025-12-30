@@ -23,7 +23,17 @@ class CapybaraChatRequest(BaseModel):
     message: str
 
 
+# Globals
+_search_model = None
+_text_model = None
+
 def register_capybara_handler(app, handler_capybara, configuration_capybara, search_model, text_model):
+    global _search_model, _text_model
+    _search_model = search_model
+    _text_model = text_model
+    """
+    カピバラのWebhookエンドポイントとハンドラーを登録する
+    """
     """
     カピバラのWebhookエンドポイントとハンドラーを登録する
     """
@@ -166,51 +176,6 @@ def register_capybara_handler(app, handler_capybara, configuration_capybara, sea
             return {"status": "error", "message": str(e)}
 
 
-    # ==========================================
-    # 🌍 Web API (No Auth)
-    # ==========================================
-    @app.get("/api/capybara/news")
-    async def get_capybara_news():
-        """Webアプリ用: 今日のニュースを取得"""
-        if not search_model:
-            return {"news": "機能がメンテナンス中だっぴ...🐹"}
-
-        import datetime as dt
-        today = dt.date.today().strftime("%Y年%m月%d日")
-
-        prompt = f"""
-        本日は {today} です。
-        今日のAIトレンド、ニュースを3つピックアップして検索してください。
-
-        役割: ニュースキャスターのカピバラ（語尾はっぴ）
-        ルール:
-        1. タイトルと短い要約で3つ紹介。
-        2. 絵文字（📺, 🤖, 📝）を使ってかわいく。
-        3. HTML形式（<p>, <ul>など）で返してください。
-        """
-        try:
-            response = search_model.generate_content(prompt)
-            return {"news": response.text}
-        except Exception as e:
-            return {"news": f"エラーだっぴ... {str(e)}"}
-
-    @app.post("/api/capybara/chat")
-    async def chat_capybara_web(req: CapybaraChatRequest):
-        """Webアプリ用: チャット"""
-        if not search_model:
-            return {"reply": "今は眠いっぴ... (Model Not Loaded)"}
-
-        prompt = f"""
-        ユーザーの質問: {req.message}
-        役割: 物知りなカピバラ（語尾はっぴ）。
-        ルール: 最新情報をGoogle検索して答えてください。
-        """
-        try:
-            response = search_model.generate_content(prompt)
-            return {"reply": response.text}
-        except Exception as e:
-            return {"reply": "うまく調べられなかったっぴ...💦"}
-
     print("🐹 カピバラハンドラー登録完了")
 
 
@@ -227,3 +192,53 @@ def _send_reply(event, configuration, text):
             )
     except Exception as e:
         print(f"❌ カピバラ返信エラー: {e}")
+
+
+# ==========================================
+# 🌍 Web API (Router)
+# ==========================================
+from fastapi import APIRouter
+
+router = APIRouter()
+
+@router.get("/api/capybara/news")
+async def get_capybara_news():
+    """Webアプリ用: 今日のニュースを取得"""
+    if not _search_model:
+        return {"news": "機能がメンテナンス中だっぴ...🐹 (Model loading)"}
+
+    import datetime as dt
+    today = dt.date.today().strftime("%Y年%m月%d日")
+
+    prompt = f"""
+    本日は {today} です。
+    今日のAIトレンド、ニュースを3つピックアップして検索してください。
+
+    役割: ニュースキャスターのカピバラ（語尾はっぴ）
+    ルール:
+    1. タイトルと短い要約で3つ紹介。
+    2. 絵文字（📺, 🤖, 📝）を使ってかわいく。
+    3. HTML形式（<p>, <ul>など）で返してください。
+    """
+    try:
+        response = _search_model.generate_content(prompt)
+        return {"news": response.text}
+    except Exception as e:
+        return {"news": f"エラーだっぴ... {str(e)}"}
+
+@router.post("/api/capybara/chat")
+async def chat_capybara_web(req: CapybaraChatRequest):
+    """Webアプリ用: チャット"""
+    if not _search_model:
+        return {"reply": "今は眠いっぴ... (Model Not Loaded)"}
+
+    prompt = f"""
+    ユーザーの質問: {req.message}
+    役割: 物知りなカピバラ（語尾はっぴ）。
+    ルール: 最新情報をGoogle検索して答えてください。
+    """
+    try:
+        response = _search_model.generate_content(prompt)
+        return {"reply": response.text}
+    except Exception as e:
+        return {"reply": "うまく調べられなかったっぴ...💦"}
