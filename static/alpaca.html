@@ -6,6 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>アルパカのまつエクサロン🦙</title>
     <link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
     <style>
         :root {
             --primary-gold: #D4AF37;
@@ -305,6 +311,13 @@
 
         <div class="controls">
             <div class="control-row">
+                <div class="label">モード</div>
+                <div class="btn-group">
+                    <button id="btnAuto" onclick="setMode('auto')" class="style-btn active">自動 (Auto)</button>
+                    <button id="btnManual" onclick="setMode('manual')" class="style-btn">手動 (Manual)</button>
+                </div>
+            </div>
+            <div class="control-row">
                 <div class="label">本数 (Volume)</div>
                 <div class="btn-group">
                     <button onclick="setVolume(60)" class="style-btn active">60本</button>
@@ -342,27 +355,219 @@
         const video = document.getElementById('video');
         const lashLeft = document.getElementById('lashLeft');
         const lashRight = document.getElementById('lashRight');
+        let isAutoMode = true;
+        let faceMesh;
+        let camera;
 
-        // Camera Access
-        async function startCamera() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "user" },
-                    audio: false
-                });
-                video.srcObject = stream;
-            } catch (err) {
-                alert("カメラへのアクセスが許可されていません。");
+        // Mode Switching
+        window.setMode = (mode) => {
+            isAutoMode = (mode === 'auto');
+            document.getElementById('btnAuto').classList.toggle('active', isAutoMode);
+            document.getElementById('btnManual').classList.toggle('active', !isAutoMode);
+
+            if (isAutoMode) {
+                document.querySelector('.tips').innerText = "✨ AIが目の位置を自動認識中... ✨";
+                // Reset transforms controlled by auto mode if needed,
+                // but updateStyle() handles opacity/curl. Position is handled by onResults.
+            } else {
+                document.querySelector('.tips').innerText = "✨ まつげをドラッグして位置を調整してください ✨";
             }
-        }
-        startCamera();
+        };
 
-        // Drag Logic (Touch & Mouse) - Same as before
+        // MediaPipe Setup
+        async function initMediaPipe() {
+            faceMesh = new FaceMesh({
+                locateFile: (file) => {
+                    return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+                }
+            });
+
+            faceMesh.setOptions({
+                maxNumFaces: 1,
+                refineLandmarks: true,
+                minDetectionConfidence: 0.8,
+                minTrackingConfidence: 0.5
+            });
+
+            faceMesh.onResults(onResults);
+
+            camera = new Camera(video, {
+                onFrame: async () => {
+                    await faceMesh.send({ image: video });
+                },
+                width: 1280,
+                height: 720
+            });
+
+            // Custom start to handle permission errors gracefully if needed,
+            // but Camera util handles it well usually.
+            camera.start();
+        }
+
+        function onResults(results) {
+            if (!isAutoMode || !results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
+                return;
+            }
+
+            const landmarks = results.multiFaceLandmarks[0];
+            const container = document.querySelector('.camera-container');
+            const rect = container.getBoundingClientRect();
+            const width = rect.width;
+            const height = rect.height;
+
+            // Key Landmarks for Eyes (Refined)
+            // Left Eye: 33 (inner), 133 (outer), 159 (top), 145 (bottom)
+            // Right Eye: 362 (inner), 263 (outer), 386 (top), 374 (bottom)
+
+            // Note: MediaPipe coordinates are normalized 0-1.
+            // Video is mirrored via CSS transform: scaleX(-1).
+            // If user looks left, video shows them looking left (mirrored).
+            // MediaPipe sees raw image.
+            // x=0 is left of raw image. x=1 is right.
+            // Mirrored display: x=0 is Right of screen? No.
+            // CSS transform scaleX(-1) flips the element around its center.
+            // Visual X = (1 - x) * width
+
+            function getPoint(index) {
+                const p = landmarks[index];
+                // Adjust for mirror effect
+                const visualX = (1 - p.x) * width;
+                const visualY = p.y * height;
+                return { x: visualX, y: visualY };
+            }
+
+            // Left Eye (User's Left, appearing on Right of screen due to mirror?)
+            // Wait, if it's mirrored:
+            // User's Left Eye -> Camera sees it on Right side of image (if selfie) -> x > 0.5
+            // Mirrored display -> Flipped to Left side of screen.
+            // Let's stick to the visual logic:
+            // If I raise my Left Hand, it appears on Left side of screen (Mirror).
+            // Camera raw: Left hand is on Right side of sensor. x ~ 0.8.
+            // (1 - 0.8) * width = 0.2 * width (Left side). Correct.
+
+            // Landmarks indices:
+            // 33: Left Eye Inner, 133: Left Eye Outer
+            // 362: Right Eye Inner, 263: Right Eye Outer
+
+            const leftEyeInner = getPoint(33);
+            const leftEyeOuter = getPoint(133);
+            const rightEyeInner = getPoint(362);
+            const rightEyeOuter = getPoint(263);
+
+            // Center calculation
+            const leftCenter = { x: (leftEyeInner.x + leftEyeOuter.x) / 2, y: (leftEyeInner.y + leftEyeOuter.y) / 2 };
+            const rightCenter = { x: (rightEyeInner.x + rightEyeOuter.x) / 2, y: (rightEyeInner.y + rightEyeOuter.y) / 2 };
+
+            // Width calculation
+            const leftWidth = Math.hypot(leftEyeOuter.x - leftEyeInner.x, leftEyeOuter.y - leftEyeInner.y);
+            const rightWidth = Math.hypot(rightEyeOuter.x - rightEyeInner.x, rightEyeOuter.y - rightEyeInner.y);
+
+            // Scale factor: Eyelash image width vs Eye Physical Width
+            // Tuned multiplier
+            const scaleMult = 2.2;
+
+            // Rotation (Angle)
+            // atan2(dy, dx)
+            const leftAngle = Math.atan2(leftEyeOuter.y - leftEyeInner.y, leftEyeOuter.x - leftEyeInner.x);
+            const rightAngle = Math.atan2(rightEyeOuter.y - rightEyeInner.y, rightEyeOuter.x - rightEyeInner.x);
+
+            // Apply to Elements
+            // Note: lashLeft element is for User's Left Eye.
+            // In mirror mode, User Left Eye is on Screen Left.
+            // But wait, getPoint(33) is User Left Eye?
+            // 33 is localized to the mesh's "Left Eye" (which is actually User's Right Eye?? No, standard is Subject's Left)
+            // Let's verify standard MP Mesh: 33 is Right Eye on image (Subject's Right)?
+            // Actually, usually 33 is Left Eye (Subject Left).
+            // If Subject Left is on Camera Right (x=0.8).
+            // Visual X = 0.2 (Screen Left).
+            // So lashLeft should go to Visual X.
+
+            updateLash(lashLeft, leftCenter, leftWidth * scaleMult, leftAngle, false);
+            updateLash(lashRight, rightCenter, rightWidth * scaleMult, rightAngle, true);
+        }
+
+        function updateLash(el, center, width, angle, isRightLash) {
+            // Base Rotation
+            // The image is horizontal.
+            // Rotation should be angle + adjustments?
+            // Note: `angle` is in radians.
+            // If eye is tilted down-right, angle is positive.
+            // CSS rotate accepts rad or deg.
+
+            el.style.left = `${center.x}px`;
+            el.style.top = `${center.y}px`;
+            el.style.width = (`${width}px`);
+
+            // We need to preserve the Style (Curl/Flip) Logic
+            // So we just set CSS variables or modify transform safely?
+            // Current logic: transform: translate(-50%, -50%) ${flip} scaleY(${scaleY})
+            // We need to ADD rotation.
+
+            // Let's modify the updateStyle function to incorporate Auto-Rotation
+            // But `onResults` runs every frame.
+            // We can set custom properties on the element.
+
+            el.dataset.autoRotate = angle; // Radians
+            el.dataset.autoScale = width / 200; // Normalizing to default 200px?
+            // Ideally just set width directly as above.
+
+            applyTransform(el, isRightLash, angle);
+        }
+
+        // Call this from loop
+        function applyTransform(el, isRightLash, rotationRad) {
+            let opacity = 0.7;
+            let scaleY = 1.0;
+
+            // Existing style vars
+            if (currentVolume === 80) opacity = 0.85;
+            if (currentVolume === 100) opacity = 1.0;
+            if (currentCurl === 'C') scaleY = 1.2;
+            if (currentCurl === 'D') scaleY = 1.4;
+
+            el.style.opacity = opacity;
+
+            const flip = isRightLash ? 'scaleX(-1)' : '';
+            const rotationDeg = rotationRad * (180 / Math.PI);
+
+            // Combined Transform
+            // Translate Center -> Rotate -> Scale/Flip
+            // Note: Order matters.
+            // We are centered at top/left via CSS `left/top` + `translate(-50%, -50%)`.
+            // Then we rotate.
+            // Then we scale/flip.
+
+            // Adjust rotation for flip?
+            // If flipped scaleX(-1), +10deg becomes -10deg visually?
+            // Let's try simple concatenation.
+
+            // For right lash (flipped), if the eye is tilted, the line of the eye has angle.
+            // We matched the angle from inner to outer.
+            // IsRightLash = User Right Eye.
+            // Visual: Screen Right.
+            // Inner (Left of screen) to Outer (Right of screen).
+            // Angle is roughly 0 if horizontal.
+
+            // If we flip X, +10deg becomes -10deg visually?
+            // So we might need to negate rotation if flipped?
+            let finalRotate = rotationDeg;
+            if (isRightLash) {
+                finalRotate = -rotationDeg;
+            }
+
+            el.style.transform = `translate(-50%, -50%) rotate(${finalRotate}deg) ${flip} scaleY(${scaleY})`;
+        }
+
+        // Initialize
+        initMediaPipe();
+
+        // Drag Logic (Touch & Mouse) - Updated to disable in Auto Mode
         function makeDraggable(el) {
             let isDragging = false;
             let startX, startY, initialLeft, initialTop;
 
             const start = (e) => {
+                if (isAutoMode) return; // Disable drag in auto
                 isDragging = true;
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -370,7 +575,7 @@
                 startY = clientY;
                 initialLeft = el.offsetLeft;
                 initialTop = el.offsetTop;
-                el.style.opacity = 0.5; // Drag feedback
+                el.style.opacity = 0.5;
                 e.preventDefault();
             };
 
@@ -385,8 +590,9 @@
             };
 
             const end = () => {
+                if (!isDragging) return;
                 isDragging = false;
-                updateStyle(); // Reset opacity correct
+                updateStyle(); // Reset opacity
             };
 
             el.addEventListener('mousedown', start);
@@ -405,6 +611,8 @@
         let currentCurl = 'J';
 
         function updateStyle() {
+            if (isAutoMode) return; // In Auto mode, transforms are handled by the loop
+
             let opacity = 0.7;
             let scaleY = 1.0;
 
@@ -419,12 +627,13 @@
                 const isRight = lash.id === 'lashRight';
                 const flip = isRight ? 'scaleX(-1)' : '';
                 lash.style.transform = `translate(-50%, -50%) ${flip} scaleY(${scaleY})`;
+                // Reset rotation in manual mode
             });
         }
 
         window.setVolume = (vol) => {
             currentVolume = vol;
-            const btns = document.querySelectorAll('.control-row:nth-child(1) .style-btn');
+            const btns = document.querySelectorAll('.control-row:nth-child(2) .style-btn'); // Adjusted selector
             btns.forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
             updateStyle();
@@ -432,12 +641,13 @@
 
         window.setCurl = (curl) => {
             currentCurl = curl;
-            const btns = document.querySelectorAll('.control-row:nth-child(2) .style-btn');
+            const btns = document.querySelectorAll('.control-row:nth-child(3) .style-btn'); // Adjusted selector
             btns.forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
             updateStyle();
         };
 
+        // Initial call
         updateStyle();
 
         // Snapshot Logic
