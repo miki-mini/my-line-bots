@@ -103,3 +103,12 @@ async def voidoll_page():
             return HTMLResponse(content=f.read(), headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"})
     except FileNotFoundError:
         return HTMLResponse(content="<h1>Page Not Found</h1>", status_code=404)
+
+@router.get("/alpaca", response_class=HTMLResponse)
+async def alpaca_page():
+    """アルパカのまつエクサロン（認証なし）"""
+    try:
+        with open("static/alpaca.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read(), headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"})
+    except FileNotFoundError:
+        return HTMLResponse(content="<h1>Page Not Found</h1>", status_code=404)

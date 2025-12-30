@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アルパカのまつエクサロン🦙</title>
+    <style>
+        :root {
+            --primary-color: #f8c291;
+            --secondary-color: #6a89cc;
+            --accent-color: #82ccdd;
+            --bg-color: #fdf2e9;
+            --text-color: #2f3542;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #fff;
+            width: 100%;
+            padding: 1rem 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        h1 {
+            margin: 0;
+            color: var(--secondary-color);
+            font-size: 1.5rem;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .camera-container {
+            position: relative;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            background-color: #000;
+            aspect-ratio: 3/4;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            /* Mirror effect */
+        }
+
+        .canvas-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .eyelash-overlay {
+            position: absolute;
+            width: 200px;
+            /* Default size */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: multiply;
+            /* Make white background transparent */
+            pointer-events: auto;
+            /* Allow dragging */
+            cursor: grab;
+            filter: contrast(1.2);
+        }
+
+        .eyelash-overlay:active {
+            cursor: grabbing;
+        }
+
+        .controls {
+            margin-top: 20px;
+            width: 90%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 5px;
+            background: #fff;
+            padding: 5px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        button {
+            border: none;
+            background: transparent;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--text-color);
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--accent-color);
+            color: #fff;
+        }
+
+        button.active {
+            background-color: var(--secondary-color);
+            color: #fff;
+        }
+
+        .capture-btn {
+            background-color: var(--primary-color);
+            color: #fff;
+            font-size: 1.2rem;
+            padding: 15px 40px;
+            border-radius: 50px;
+            margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(248, 194, 145, 0.4);
+        }
+
+        .capture-btn:active {
+            transform: scale(0.95);
+        }
+
+        .tips {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px;
+            width: 80%;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>アルパカのまつエクサロン🦙</h1>
+    </header>
+
+    <div class="container">
+        <div class="camera-container" id="cameraContainer">
+            <video id="video" autoplay playsinline></video>
+            <!-- The overlay image -->
+            <img src="/static/eyelashes.png" id="lashLeft" class="eyelash-overlay" style="left: 35%;" alt="Left Lash">
+            <img src="/static/eyelashes.png" id="lashRight" class="eyelash-overlay"
+                style="transform: translate(-50%, -50%) scaleX(-1); left: 65%;" alt="Right Lash">
+        </div>
+
+        <div class="controls">
+            <div class="btn-group">
+                <button onclick="setVolume(60)" class="active">60本</button>
+                <button onclick="setVolume(80)">80本</button>
+                <button onclick="setVolume(100)">100本</button>
+            </div>
+            <div class="btn-group">
+                <button onclick="setCurl('J')" class="active">Jカール</button>
+                <button onclick="setCurl('C')">Cカール</button>
+                <button onclick="setCurl('D')">Dカール</button>
+            </div>
+        </div>
+
+        <div class="tips">
+            <p>💡 ヒント: まつげの位置は指でドラッグして調整できます！</p>
+        </div>
+
+        <button class="capture-btn" onclick="takeSnapshot()">📸 撮影する</button>
+
+        <canvas id="snapshotCanvas" class="hidden"></canvas>
+        <img id="snapshotImg" class="hidden"
+            style="max-width: 90%; border-radius: 20px; margin-top:20px; box-shadow: 0 8px 20px rgba(0,0,0,0.2);">
+        <a id="downloadLink" class="hidden"
+            style="margin-top: 10px; display: inline-block; text-decoration: none; color: var(--secondary-color); font-weight: bold;">画像を保存</a>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const lashLeft = document.getElementById('lashLeft');
+        const lashRight = document.getElementById('lashRight');
+
+        // Camera Access
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "user" },
+                    audio: false
+                });
+                video.srcObject = stream;
+            } catch (err) {
+                alert("カメラへのアクセスが許可されていません。\n設定を確認してください。");
+                console.error("Camera Error:", err);
+            }
+        }
+        startCamera();
+
+        // Drag Logic (Touch & Mouse)
+        function makeDraggable(el) {
+            let isDragging = false;
+            let startX, startY, initialLeft, initialTop;
+
+            const start = (e) => {
+                isDragging = true;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                startX = clientX;
+                startY = clientY;
+                initialLeft = el.offsetLeft;
+                initialTop = el.offsetTop;
+                el.style.cursor = 'grabbing';
+                e.preventDefault();
+            };
+
+            const move = (e) => {
+                if (!isDragging) return;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const dx = clientX - startX;
+                const dy = clientY - startY;
+                el.style.left = `${initialLeft + dx}px`;
+                el.style.top = `${initialTop + dy}px`;
+            };
+
+            const end = () => {
+                isDragging = false;
+                el.style.cursor = 'grab';
+            };
+
+            el.addEventListener('mousedown', start);
+            el.addEventListener('touchstart', start);
+            window.addEventListener('mousemove', move);
+            window.addEventListener('touchmove', move);
+            window.addEventListener('mouseup', end);
+            window.addEventListener('touchend', end);
+        }
+
+        makeDraggable(lashLeft);
+        makeDraggable(lashRight);
+
+        // Style Logic
+        let currentVolume = 60;
+        let currentCurl = 'J';
+
+        function updateStyle() {
+            // Simple simulation logic
+            let opacity = 0.7; // default for 60
+            let scaleY = 1.0;  // default for J
+
+            // Volume logic
+            if (currentVolume === 80) opacity = 0.85;
+            if (currentVolume === 100) opacity = 1.0;
+
+            // Curl logic
+            if (currentCurl === 'C') scaleY = 1.2;
+            if (currentCurl === 'D') scaleY = 1.4;
+
+            [lashLeft, lashRight].forEach(lash => {
+                lash.style.opacity = opacity;
+                // Maintain the flip for the right lash
+                const isRight = lash.id === 'lashRight';
+                const flip = isRight ? 'scaleX(-1)' : '';
+                lash.style.transform = `translate(-50%, -50%) ${flip} scaleY(${scaleY})`;
+            });
+        }
+
+        window.setVolume = (vol) => {
+            currentVolume = vol;
+            // Update generic button UI
+            document.querySelectorAll('.btn-group:first-of-type button').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            updateStyle();
+        };
+
+        window.setCurl = (curl) => {
+            currentCurl = curl;
+            document.querySelectorAll('.btn-group:last-of-type button').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            updateStyle();
+        };
+
+        // Initial call
+        updateStyle();
+
+        // Snapshot Logic
+        window.takeSnapshot = () => {
+            const canvas = document.getElementById('snapshotCanvas');
+            const context = canvas.getContext('2d');
+            const width = video.videoWidth;
+            const height = video.videoHeight;
+
+            // Set canvas dimensions to match video
+            canvas.width = width;
+            canvas.height = height;
+
+            // Draw video (Mirrored)
+            context.save();
+            context.scale(-1, 1);
+            context.drawImage(video, -width, 0, width, height);
+            context.restore();
+
+            // Draw overlays manually mapping DOM position to Canvas position
+            // Note: This is tricky because DOM is responsive. simplified approach:
+            // Just take screenshot of the .camera-container using html2canvas if possible,
+            // OR better (simpler for this demo): Just pause video and hide UI?
+            // Let's try to map the DOM position to canvas coordinates relative to the video size.
+
+            const containerRect = document.querySelector('.camera-container').getBoundingClientRect();
+
+            [lashLeft, lashRight].forEach(lash => {
+                const lashRect = lash.getBoundingClientRect();
+                // Calculate relative position within the container
+                const relativeLeft = lashRect.left - containerRect.left;
+                const relativeTop = lashRect.top - containerRect.top;
+
+                // Scale factor between displayed video and actual video resolution
+                const scaleX = width / containerRect.width;
+                const scaleY = height / containerRect.height;
+
+                const drawX = relativeLeft * scaleX;
+                const drawY = relativeTop * scaleY;
+                const drawW = lashRect.width * scaleX;
+                const drawH = lashRect.height * scaleY;
+
+                // Check if flipped
+                const isRight = lash.id === 'lashRight';
+
+                context.globalAlpha = lash.style.opacity || 0.7;
+                context.save();
+                context.globalCompositeOperation = 'multiply'; // Simulate mix-blend-mode
+
+                // Move to center of image to apply transforms
+                context.translate(drawX + drawW / 2, drawY + drawH / 2);
+
+                // Re-apply style transforms
+                // Note: extracting matrix is hard, let's just re-apply known logic
+                let scaleYParam = 1.0;
+                if (currentCurl === 'C') scaleYParam = 1.2;
+                if (currentCurl === 'D') scaleYParam = 1.4;
+
+                const flip = isRight ? -1 : 1;
+                context.scale(flip, scaleYParam);
+
+                // Draw image centered
+                context.drawImage(lash, -drawW / 2, -drawH / 2, drawW, drawH); // Lash image already loaded in DOM
+
+                context.restore();
+                context.globalAlpha = 1.0;
+            });
+
+            // Show result
+            const dataURL = canvas.toDataURL('image/png');
+            const img = document.getElementById('snapshotImg');
+            img.src = dataURL;
+            img.classList.remove('hidden');
+
+            const link = document.getElementById('downloadLink');
+            link.href = dataURL;
+            link.download = `alpaca_lashes_${Date.now()}.png`;
+            link.classList.remove('hidden');
+
+            // Scroll to result
+            img.scrollIntoView({ behavior: 'smooth' });
+        };
+
+    </script>
+</body>
+
+</html>
