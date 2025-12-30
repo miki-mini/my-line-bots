@@ -18,6 +18,7 @@ from linebot.v3.messaging import (
 from linebot.v3.webhooks import MessageEvent
 from linebot.v3.webhooks import TextMessageContent
 from linebot.v3.exceptions import InvalidSignatureError
+from pydantic import BaseModel
 
 # Firestore Collection Name
 COLLECTION_NAME = "tv_watch_lists"
@@ -163,11 +164,7 @@ def register_bat_handler(app, handler_bat, configuration_bat, search_model, db):
     # ==========================================
     # 🦇 Web App API (Watchlist Management)
     # ==========================================
-    class BatUnknownRequest(BaseModel):
-        user_id: str
-        keyword: str
 
-    from pydantic import BaseModel
     class WatchListRequest(BaseModel):
         user_id: str
         keyword: str

@@ -273,7 +273,9 @@ def startup_event():
             print("⚠️ GCP_PROJECT_ID not set, skipping AI init", flush=True)
 
     except Exception as e:
+        import traceback
         print(f"❌ Startup Error: {e}", flush=True)
+        traceback.print_exc()  # ← 詳細なエラーを表示
 
 @app.post("/callback")
 async def callback(request: Request):
