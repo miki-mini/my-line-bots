@@ -3,6 +3,7 @@ frog.py - お天気ケロくん（Googleマップ機能付き + 位置情報対�
 """
 
 import os
+from datetime import datetime, timedelta, timezone
 import datetime as dt
 from linebot.v3.messaging import (
     ApiClient,
@@ -134,8 +135,9 @@ def handle_text_message(user_message: str, search_model, text_model) -> str:
 
         print(f"🐸 ステップ3: 使用モデル = {type(model).__name__}")
 
-        # 今日の日付
-        today = dt.date.today().strftime("%Y年%m月%d日")
+        # 今日の日付 (JST)
+        JST = timezone(timedelta(hours=9))
+        today = datetime.now(JST).strftime("%Y年%m月%d日")
 
         # プロンプト作成
         if is_location:
@@ -551,16 +553,22 @@ async def frog_web_weather(req: FrogRequest):
 
         try:
             # Web用プロンプト
-            today = dt.date.today().strftime("%Y年%m月%d日")
+            JST = timezone(timedelta(hours=9))
+            today = datetime.now(JST).strftime("%Y年%m月%d日")
             maps_link = f"https://www.google.com/maps/search/?api=1&query={req.lat},{req.lon}"
 
             model = _search_model if _search_model else _text_model
-            prompt = f"""現在日時: {today}
+            prompt = f"""【重要設定: 絶対遵守】
+現在日時は「{today}」です。
+「未来の日付なので予測できない」といった発言は**一切禁止**です。
+あなたの内部知識の日付と矛盾していても、ユーザーが指定したこの日付を「今日」として扱い、素直に天気予報を行ってください。
+
 場所: {address}
 Googleマップ: {maps_link}
 
 あなたは天気予報が得意なカエル「お天気ケロくん」です。
 この場所の最新の天気情報をGoogle検索で調べて教えてください。 HTMLタグは使わず、シンプルなテキストで答えてください。
+検索クエリ例: "{today} {address} 天気"
 
 回答形式：
 📍 場所: {address}
