@@ -474,6 +474,7 @@
 
             context.globalAlpha = opacity;
             context.save();
+            context.globalCompositeOperation = 'multiply';
 
             // Number of segments
             const numSegments = points.length - 1;
@@ -489,77 +490,18 @@
                 const dist = Math.hypot(dx, dy);
                 const angle = Math.atan2(dy, dx);
 
-                // Source Image Slice
-                // Right Eye (Normal): Inner->Outer maps to Left->Right of image.
-                // Left Eye (Flipped): Inner->Outer maps to Left->Right of FLIPPED image?
-                // Visual Left Eye Curve: Goes Left (x decreases).
-                // So dx is negative?
-                // atan2 will handle direction.
-
-                // Wait, if we draw normal image segments along a line going Left,
-                // the image will be upside down?
-                // atan2 of (-1, 0) is PI (180 deg).
-                // Image drawn at 180 deg is upside down.
-                // We want it upright.
-
                 context.save();
                 context.translate(p1.x, p1.y);
                 context.rotate(angle);
 
-                // Destination width is distance
-                // Destination height needs scaling based on ratio?
-                // Just use fixed ratio relative to segment length?
-                // Let's rely on standard aspect ratio.
-                // Total curve length vs total image width.
-                // We are squeezing/stretching each segment.
-
                 // Scale height:
                 // Base Scale: dist / imgSegWidth * ScaleMult
-                const scaleMult = 2.5; // Tuned
+                const scaleMult = 1.5;
                 const dHeight = (lashImg.height * (dist / imgSegWidth)) * scaleY * scaleMult;
-
-                // If isLeftEye, we need to flip the TEXTURE, not the drawing direction (which is handled by rotate).
-                // Actually, if we rotate 180 deg, we are drawing "backwards".
-                // Left Eye curve goes Right -> Left.
-                // Image goes Left -> Right.
-                // If we map Image Left to Curve Start, and Rotate 180...
-                // Image Top becomes Bottom.
-                // We need to flip Y axis?
-
-                // Let's Handle Left Eye Logic:
-                // We want the lashes pointing UP.
-                // Normal Right Eye: Angle ~0. Pointing Up (Negative Y relative to line).
-                // Left Eye: Angle ~180. Pointing Up (Negative Y relative to screen, but "Down" relative to rotated axis).
-                // We need to Flip Y to make it point Up relative to screen.
 
                 if (isLeftEye) {
                     context.scale(1, -1);
-                    // Also, we want the MIRRORED lash texture (curl direction).
-                    // Flipping Y creates mirrored texture effectively?
-                    // No, Flipping Y flips Up/Down.
-                    // Flipping X flips Left/Right.
-                    // We need Left Lash texture (Mirrored X of Right Lash).
-                    // AND we need it pointing Up.
-
-                    // Combined:
-                    // Rotate 180 (Angle) -> Upside Down.
-                    // Flip Y -> Rightside Up.
-                    // Net effect on X? X is reversed by Rotate 180.
-                    // Net result: Mirrored X and Upright.
-                    // This sounds like exactly what we need for Left Eye!
-
-                    // So for isLeftEye (Angle ~180), context.scale(1, -1) should work.
                 }
-
-                // Draw Sliced Image
-                // We draw the slice from (0, -height/2) ??
-                // Lash root is at bottom of image.
-                // We want root on the line.
-                // Image Rect: (i * w, 0, w, h)
-                // Dest Rect: (0, -dHeight??, dist, dHeight)
-                // Lash image: Top is tips, Bottom is root.
-                // We want Bottom at y=0 (the line).
-                // So draw at (0, -dHeight, dist, dHeight).
 
                 context.drawImage(
                     lashImg,
