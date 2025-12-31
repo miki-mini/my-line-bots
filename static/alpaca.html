@@ -783,6 +783,17 @@
             container.innerHTML = ''; // Clear all
         }
 
+        // Toast Notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            if (!toast) return;
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
         // Settings
         let currentVolume = 60;  // 50 → 60 (より自然な密度)
         let currentCurl = 'J';
@@ -916,6 +927,7 @@
 
             // Start Sparkle immediately for effect!
             startMagicEffect();
+            await new Promise(r => setTimeout(r, 100)); // Ensure UI updates
 
             // Create canvas for capture
             const canvas = document.createElement('canvas');
@@ -1577,14 +1589,11 @@
 
                 const info = document.createElement('div');
                 info.className = 'compare-info';
-                const volumeName = pattern.volume === 40 ? '少なめ' :
-                    pattern.volume === 60 ? '標準' :
-                        pattern.volume === 90 ? '多め' :
-                            pattern.volume === 120 ? 'ボリューム' : `${pattern.volume}本`;
-                const curlName = pattern.curl === 'J' ? 'J（自然）' :
-                    pattern.curl === 'C' ? 'C（標準）' : 'D（強め）';
-                const lengthName = pattern.length === 0.8 ? '短め' :
-                    pattern.length === 1.0 ? '標準' : '長め';
+                const volumeName = `${pattern.volume}本`;
+                const curlName = `${pattern.curl}カール`;
+                // base 11mm * ratio
+                const lengthVal = Math.round(11 * pattern.length);
+                const lengthName = `${lengthVal}mm`;
                 info.textContent = `${volumeName} / ${curlName} / ${lengthName}`;
 
                 item.appendChild(canvas);

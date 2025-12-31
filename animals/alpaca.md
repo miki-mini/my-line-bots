@@ -2,13 +2,16 @@
 
 **まつエクの仕上がりをAIでシミュレーション**
 
+<img src="images/alpaca.jpg" width="100">
+
 写真を撮るだけで、まつエクの仕上がりをリアルタイムでプレビューできるWebアプリです。
 Gemini 2.5 Flash が目の形を分析し、最適なスタイルを提案します。
 
 | before | after |
 |:--:|:--:|
-| <img src="https://storage.googleapis.com/zenn-user-upload/27ba6b5b302e-20251231.png"   width="300"> | <img src="https://storage.googleapis.com/zenn-user-upload/eeedbc69598e-20251231.png" width="300"> |
-| <img src="https://storage.googleapis.com/zenn-user-upload/cd05dce31072-20251231.png" width="300"> | <img src="https://storage.googleapis.com/zenn-user-upload/8fc7a749268d-20251231.png" width="300"> |
+| <img src="https://storage.googleapis.com/zenn-user-upload/eeedbc69598e-20251231.png"   width="300"> | <img src="https://storage.googleapis.com/zenn-user-upload/a585ca475661-20251231.png" width="280"> |
+| <img src="https://storage.googleapis.com/zenn-user-upload/8fc7a749268d-20251231.png" width="300"> | <img src="https://storage.googleapis.com/zenn-user-upload/4c153e5d64d4-20251231.png" width="280"> |
+
 
 ## ✨ 特徴
 
