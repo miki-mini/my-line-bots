@@ -19,6 +19,8 @@
             --shadow-soft: 0 10px 30px rgba(212, 175, 55, 0.15);
         }
 
+        * { box-sizing: border-box; }
+
         body {
             font-family: 'Zen Old Mincho', serif;
             background: linear-gradient(135deg, #fdfbf7 0%, #fff1f2 100%);
@@ -39,31 +41,12 @@
             animation: float 10s infinite ease-in-out;
         }
 
-        .fluff:nth-child(1) {
-            width: 300px;
-            height: 300px;
-            top: -50px;
-            left: -50px;
-            animation-delay: 0s;
-            background: rgba(252, 228, 236, 0.6);
-        }
-
-        .fluff:nth-child(2) {
-            width: 400px;
-            height: 400px;
-            bottom: -100px;
-            right: -100px;
-            animation-delay: 2s;
-            background: rgba(243, 230, 255, 0.5);
-        }
+        .fluff:nth-child(1) { width: 300px; height: 300px; top: -50px; left: -50px; background: rgba(252, 228, 236, 0.6); }
+        .fluff:nth-child(2) { width: 400px; height: 400px; bottom: -100px; right: -100px; animation-delay: 2s; background: rgba(243, 230, 255, 0.5); }
 
         @keyframes float {
-            0%, 100% {
-                transform: translateY(0) scale(1);
-            }
-            50% {
-                transform: translateY(-20px) scale(1.05);
-            }
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-20px) scale(1.05); }
         }
 
         header {
@@ -86,8 +69,17 @@
             font-weight: 700;
         }
 
-        h1 span {
-            color: var(--primary-gold);
+        h1 span { color: var(--primary-gold); }
+
+        .ai-badge {
+            display: inline-block;
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.6rem;
+            margin-left: 8px;
+            vertical-align: middle;
         }
 
         .container {
@@ -105,9 +97,7 @@
             align-items: center;
         }
 
-        .camera-section.hidden {
-            display: none;
-        }
+        .camera-section.hidden { display: none; }
 
         .camera-frame {
             padding: 15px;
@@ -150,12 +140,8 @@
         }
 
         @keyframes pulse {
-            0%, 100% {
-                opacity: 0.6;
-            }
-            50% {
-                opacity: 1;
-            }
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
         }
 
         .eye-guide {
@@ -169,15 +155,8 @@
             background: rgba(212, 175, 55, 0.2);
         }
 
-        .eye-guide.left {
-            top: 40%;
-            left: 17%;
-        }
-
-        .eye-guide.right {
-            top: 40%;
-            right: 17%;
-        }
+        .eye-guide.left { top: 40%; left: 17%; }
+        .eye-guide.right { top: 40%; right: 17%; }
 
         .guide-text {
             position: absolute;
@@ -208,13 +187,8 @@
         }
 
         /* Edit Mode */
-        .edit-section {
-            display: none;
-        }
-
-        .edit-section.active {
-            display: block;
-        }
+        .edit-section { display: none; }
+        .edit-section.active { display: block; }
 
         .preview-area {
             display: flex;
@@ -234,6 +208,30 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
 
+        .ai-analysis {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+
+        .ai-analysis h4 {
+            margin: 0 0 10px 0;
+            color: #667eea;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-analysis-content {
+            font-size: 0.85rem;
+            color: #666;
+            line-height: 1.6;
+        }
+
         .controls {
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
@@ -251,9 +249,7 @@
             margin-bottom: 20px;
         }
 
-        .control-row:last-child {
-            margin-bottom: 0;
-        }
+        .control-row:last-child { margin-bottom: 0; }
 
         .label {
             font-size: 0.95rem;
@@ -315,13 +311,8 @@
             transition: transform 0.2s;
         }
 
-        .btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .btn:active {
-            transform: scale(0.95);
-        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn:active { transform: scale(0.95); }
 
         .btn.secondary {
             background: linear-gradient(45deg, #888, #aaa);
@@ -329,13 +320,8 @@
         }
 
         /* Compare Mode */
-        .compare-section {
-            display: none;
-        }
-
-        .compare-section.active {
-            display: block;
-        }
+        .compare-section { display: none; }
+        .compare-section.active { display: block; }
 
         .compare-grid {
             display: grid;
@@ -369,15 +355,27 @@
             color: #aaa;
         }
 
-        .hidden {
-            display: none;
-        }
+        .hidden { display: none; }
 
         .tips {
             text-align: center;
             font-size: 0.85rem;
             color: #aaa;
             margin-top: 15px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -387,7 +385,7 @@
     <div class="fluff"></div>
 
     <header>
-        <h1><span>アルパカ</span>のまつエクサロン🦙</h1>
+        <h1><span>アルパカ</span>のまつエクサロン🦙 <span class="ai-badge">AI Enhanced</span></h1>
     </header>
 
     <div class="container">
@@ -415,6 +413,11 @@
                 <div class="preview-container">
                     <canvas id="previewCanvas" class="preview-canvas"></canvas>
                 </div>
+            </div>
+
+            <div class="ai-analysis" id="aiAnalysis" style="display: none;">
+                <h4><span class="loading"></span> AI分析中...</h4>
+                <div class="ai-analysis-content" id="analysisContent"></div>
             </div>
 
             <div class="controls">
@@ -445,7 +448,7 @@
                 </div>
             </div>
 
-            <div class="tips">✨ スライダーを動かすとリアルタイムで変わります ✨</div>
+            <div class="tips">✨ Gemini 2.5 Flash があなたの目に最適化しています ✨</div>
 
             <div class="action-buttons">
                 <button class="btn" onclick="savePattern()">💾 このパターンを保存</button>
@@ -464,7 +467,6 @@
             </div>
         </div>
 
-        <!-- Hidden elements -->
         <canvas id="tempCanvas" class="hidden"></canvas>
     </div>
 
@@ -480,6 +482,7 @@
         let capturedImage = null;
         let capturedLandmarks = null;
         let savedPatterns = [];
+        let eyeAnalysis = null;
 
         // Settings
         let currentVolume = 100;
@@ -491,9 +494,7 @@
             statusEl.textContent = 'MediaPipe初期化中...';
 
             faceMesh = new FaceMesh({
-                locateFile: (file) => {
-                    return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
-                }
+                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
             });
 
             faceMesh.setOptions({
@@ -505,7 +506,6 @@
 
             camera = new Camera(video, {
                 onFrame: async () => {
-                    // Only process if in camera mode
                     const cameraSection = document.getElementById('cameraSection');
                     if (cameraSection && !cameraSection.classList.contains('hidden')) {
                         await faceMesh.send({ image: video });
@@ -519,9 +519,88 @@
             camera.start();
             statusEl.textContent = '準備完了！';
 
-            setTimeout(() => {
-                statusEl.style.opacity = '0';
-            }, 2000);
+            setTimeout(() => { statusEl.style.opacity = '0'; }, 2000);
+        }
+
+        // Analyze eye with Gemini 2.5 Flash (Backend API)
+        async function analyzeEyeWithAI(base64Image) {
+            const analysisDiv = document.getElementById('aiAnalysis');
+            const contentDiv = document.getElementById('analysisContent');
+            analysisDiv.style.display = 'block';
+
+            try {
+                const response = await fetch('/api/alpaca-salon/analyze-eye', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: base64Image })
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.error || 'AI分析に失敗しました');
+                }
+
+                const analysis = data.analysis;
+
+                // Display analysis
+                analysisDiv.querySelector('h4').innerHTML = '🤖 AI分析結果（Gemini 2.5 Flash）';
+                contentDiv.innerHTML = `
+                    <strong>目の特徴：</strong><br>
+                    形状: ${translateEyeShape(analysis.eyeShape)} /
+                    角度: ${translateEyeSlant(analysis.eyeSlant)} /
+                    まぶた: ${translateEyelidType(analysis.eyelidType)} /
+                    幅: ${translateEyeWidth(analysis.eyeWidth)}<br><br>
+                    <strong>AI推奨スタイル：</strong><br>
+                    ${analysis.recommendations.reasoning}
+                `;
+
+                return analysis;
+            } catch (error) {
+                console.error('AI分析エラー:', error);
+                analysisDiv.querySelector('h4').innerHTML = '⚠️ AI分析失敗';
+
+                // エラー詳細を表示
+                let errorMsg = `エラー: ${error.message}`;
+
+                // レスポンスに詳細があれば表示
+                if (data && data.error) {
+                    errorMsg = data.error;
+                    console.log('詳細エラー:', data.error);
+                }
+
+                contentDiv.innerHTML = `
+                    <div style="color: #d32f2f;">
+                        ${errorMsg.split('\n').slice(0, 3).join('<br>')}
+                    </div>
+                    <br>
+                    <small style="color: #888;">
+                        手動で調整するか、F12でコンソールを開いて詳細を確認してください。
+                    </small>
+                `;
+
+                return null;
+            }
+        }
+
+        function translateEyeShape(shape) {
+            const map = { almond: 'アーモンド型', round: '丸型', hooded: 'フード型' };
+            return map[shape] || shape;
+        }
+
+        function translateEyeSlant(slant) {
+            const map = { upturned: '上がり目', downturned: '下がり目', straight: '平行' };
+            return map[slant] || slant;
+        }
+
+        function translateEyelidType(type) {
+            const map = { monolid: '一重', double: '二重' };
+            return map[type] || type;
+        }
+
+        function translateEyeWidth(width) {
+            const map = { narrow: '狭め', medium: '標準', wide: '広め' };
+            return map[width] || width;
         }
 
         // Capture photo
@@ -531,7 +610,6 @@
             tempCanvas.height = video.videoHeight;
             const tempCtx = tempCanvas.getContext('2d');
 
-            // Draw mirrored video
             tempCtx.save();
             tempCtx.scale(-1, 1);
             tempCtx.drawImage(video, -tempCanvas.width, 0, tempCanvas.width, tempCanvas.height);
@@ -539,7 +617,6 @@
 
             capturedImage = tempCanvas.toDataURL('image/png');
 
-            // Get face landmarks from current video frame
             statusEl.textContent = '顔を検出中...';
             statusEl.style.opacity = '1';
 
@@ -556,16 +633,29 @@
                 });
 
                 if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-                    // Store landmarks (no need to mirror, we'll handle it in drawing)
                     capturedLandmarks = results.multiFaceLandmarks[0];
 
-                    // Switch to edit mode
                     const cameraSection = document.getElementById('cameraSection');
                     cameraSection.style.display = 'none';
                     cameraSection.classList.add('hidden');
                     document.getElementById('editSection').classList.add('active');
 
-                    // Draw initial preview
+                    // Analyze with AI (Backend)
+                    eyeAnalysis = await analyzeEyeWithAI(capturedImage);
+
+                    // Apply AI recommendations
+                    if (eyeAnalysis && eyeAnalysis.recommendations) {
+                        const rec = eyeAnalysis.recommendations;
+                        currentVolume = rec.volume;
+                        currentCurl = rec.curl;
+                        currentLength = rec.length;
+
+                        document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+                        document.querySelector(`button[onclick="setVolume(${rec.volume})"]`)?.classList.add('active');
+                        document.querySelector(`button[onclick="setCurl('${rec.curl}')"]`)?.classList.add('active');
+                        document.querySelector(`button[onclick="setLength(${rec.length})"]`)?.classList.add('active');
+                    }
+
                     redrawPreview();
                 } else {
                     alert('顔が検出できませんでした。\nガイドに顔を合わせて、もう一度お試しください。');
@@ -577,7 +667,7 @@
             }
         }
 
-        // Redraw preview with current settings
+        // Redraw preview
         function redrawPreview() {
             if (!capturedImage || !capturedLandmarks) return;
 
@@ -586,18 +676,15 @@
                 previewCanvas.width = img.width;
                 previewCanvas.height = img.height;
 
-                // Draw image
                 previewCtx.drawImage(img, 0, 0);
 
-                // Draw lashes
                 const width = previewCanvas.width;
                 const height = previewCanvas.height;
 
                 function getPoint(index) {
                     const p = capturedLandmarks[index];
-                    // Image is already mirrored, so use coordinates directly
                     return {
-                        x: (1 - p.x) * width,  // Mirror x coordinate
+                        x: (1 - p.x) * width,
                         y: p.y * height
                     };
                 }
@@ -608,14 +695,14 @@
                 const leftPoints = leftEyeIndices.map(getPoint);
                 const rightPoints = rightEyeIndices.map(getPoint);
 
-                drawNaturalLashes(previewCtx, leftPoints);
-                drawNaturalLashes(previewCtx, rightPoints);
+                drawEnhancedLashes(previewCtx, leftPoints, 'left');
+                drawEnhancedLashes(previewCtx, rightPoints, 'right');
             };
             img.src = capturedImage;
         }
 
-        // Draw natural lashes
-        function drawNaturalLashes(context, points) {
+        // Enhanced lash drawing
+        function drawEnhancedLashes(context, points, side) {
             if (points.length < 2) return;
 
             let totalLength = 0;
@@ -640,14 +727,14 @@
 
                 while (accumulated < segmentLength && lashCount < lashesPerEye) {
                     const t = accumulated / segmentLength;
-                    const offsetT = Math.max(0, Math.min(1, t + (Math.random() - 0.5) * 0.15));
+                    const offsetT = Math.max(0, Math.min(1, t + (Math.random() - 0.5) * 0.1));
 
                     const x = p1.x + dx * offsetT;
                     const y = p1.y + dy * offsetT;
                     const tangentAngle = Math.atan2(dy, dx);
                     const totalPosition = (i + offsetT) / (points.length - 1);
 
-                    drawSingleLash(context, x, y, tangentAngle, totalPosition);
+                    drawEnhancedSingleLash(context, x, y, tangentAngle, totalPosition, side);
 
                     accumulated += spacing;
                     lashCount++;
@@ -656,71 +743,86 @@
             }
         }
 
-        // Draw single lash
-        function drawSingleLash(context, x, y, baseAngle, position) {
+        // Enhanced single lash
+        function drawEnhancedSingleLash(context, x, y, baseAngle, position, side) {
             context.save();
 
             const positionFromCenter = Math.abs(position - 0.5) * 2;
-            const lengthMultiplier = 1 - Math.pow(positionFromCenter, 1.5) * 0.5;
+            let lengthMultiplier = 1 - Math.pow(positionFromCenter, 1.3) * 0.4;
 
-            const baseLength = 20 * currentLength * lengthMultiplier;
-            const randomLength = 0.9 + Math.random() * 0.2;
+            if (eyeAnalysis) {
+                if (eyeAnalysis.eyeShape === 'round') lengthMultiplier *= 1.1;
+                if (eyeAnalysis.eyeShape === 'hooded') lengthMultiplier *= 0.95;
+            }
+
+            const baseLength = 22 * currentLength * lengthMultiplier;
+            const randomLength = 0.88 + Math.random() * 0.24;
             const length = baseLength * randomLength;
 
             const straightUp = -Math.PI / 2;
-            const angleTowardUp = straightUp * 0.7 + baseAngle * 0.3;
-            const randomAngle = (Math.random() - 0.5) * 0.1;
+            let angleBlend = 0.7;
+
+            if (eyeAnalysis) {
+                if (eyeAnalysis.eyeSlant === 'upturned') angleBlend = 0.65;
+                if (eyeAnalysis.eyeSlant === 'downturned') angleBlend = 0.75;
+            }
+
+            const angleTowardUp = straightUp * angleBlend + baseAngle * (1 - angleBlend);
+            const randomAngle = (Math.random() - 0.5) * 0.08;
             const angle = angleTowardUp + randomAngle;
 
-            let curlAmount = 0.1;
-            if (currentCurl === 'C') curlAmount = 0.2;
-            if (currentCurl === 'D') curlAmount = 0.3;
+            let curlAmount = 0.08;
+            if (currentCurl === 'C') curlAmount = 0.15;
+            if (currentCurl === 'D') curlAmount = 0.22;
 
-            const thickness = 1.2 + Math.random() * 0.6;
+            const baseThickness = 1.4 + Math.random() * 0.5;
 
             // Shadow
-            context.globalAlpha = 0.2;
+            context.globalAlpha = 0.18;
             context.beginPath();
-            context.moveTo(x + 0.5, y + 0.5);
-            const shadowControlX = x + Math.cos(angle) * length * 0.4 + 0.5;
-            const shadowControlY = y + Math.sin(angle) * length * 0.4 + 0.5;
-            const shadowEndX = x + Math.cos(angle - curlAmount) * length + 0.5;
-            const shadowEndY = y + Math.sin(angle - curlAmount) * length + 0.5;
-            context.quadraticCurveTo(shadowControlX, shadowControlY, shadowEndX, shadowEndY);
-            context.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-            context.lineWidth = thickness + 0.3;
+            context.moveTo(x + 0.8, y + 0.8);
+            const shadowCtrlX = x + Math.cos(angle) * length * 0.35 + 0.8;
+            const shadowCtrlY = y + Math.sin(angle) * length * 0.35 + 0.8;
+            const shadowEndX = x + Math.cos(angle - curlAmount) * length + 0.8;
+            const shadowEndY = y + Math.sin(angle - curlAmount) * length + 0.8;
+            context.quadraticCurveTo(shadowCtrlX, shadowCtrlY, shadowEndX, shadowEndY);
+            context.strokeStyle = 'rgba(0, 0, 0, 0.25)';
+            context.lineWidth = baseThickness + 0.4;
             context.lineCap = 'round';
             context.stroke();
 
-            // Main lash
-            for (let layer = 0; layer < 2; layer++) {
-                context.globalAlpha = layer === 0 ? 0.9 : 0.7;
+            // Main lash - 3 layers
+            for (let layer = 0; layer < 3; layer++) {
+                context.globalAlpha = layer === 0 ? 0.95 : (layer === 1 ? 0.75 : 0.5);
                 context.beginPath();
                 context.moveTo(x, y);
-                const controlX = x + Math.cos(angle) * length * 0.4;
-                const controlY = y + Math.sin(angle) * length * 0.4;
+
+                const controlX = x + Math.cos(angle) * length * 0.35;
+                const controlY = y + Math.sin(angle) * length * 0.35;
                 const endX = x + Math.cos(angle - curlAmount) * length;
                 const endY = y + Math.sin(angle - curlAmount) * length;
+
                 context.quadraticCurveTo(controlX, controlY, endX, endY);
-                const layerThickness = layer === 0 ? thickness : thickness * 0.7;
-                context.strokeStyle = layer === 0 ? 'rgba(0, 0, 0, 0.95)' : 'rgba(0, 0, 0, 0.8)';
+
+                const layerThickness = baseThickness * (1 - layer * 0.25);
+                context.strokeStyle = `rgba(0, 0, 0, ${0.98 - layer * 0.15})`;
                 context.lineWidth = layerThickness;
                 context.lineCap = 'round';
                 context.stroke();
             }
 
             // Highlight
-            if (Math.random() > 0.8) {
-                context.globalAlpha = 0.15;
+            if (Math.random() > 0.75) {
+                context.globalAlpha = 0.12;
                 context.beginPath();
                 context.moveTo(x, y);
-                const hlControlX = x + Math.cos(angle) * length * 0.3;
-                const hlControlY = y + Math.sin(angle) * length * 0.3;
-                const hlEndX = x + Math.cos(angle - curlAmount) * length * 0.6;
-                const hlEndY = y + Math.sin(angle - curlAmount) * length * 0.6;
-                context.quadraticCurveTo(hlControlX, hlControlY, hlEndX, hlEndY);
-                context.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-                context.lineWidth = 0.5;
+                const hlCtrlX = x + Math.cos(angle) * length * 0.25;
+                const hlCtrlY = y + Math.sin(angle) * length * 0.25;
+                const hlEndX = x + Math.cos(angle - curlAmount) * length * 0.5;
+                const hlEndY = y + Math.sin(angle - curlAmount) * length * 0.5;
+                context.quadraticCurveTo(hlCtrlX, hlCtrlY, hlEndX, hlEndY);
+                context.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+                context.lineWidth = 0.6;
                 context.stroke();
             }
 
@@ -756,10 +858,11 @@
                 volume: currentVolume,
                 curl: currentCurl,
                 length: currentLength,
+                analysis: eyeAnalysis,
                 timestamp: Date.now()
             };
             savedPatterns.push(pattern);
-            alert(`パターンを保存しました！（保存数: ${savedPatterns.length}）`);
+            alert(`✅ パターンを保存しました！（保存数: ${savedPatterns.length}）`);
         };
 
         // Show compare
@@ -811,13 +914,11 @@
             });
         };
 
-        // Back to edit
         window.backToEdit = () => {
             document.getElementById('compareSection').classList.remove('active');
             document.getElementById('editSection').classList.add('active');
         };
 
-        // Retake photo
         window.retakePhoto = () => {
             document.getElementById('editSection').classList.remove('active');
             document.getElementById('compareSection').classList.remove('active');
@@ -826,7 +927,9 @@
             cameraSection.classList.remove('hidden');
             capturedImage = null;
             capturedLandmarks = null;
+            eyeAnalysis = null;
             savedPatterns = [];
+            document.getElementById('aiAnalysis').style.display = 'none';
         };
 
         // Start

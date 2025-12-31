@@ -31,6 +31,7 @@ from google.cloud import firestore
 _db = None
 _db = None
 _text_model = None
+_configuration = None
 
 # ========================================
 # API Router definition
@@ -63,9 +64,10 @@ def register_beaver_handler(app, handler, configuration, db, text_model=None):
         db: Firestore client
         text_model: Geminiモデル（オプション）
     """
-    global _db, _text_model
+    global _db, _text_model, _configuration
     _db = db
     _text_model = text_model
+    _configuration = configuration
 
     # ========================================
     # Webhook エンドポイント

@@ -329,3 +329,145 @@ async def chat_whale(request: WhaleChatRequest):
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8080))
     uvicorn.run(app, host="0.0.0.0", port=port)
+
+# ---------------------------------------------------------------------------
+# 🦙 アルパカのまつエクサロン用 API Models & Endpoints
+# ---------------------------------------------------------------------------
+# このコードを main.py の以下の位置に追加してください：
+# - class WhaleChatRequest(BaseModel): の下
+# - @app.post("/api/whale/chat") の上または下
+
+from pydantic import BaseModel
+import base64
+import json
+import re
+from PIL import Image
+import io
+
+class EyeAnalysisRequest(BaseModel):
+    image: str  # Base64エンコードされた画像
+
+@app.post("/api/alpaca-salon/analyze-eye")
+async def analyze_eye(request: EyeAnalysisRequest):
+    """
+    🦙 アルパカのまつエクサロン - AI目分析API
+
+    Gemini 2.5 Flash で目の形状を分析し、最適なまつエクスタイルを提案
+
+    - **image**: Base64エンコードされた顔写真
+    - **return**: 目の特徴と推奨スタイル
+    """
+    try:
+        # Base64画像をデコード
+        # data:image/png;base64, を除去
+        image_data = request.image.split(',')[1] if ',' in request.image else request.image
+        image_bytes = base64.b64decode(image_data)
+
+        # Vertex AIで画像分析
+        from vertexai.generative_models import Part
+
+        prompt = """あなたは美容のプロフェッショナルです。この顔写真の目を分析して、最適なまつげエクステンションを提案してください。
+
+必ず以下のJSON形式「のみ」で回答してください（説明文などは一切含めないでください）：
+
+{
+  "eyeShape": "almond",
+  "eyeSlant": "upturned",
+  "eyelidType": "double",
+  "eyeWidth": "medium",
+  "recommendations": {
+    "volume": 100,
+    "curl": "C",
+    "length": 1.0,
+    "reasoning": "目の形状に合わせた推奨スタイルです"
+  }
+}
+
+【分類ルール】
+- eyeShape: "almond" (アーモンド型) / "round" (丸型) / "hooded" (フード型)
+- eyeSlant: "upturned" (上がり目) / "downturned" (下がり目) / "straight" (平行)
+- eyelidType: "monolid" (一重) / "double" (二重)
+- eyeWidth: "narrow" (狭め) / "medium" (標準) / "wide" (広め)
+- volume: 60, 100, 140, 180 のいずれか
+- curl: "J", "C", "D" のいずれか
+- length: 0.8, 1.0, 1.2 のいずれか
+- reasoning: 日本語で1-2文の簡潔な理由
+
+JSON以外の文字を含めないでください。"""
+
+        # 画像パーツを作成
+        image_part = Part.from_data(image_bytes, mime_type="image/png")
+
+        # Gemini 2.5 Flash で分析
+        response = text_model.generate_content(
+            [prompt, image_part],
+            generation_config={
+                "temperature": 0.4,
+                "max_output_tokens": 1024,
+            }
+        )
+
+        # レスポンスからJSONを抽出
+        response_text = response.text
+        print(f"📝 Gemini Response: {response_text[:500]}...", flush=True)  # デバッグ用
+
+        # JSONブロックを抽出（複数パターンに対応）
+        json_str = None
+
+        # パターン1: ```json ... ```
+        json_match = re.search(r'```json\s*(.*?)\s*```', response_text, re.DOTALL)
+        if json_match:
+            json_str = json_match.group(1)
+            print("✅ JSON found in code block", flush=True)
+
+        # パターン2: ``` ... ``` (jsonなし)
+        if not json_str:
+            json_match = re.search(r'```\s*(.*?)\s*```', response_text, re.DOTALL)
+            if json_match:
+                json_str = json_match.group(1)
+                print("✅ JSON found in generic code block", flush=True)
+
+        # パターン3: { ... } 直接
+        if not json_str:
+            json_match = re.search(r'\{[\s\S]*\}', response_text)
+            if json_match:
+                json_str = json_match.group(0)
+                print("✅ JSON found as raw object", flush=True)
+
+        # パース前にクリーンアップ
+        if json_str:
+            json_str = json_str.strip()
+            # 不要な改行やスペースを削除
+            json_str = re.sub(r'\s+', ' ', json_str)
+        else:
+            print(f"❌ No JSON found in response", flush=True)
+            raise ValueError(f"JSONが見つかりませんでした。レスポンス: {response_text[:200]}")
+
+        try:
+            analysis = json.loads(json_str)
+            print(f"✅ JSON parsed successfully: {analysis}", flush=True)
+        except json.JSONDecodeError as je:
+            print(f"❌ JSON Parse Error: {je}", flush=True)
+            print(f"📄 Raw JSON String: {json_str[:300]}", flush=True)
+            raise ValueError(f"JSONのパースに失敗: {str(je)}")
+
+        return {
+            "success": True,
+            "analysis": analysis
+        }
+
+    except Exception as e:
+        import traceback
+        print(f"❌ Eye Analysis Error: {e}", flush=True)
+        traceback.print_exc()
+
+        # デバッグ用：エラー時にレスポンス全文を返す
+        error_details = str(e)
+        if 'response_text' in locals():
+            error_details += f"\n\n【Geminiのレスポンス】\n{response_text[:1000]}"
+
+        return {
+            "success": False,
+            "error": error_details,
+            "analysis": None
+        }

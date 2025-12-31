@@ -93,7 +93,7 @@ def register_bat_handler(app, handler, configuration, search_model, db):
 
         elif text in ["ID", "id", "ID教えて", "自分のID"]:
             # ID確認
-            reply_text = f"お前のIDはこれだモリ...🦇\n\n{user_id}\n\nこれをWebアプリに入れると通知が届くモリ。"
+            reply_text = f"あなたのIDはこれだモリ...🦇\n\n{user_id}\n\nこれをWebアプリに入れると通知が届くモリ。"
 
         else:
             # --- 通常会話（検索） ---
