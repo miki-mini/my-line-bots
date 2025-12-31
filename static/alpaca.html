@@ -7,8 +7,10 @@
     <title>アルパカのまつエクサロン🦙</title>
     <link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+        crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
     <style>
         :root {
@@ -19,16 +21,25 @@
             --shadow-soft: 0 10px 30px rgba(212, 175, 55, 0.15);
         }
 
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Zen Old Mincho', serif;
-            background: linear-gradient(135deg, #fdfbf7 0%, #fff1f2 100%);
+            background-color: #fdfbf7;
+            background-image: url('/static/background_actress.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             color: var(--text-dark);
             margin: 0;
             padding: 0;
             min-height: 100vh;
             overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .fluff {
@@ -41,12 +52,33 @@
             animation: float 10s infinite ease-in-out;
         }
 
-        .fluff:nth-child(1) { width: 300px; height: 300px; top: -50px; left: -50px; background: rgba(252, 228, 236, 0.6); }
-        .fluff:nth-child(2) { width: 400px; height: 400px; bottom: -100px; right: -100px; animation-delay: 2s; background: rgba(243, 230, 255, 0.5); }
+        .fluff:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            top: -50px;
+            left: -50px;
+            background: rgba(252, 228, 236, 0.6);
+        }
+
+        .fluff:nth-child(2) {
+            width: 400px;
+            height: 400px;
+            bottom: -100px;
+            right: -100px;
+            animation-delay: 2s;
+            background: rgba(243, 230, 255, 0.5);
+        }
 
         @keyframes float {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-20px) scale(1.05); }
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-20px) scale(1.05);
+            }
         }
 
         header {
@@ -69,7 +101,9 @@
             font-weight: 700;
         }
 
-        h1 span { color: var(--primary-gold); }
+        h1 span {
+            color: var(--primary-gold);
+        }
 
         .ai-badge {
             display: inline-block;
@@ -97,11 +131,13 @@
             align-items: center;
         }
 
-        .camera-section.hidden { display: none; }
+        .camera-section.hidden {
+            display: none;
+        }
 
         .camera-frame {
             padding: 15px;
-            background: #fff;
+            background: rgba(0, 0, 0, 0.5);
             border-radius: 50% 50% 45% 45% / 60% 60% 40% 40%;
             box-shadow: var(--shadow-soft);
             margin-bottom: 20px;
@@ -140,8 +176,15 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
+
+            0%,
+            100% {
+                opacity: 0.6;
+            }
+
+            50% {
+                opacity: 1;
+            }
         }
 
         .eye-guide {
@@ -155,8 +198,15 @@
             background: rgba(212, 175, 55, 0.2);
         }
 
-        .eye-guide.left { top: 40%; left: 17%; }
-        .eye-guide.right { top: 40%; right: 17%; }
+        .eye-guide.left {
+            top: 40%;
+            left: 17%;
+        }
+
+        .eye-guide.right {
+            top: 40%;
+            right: 17%;
+        }
 
         .guide-text {
             position: absolute;
@@ -187,8 +237,13 @@
         }
 
         /* Edit Mode */
-        .edit-section { display: none; }
-        .edit-section.active { display: block; }
+        .edit-section {
+            display: none;
+        }
+
+        .edit-section.active {
+            display: block;
+        }
 
         .preview-area {
             display: flex;
@@ -249,7 +304,9 @@
             margin-bottom: 20px;
         }
 
-        .control-row:last-child { margin-bottom: 0; }
+        .control-row:last-child {
+            margin-bottom: 0;
+        }
 
         .label {
             font-size: 0.95rem;
@@ -311,8 +368,13 @@
             transition: transform 0.2s;
         }
 
-        .btn:hover { transform: translateY(-2px); }
-        .btn:active { transform: scale(0.95); }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
 
         .btn.secondary {
             background: linear-gradient(45deg, #888, #aaa);
@@ -320,8 +382,13 @@
         }
 
         /* Compare Mode */
-        .compare-section { display: none; }
-        .compare-section.active { display: block; }
+        .compare-section {
+            display: none;
+        }
+
+        .compare-section.active {
+            display: block;
+        }
 
         .compare-grid {
             display: grid;
@@ -355,13 +422,28 @@
             color: #aaa;
         }
 
-        .hidden { display: none; }
+        .hidden {
+            display: none;
+        }
 
         .tips {
             text-align: center;
             font-size: 0.85rem;
             color: #aaa;
             margin-top: 15px;
+        }
+
+        .ai-analysis {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 20px;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px);
+            max-width: 600px;
+            width: 90%;
+            transition: all 0.3s ease;
         }
 
         .loading {
@@ -375,12 +457,81 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Sparkle Animation */
+        .sparkle-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+        }
+
+        .sparkle-container.active {
+            display: block;
+        }
+
+        .sparkle {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(255, 215, 0, 0.5) 40%, rgba(255, 255, 255, 0) 70%);
+            border-radius: 50%;
+            animation: twinkle 1s ease-in-out forwards;
+            filter: drop-shadow(0 0 5px gold);
+        }
+
+        @keyframes twinkle {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.2) rotate(45deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0) rotate(90deg);
+                opacity: 0;
+            }
+        }
+
+
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(50, 50, 50, 0.9);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 24px;
+            font-size: 0.9rem;
+            z-index: 1000;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.27);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
         }
     </style>
 </head>
 
 <body>
+    <div id="sparkleContainer" class="sparkle-container"></div>
     <div class="fluff"></div>
     <div class="fluff"></div>
 
@@ -404,32 +555,35 @@
             <div class="tips">✨ 顔をカメラに向けて、撮影ボタンを押してください ✨</div>
             <div class="action-buttons">
                 <button class="btn" onclick="capturePhoto()">📸 写真を撮る</button>
-                <button class="btn secondary" onclick="document.getElementById('fileInput').click()">📁 写真をアップロード</button>
+                <button class="btn secondary" onclick="document.getElementById('fileInput').click()">📁
+                    写真をアップロード</button>
             </div>
-            <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileUpload(event)">
+            <input type="file" id="fileInput" accept="image/*" style="display: none;"
+                onchange="handleFileUpload(event)">
         </div>
 
         <!-- Edit Mode -->
+        <!-- Edit Mode -->
         <div class="edit-section" id="editSection">
+            <div class="ai-analysis" id="aiAnalysis" style="display: none;">
+                <h4><span class="loading"></span> AI分析中...</h4>
+                <div class="ai-analysis-content" id="analysisContent"></div>
+            </div>
+
             <div class="preview-area">
                 <div class="preview-container">
                     <canvas id="previewCanvas" class="preview-canvas"></canvas>
                 </div>
             </div>
 
-            <div class="ai-analysis" id="aiAnalysis" style="display: none;">
-                <h4><span class="loading"></span> AI分析中...</h4>
-                <div class="ai-analysis-content" id="analysisContent"></div>
-            </div>
-
             <div class="controls">
                 <div class="control-row">
                     <div class="label">本数</div>
                     <div class="btn-group">
-                        <button onclick="setVolume(40)" class="style-btn">超ナチュラル</button>
-                        <button onclick="setVolume(60)" class="style-btn active">ナチュラル</button>
-                        <button onclick="setVolume(100)" class="style-btn">標準</button>
-                        <button onclick="setVolume(140)" class="style-btn">ボリューム</button>
+                        <button onclick="setVolume(40)" class="style-btn">80本</button>
+                        <button onclick="setVolume(60)" class="style-btn active">100本</button>
+                        <button onclick="setVolume(90)" class="style-btn">120本</button>
+                        <button onclick="setVolume(120)" class="style-btn">140本</button>
                     </div>
                 </div>
                 <div class="control-row">
@@ -443,9 +597,38 @@
                 <div class="control-row">
                     <div class="label">長さ</div>
                     <div class="btn-group">
-                        <button onclick="setLength(0.8)" class="style-btn">短め</button>
-                        <button onclick="setLength(1.0)" class="style-btn active">標準</button>
-                        <button onclick="setLength(1.2)" class="style-btn">長め</button>
+                        <button onclick="setLength(0.8)" class="style-btn">9mm</button>
+                        <button onclick="setLength(1.0)" class="style-btn active">11mm</button>
+                        <button onclick="setLength(1.2)" class="style-btn">13mm</button>
+                        <button onclick="setLength(1.4)" class="style-btn">15mm</button>
+                    </div>
+                </div>
+                <!-- Lower Lash Toggle -->
+                <div class="control-row">
+                    <div class="label">下まつげ</div>
+                    <div class="btn-group">
+                        <button onclick="toggleLowerLashes(false)" class="style-btn active"
+                            id="btn-lower-off">なし</button>
+                        <button onclick="toggleLowerLashes(true)" class="style-btn" id="btn-lower-on">あり</button>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <div class="label">位置</div>
+                    <div class="btn-group">
+                        <div style="display: flex; flex-direction: column; gap: 5px; align-items: center;">
+                            <button onclick="adjustPosition(0, -2)" class="style-btn"
+                                style="padding: 5px 15px;">⬆️</button>
+                            <div style="display: flex; gap: 5px;">
+                                <button onclick="adjustPosition(-2, 0)" class="style-btn"
+                                    style="padding: 5px 15px;">⬅️</button>
+                                <button onclick="resetPosition()" class="style-btn secondary-btn"
+                                    style="font-size: 0.8rem; padding: 5px 10px;">復元</button>
+                                <button onclick="adjustPosition(2, 0)" class="style-btn"
+                                    style="padding: 5px 15px;">➡️</button>
+                            </div>
+                            <button onclick="adjustPosition(0, 2)" class="style-btn"
+                                style="padding: 5px 15px;">⬇️</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -470,11 +653,14 @@
         </div>
 
         <canvas id="tempCanvas" class="hidden"></canvas>
+        <div id="toast" class="toast"></div>
     </div>
 
     <script>
+        // ... script starts ...
         const video = document.getElementById('video');
         const statusEl = document.getElementById('status');
+        const toastEl = document.getElementById('toast'); // Toast element
         const previewCanvas = document.getElementById('previewCanvas');
         const previewCtx = previewCanvas.getContext('2d');
 
@@ -485,11 +671,58 @@
         let capturedLandmarks = null;
         let savedPatterns = [];
         let eyeAnalysis = null;
+        let isMirrored = false; // New: Mirror flag
+        let sparkleInterval = null; // Sparkle timer
+
+        // Sparkle Effect Functions
+        function startMagicEffect() {
+            const container = document.getElementById('sparkleContainer');
+            if (!container) return; // Guard clause
+            container.classList.add('active');
+
+            // Create sparkles periodically
+            sparkleInterval = setInterval(() => {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+
+                // Random position
+                const x = Math.random() * window.innerWidth;
+                const y = Math.random() * window.innerHeight;
+
+                sparkle.style.left = `${x}px`;
+                sparkle.style.top = `${y}px`;
+
+                // Random size variation
+                const scale = 0.5 + Math.random() * 1.0;
+                sparkle.style.transform = `scale(${scale})`;
+
+                container.appendChild(sparkle);
+
+                // Cleanup after animation
+                setTimeout(() => {
+                    sparkle.remove();
+                }, 1000);
+            }, 50); // Every 50ms
+        }
+
+        function stopMagicEffect() {
+            const container = document.getElementById('sparkleContainer');
+            if (!container) return; // Guard clause
+            container.classList.remove('active');
+            if (sparkleInterval) {
+                clearInterval(sparkleInterval);
+                sparkleInterval = null;
+            }
+            container.innerHTML = ''; // Clear all
+        }
 
         // Settings
-        let currentVolume = 60;  // 80 → 60 (よりナチュラル)
+        let currentVolume = 60;  // 50 → 60 (より自然な密度)
         let currentCurl = 'J';
         let currentLength = 1.0;
+        let currentOffsetY = 0;
+        let currentOffsetX = 0; // New: Horizontal offset
+        let showLowerLashes = false; // Default: OFF
 
         // Initialize MediaPipe
         async function initMediaPipe() {
@@ -502,10 +735,11 @@
             faceMesh.setOptions({
                 maxNumFaces: 1,
                 refineLandmarks: true,
-                minDetectionConfidence: 0.7,
-                minTrackingConfidence: 0.5
+                minDetectionConfidence: 0.3,  // 0.5 → 0.3 (さらに検出しやすく)
+                minTrackingConfidence: 0.3
             });
 
+            // カメラモード用の初期化
             camera = new Camera(video, {
                 onFrame: async () => {
                     const cameraSection = document.getElementById('cameraSection');
@@ -518,10 +752,20 @@
             });
 
             statusEl.textContent = 'カメラ起動中...';
-            camera.start();
-            statusEl.textContent = '準備完了！';
 
-            setTimeout(() => { statusEl.style.opacity = '0'; }, 2000);
+            try {
+                await camera.start();
+                statusEl.textContent = '準備完了！';
+                setTimeout(() => { statusEl.style.opacity = '0'; }, 2000);
+            } catch (error) {
+                console.error('カメラ起動エラー:', error);
+                statusEl.textContent = 'カメラ起動に失敗しました';
+                // カメラが使えなくても、写真アップロードは使える
+                setTimeout(() => {
+                    statusEl.textContent = '写真アップロード機能は使えます';
+                    setTimeout(() => { statusEl.style.opacity = '0'; }, 3000);
+                }, 2000);
+            }
         }
 
         // Analyze eye with Gemini 2.5 Flash (Backend API)
@@ -560,6 +804,10 @@
                 return analysis;
             } catch (error) {
                 console.error('AI分析エラー:', error);
+
+                // Stop Magic on error
+                stopMagicEffect();
+
                 analysisDiv.querySelector('h4').innerHTML = '⚠️ AI分析失敗';
 
                 // エラー詳細を表示
@@ -605,62 +853,117 @@
             return map[width] || width;
         }
 
-        // Handle file upload
+        // Handle file upload - カメラモードと同じ処理に
         window.handleFileUpload = async (event) => {
             const file = event.target.files[0];
             if (!file) return;
 
+            console.log('📁 ファイル選択:', file.name);
+
+            statusEl.textContent = '画像を読み込み中...';
+            statusEl.style.opacity = '1';
+
             const reader = new FileReader();
             reader.onload = async (e) => {
+                console.log('📷 画像読み込み完了');
+
                 const img = new Image();
+
                 img.onload = async () => {
-                    // Create canvas to process image
-                    const tempCanvas = document.getElementById('tempCanvas');
-                    tempCanvas.width = img.width;
-                    tempCanvas.height = img.height;
-                    const tempCtx = tempCanvas.getContext('2d');
-
-                    // Draw image (no mirroring for uploaded photos)
-                    tempCtx.drawImage(img, 0, 0);
-
-                    capturedImage = tempCanvas.toDataURL('image/png');
-
-                    // Detect face with MediaPipe
-                    statusEl.textContent = '顔を検出中...';
-                    statusEl.style.opacity = '1';
+                    console.log('🖼️ 画像サイズ:', img.width, 'x', img.height);
 
                     try {
-                        // Create temporary video element for MediaPipe
-                        const imgElement = document.createElement('img');
-                        imgElement.src = e.target.result;
+                        // Resize image if too large (Max 1280px)
+                        const maxSize = 1280;
+                        let width = img.width;
+                        let height = img.height;
 
-                        await new Promise((resolve) => {
-                            imgElement.onload = resolve;
-                        });
+                        if (width > maxSize || height > maxSize) {
+                            if (width > height) {
+                                height = Math.round((height * maxSize) / width);
+                                width = maxSize;
+                            } else {
+                                width = Math.round((width * maxSize) / height);
+                                height = maxSize;
+                            }
+                            console.log(`📉 リサイズ: ${img.width}x${img.height} -> ${width}x${height}`);
+                        }
 
+                        // tempCanvasに描画
+                        const tempCanvas = document.getElementById('tempCanvas');
+                        tempCanvas.width = width;
+                        tempCanvas.height = height;
+                        const tempCtx = tempCanvas.getContext('2d');
+                        tempCtx.drawImage(img, 0, 0, width, height);
+
+                        capturedImage = tempCanvas.toDataURL('image/png');
+                        isMirrored = false; // Upload is NOT mirrored
+                        console.log('💾 画像保存完了');
+
+                        statusEl.textContent = '顔を検出中...';
+                        console.log('🔍 MediaPipe 処理開始 (Resetting Graph)...');
+
+                        // 静止画処理のために履歴をリセット
+                        faceMesh.reset();
+
+                        // カメラモードと同じ方法でMediaPipe処理
                         const results = await new Promise((resolve, reject) => {
-                            const timeout = setTimeout(() => reject(new Error('タイムアウト')), 5000);
+                            const timeout = setTimeout(() => {
+                                reject(new Error('顔検出がタイムアウトしました'));
+                            }, 10000);
+
+                            // 一度だけ結果を受け取る
+                            const onResultsOnce = (r) => {
+                                clearTimeout(timeout);
+                                console.log('✅ MediaPipe 結果受信');
+                                resolve(r);
+                            };
+
+                            // 一時的なリスナーを設定
+                            const originalOnResults = faceMesh.onResults;
+                            // Note: faceMesh.onResults doesn't return the old listener, but sets a new one.
+                            // We just set our one-time listener.
 
                             faceMesh.onResults((r) => {
-                                clearTimeout(timeout);
-                                resolve(r);
+                                onResultsOnce(r);
+                                // カメラ用のリスナーに戻す必要があればここで戻すが、
+                                // 通常はカメラ開始時に再設定されるのでOK。
+                                // ただし、連続アップロードやカメラ再開時に備えて空にしておくのが無難？
+                                // ここではresolveするだけ。
                             });
 
-                            faceMesh.send({ image: imgElement });
+                            // tempCanvasを直接送信
+                            console.log('📤 MediaPipe に画像送信...');
+                            faceMesh.send({ image: tempCanvas }).catch(reject);
+                        });
+
+                        console.log('🎯 顔検出結果:', {
+                            顔の数: results.multiFaceLandmarks ? results.multiFaceLandmarks.length : 0
                         });
 
                         if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+                            console.log('😊 顔検出成功！');
                             capturedLandmarks = results.multiFaceLandmarks[0];
 
+                            // 画面切り替え
                             const cameraSection = document.getElementById('cameraSection');
                             cameraSection.style.display = 'none';
                             cameraSection.classList.add('hidden');
                             document.getElementById('editSection').classList.add('active');
 
-                            // Analyze with AI
+                            statusEl.textContent = 'AI分析中...';
+
+                            // AI分析
+                            console.log('🤖 AI分析開始...');
+                            // Start Magic!
+                            startMagicEffect();
                             eyeAnalysis = await analyzeEyeWithAI(capturedImage);
 
+                            // Stop Magic on success
+                            stopMagicEffect();
+
                             if (eyeAnalysis && eyeAnalysis.recommendations) {
+                                console.log('✨ AI推奨:', eyeAnalysis.recommendations);
                                 const rec = eyeAnalysis.recommendations;
                                 currentVolume = rec.volume;
                                 currentCurl = rec.curl;
@@ -672,19 +975,39 @@
                                 document.querySelector(`button[onclick="setLength(${rec.length})"]`)?.classList.add('active');
                             }
 
+                            console.log('🎨 まつげ描画開始...');
                             redrawPreview();
-                        } else {
-                            alert('顔が検出できませんでした。\n別の写真を試してください。');
+
                             statusEl.style.opacity = '0';
+                            console.log('✅ 完了！');
+                        } else {
+                            throw new Error('顔が検出できませんでした');
                         }
                     } catch (error) {
-                        console.error('Face detection error:', error);
-                        alert('顔の検出に失敗しました。もう一度お試しください。');
+                        console.error('❌ エラー発生:', error);
+                        alert(`❌ 顔検出に失敗しました\n\n${error.message}\n\n・顔が正面を向いているか確認してください\n・明るい場所で撮影された写真を使用してください`);
                         statusEl.style.opacity = '0';
+                        document.getElementById('fileInput').value = '';
                     }
                 };
+
+                img.onerror = (error) => {
+                    console.error('❌ 画像読み込みエラー:', error);
+                    alert('画像の読み込みに失敗しました。');
+                    statusEl.style.opacity = '0';
+                    document.getElementById('fileInput').value = '';
+                };
+
                 img.src = e.target.result;
             };
+
+            reader.onerror = (error) => {
+                console.error('❌ ファイル読み込みエラー:', error);
+                alert('ファイルの読み込みに失敗しました。');
+                statusEl.style.opacity = '0';
+                document.getElementById('fileInput').value = '';
+            };
+
             reader.readAsDataURL(file);
         };
 
@@ -701,6 +1024,7 @@
             tempCtx.restore();
 
             capturedImage = tempCanvas.toDataURL('image/png');
+            isMirrored = true; // Webcam is mirrored
 
             statusEl.textContent = '顔を検出中...';
             statusEl.style.opacity = '1';
@@ -743,7 +1067,7 @@
 
                     redrawPreview();
                 } else {
-                    alert('顔が検出できませんでした。\nガイドに顔を合わせて、もう一度お試しください。');
+                    alert('❌ 顔が検出できませんでした\n\nガイドに顔を合わせて、もう一度お試しください。');
                     statusEl.style.opacity = '0';
                 }
             } catch (error) {
@@ -769,7 +1093,7 @@
                 function getPoint(index) {
                     const p = capturedLandmarks[index];
                     return {
-                        x: (1 - p.x) * width,
+                        x: (isMirrored ? (1 - p.x) : p.x) * width,
                         y: p.y * height
                     };
                 }
@@ -777,11 +1101,24 @@
                 const leftEyeIndices = [33, 246, 161, 160, 159, 158, 157, 173, 133];
                 const rightEyeIndices = [362, 398, 384, 385, 386, 387, 388, 466, 263];
 
+                // Lower eye indices
+                const leftEyeLowerIndices = [33, 7, 163, 144, 145, 153, 154, 155, 133];
+                const rightEyeLowerIndices = [362, 382, 381, 380, 374, 373, 390, 249, 263];
+
                 const leftPoints = leftEyeIndices.map(getPoint);
                 const rightPoints = rightEyeIndices.map(getPoint);
+                const leftLowerPoints = leftEyeLowerIndices.map(getPoint);
+                const rightLowerPoints = rightEyeLowerIndices.map(getPoint);
 
-                drawEnhancedLashes(previewCtx, leftPoints, 'left');
-                drawEnhancedLashes(previewCtx, rightPoints, 'right');
+                // Upper lashes
+                drawEnhancedLashes(previewCtx, leftPoints, 'left', false);
+                drawEnhancedLashes(previewCtx, rightPoints, 'right', false);
+
+                // Lower lashes (Only if enabled)
+                if (showLowerLashes) {
+                    drawEnhancedLashes(previewCtx, leftLowerPoints, 'left', true);
+                    drawEnhancedLashes(previewCtx, rightLowerPoints, 'right', true);
+                }
             };
             img.src = capturedImage;
         }
@@ -818,7 +1155,7 @@
                     const tangentAngle = Math.atan2(dy, dx);
                     const totalPosition = (i + t) / (points.length - 1);
 
-                    drawEnhancedSingleLash(context, x, y, tangentAngle, totalPosition, side);
+                    drawSingleLashImage(context, x, y, tangentAngle, totalPosition, side);
 
                     accumulated += spacing;
                     lashCount++;
@@ -827,51 +1164,174 @@
             }
         }
 
-        // Enhanced single lash - ULTRA SIMPLIFIED
-        function drawEnhancedSingleLash(context, x, y, baseAngle, position, side) {
+        // まつげ画像を生成（1回だけ） - カーブを改善・高画質化
+        let lashImage = null;
+
+        function createLashImage() {
+            const canvas = document.createElement('canvas');
+            const size = 300; // 解像度アップ (100 -> 300)
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // まつげを描画（より自然なカーブと「毛」の質感）
+            ctx.save();
+            ctx.translate(size / 2, size - 20);
+
+            // グラデーション (根元は濃く、毛先は薄く)
+            const gradient = ctx.createLinearGradient(0, 0, 0, -size + 40);
+            gradient.addColorStop(0, 'rgba(20, 20, 20, 0.95)');
+            gradient.addColorStop(0.5, 'rgba(40, 40, 40, 0.85)');
+            gradient.addColorStop(1, 'rgba(60, 60, 60, 0)');
+
+            ctx.fillStyle = gradient;
+
+            // 形状を描画 (線ではなく塗りつぶしで「太さ」を表現)
+            ctx.beginPath();
+
+            // 根元の左側からスタート
+            const rootWidth = 14; // 根元の太さ
+            ctx.moveTo(-rootWidth / 2, 0);
+
+            const length = size - 40;
+            const curlX = size * 0.3; // カール具合
+
+            // 左側のカーブ (根元 -> 毛先)
+            ctx.bezierCurveTo(
+                -rootWidth * 0.2, -length * 0.3,
+                curlX * 0.6, -length * 0.7,
+                curlX, -length
+            );
+
+            // 右側のカーブ (毛先 -> 根元)
+            ctx.bezierCurveTo(
+                curlX * 0.6 + rootWidth * 0.2, -length * 0.7,
+                rootWidth * 0.8, -length * 0.3,
+                rootWidth / 2, 0
+            );
+
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
+
+            return canvas;
+        }
+
+        // まつげを目のライン上に配置
+        function drawEnhancedLashes(context, points, side, isLower = false) {
+            if (points.length < 2) return;
+
+            // 初回のみ画像生成
+            if (!lashImage) {
+                lashImage = createLashImage();
+            }
+
+            let totalLength = 0;
+            for (let i = 0; i < points.length - 1; i++) {
+                const dx = points[i + 1].x - points[i].x;
+                const dy = points[i + 1].y - points[i].y;
+                totalLength += Math.sqrt(dx * dx + dy * dy);
+            }
+
+            const lashesPerEye = Math.floor(currentVolume / 2);
+            const spacing = totalLength / lashesPerEye;
+
+            let accumulated = 0;
+            let lashCount = 0;
+
+            for (let i = 0; i < points.length - 1; i++) {
+                const p1 = points[i];
+                const p2 = points[i + 1];
+                const dx = p2.x - p1.x;
+                const dy = p2.y - p1.y;
+                const segmentLength = Math.sqrt(dx * dx + dy * dy);
+
+                while (accumulated < segmentLength && lashCount < lashesPerEye) {
+                    const t = accumulated / segmentLength;
+
+                    const x = p1.x + dx * t;
+                    const y = p1.y + dy * t;
+                    const tangentAngle = Math.atan2(dy, dx);
+                    const totalPosition = (i + t) / (points.length - 1);
+
+                    // Skip inner corner
+                    // Skip inner corner
+                    // Reverted to original request: Left Side (Screen Left) needs more skip (0.55)
+                    // Right Side (Screen Right) stays 0.35
+                    let skipThresholdBase = (side === 'left') ? 0.55 : 0.35;
+
+                    const skipThreshold = isLower ? 0.2 : skipThresholdBase;
+                    if (totalPosition >= skipThreshold) {
+                        drawSingleLashImage(context, x, y, tangentAngle, totalPosition, side, isLower);
+                    }
+
+                    accumulated += spacing;
+                    lashCount++;
+                }
+                accumulated -= segmentLength;
+            }
+        }
+
+
+
+        // 画像ベースでまつげを配置 - より自然な角度に
+        function drawSingleLashImage(context, x, y, baseAngle, position, side, isLower = false) {
             context.save();
 
-            // Length based on position (中央が長い)
+            // 位置による長さ調整
             const positionFromCenter = Math.abs(position - 0.5) * 2;
-            const lengthMultiplier = 1 - Math.pow(positionFromCenter, 1.5) * 0.5;
+            const lengthMultiplier = 1 - Math.pow(positionFromCenter, 1.8) * 0.55;
 
-            const baseLength = 18 * currentLength * lengthMultiplier;
-            const length = baseLength;  // ランダム性なし
+            // カールタイプによる角度調整
+            let curlAngle = 0;
+            if (currentCurl === 'C') curlAngle = 0.1;
+            if (currentCurl === 'D') curlAngle = 0.2;
 
-            // Angle: ほぼ真上 (85%真上、15%だけ目のカーブに従う)
-            const straightUp = -Math.PI / 2;
-            const angle = straightUp * 0.85 + baseAngle * 0.15;  // ランダム性なし
 
-            // Curl (ごくわずか)
-            let curlAmount = 0.05;
-            if (currentCurl === 'C') curlAmount = 0.1;
-            if (currentCurl === 'D') curlAmount = 0.15;
 
-            // Thickness (固定)
-            const thickness = 1.0;
+            // 角度: 目のカーブに程よく従う
+            // 角度: 目のカーブに程よく従う
+            // 上まつげ基準で計算し、下まつげの場合は180度回転(Math.PI)させる
+            const straightUp = -Math.PI / 2; // 上向き(デフォルト)
 
-            // メインのまつげのみ（影なし、ハイライトなし）
-            context.globalAlpha = 0.85;
-            context.beginPath();
-            context.moveTo(x, y);
+            // 中央は真上、端は目のカーブに従う
+            const blendFactor = 0.5 + positionFromCenter * 0.3;
 
-            // 制御点
-            const controlX = x + Math.cos(angle) * length * 0.4;
-            const controlY = y + Math.sin(angle) * length * 0.4;
+            let finalAngle = straightUp * (1 - blendFactor) + baseAngle * blendFactor + curlAngle;
+            if (isLower) {
+                finalAngle += Math.PI; // 反転
+            }
 
-            // 終点
-            const endX = x + Math.cos(angle - curlAmount) * length;
-            const endY = y + Math.sin(angle - curlAmount) * length;
+            // 移動・回転 (Apply Offset Here)
+            context.translate(x + currentOffsetX, y + currentOffsetY);
+            context.rotate(finalAngle);
 
-            context.quadraticCurveTo(controlX, controlY, endX, endY);
+            // スケール（長さと太さ）
+            // 画像サイズが300pxになったので、スケールを調整
+            let scale = currentLength * lengthMultiplier * 0.12;
+            if (isLower) {
+                scale *= 0.55; // Lower lashes are shorter (55%)
+            }
+            context.scale(scale, scale);
+            // 透明度（少しランダムだが、基本を濃くする）
+            context.globalAlpha = (isLower ? 0.7 : 0.85) + Math.random() * 0.15;
 
-            context.strokeStyle = 'rgba(0, 0, 0, 0.9)';
-            context.lineWidth = thickness;
-            context.lineCap = 'round';
-            context.stroke();
+            // まつげ画像を描画
+            context.drawImage(
+                lashImage,
+                -lashImage.width / 2,
+                -lashImage.height,
+                lashImage.width,
+                lashImage.height
+            );
 
             context.restore();
         }
+
+
+
+        // ...
 
         // Control functions
         window.setVolume = (vol) => {
@@ -895,6 +1355,35 @@
             redrawPreview();
         };
 
+        // New: Adjust Position
+        window.adjustPosition = (dx, dy) => {
+            currentOffsetX += dx;
+            currentOffsetY += dy;
+            redrawPreview();
+        };
+
+        window.resetPosition = () => {
+            currentOffsetX = 0;
+            currentOffsetY = 0;
+            redrawPreview();
+        };
+
+        window.toggleLowerLashes = (show) => {
+            showLowerLashes = show;
+            document.getElementById('btn-lower-off').classList.toggle('active', !show);
+            document.getElementById('btn-lower-on').classList.toggle('active', show);
+            redrawPreview();
+        };
+
+        // Show Toast
+        function showToast(message, duration = 3000) {
+            toastEl.textContent = message;
+            toastEl.classList.add('show');
+            setTimeout(() => {
+                toastEl.classList.remove('show');
+            }, duration);
+        }
+
         // Save pattern
         window.savePattern = () => {
             const pattern = {
@@ -906,7 +1395,7 @@
                 timestamp: Date.now()
             };
             savedPatterns.push(pattern);
-            alert(`✅ パターンを保存しました！（保存数: ${savedPatterns.length}）`);
+            showToast(`✅ パターンを保存しました！（保存数: ${savedPatterns.length}）`);
         };
 
         // Show compare
@@ -942,14 +1431,14 @@
 
                 const info = document.createElement('div');
                 info.className = 'compare-info';
-                const volumeName = pattern.volume === 40 ? '超ナチュラル' :
-                                   pattern.volume === 60 ? 'ナチュラル' :
-                                   pattern.volume === 100 ? '標準' :
-                                   pattern.volume === 140 ? 'ボリューム' : `${pattern.volume}本`;
+                const volumeName = pattern.volume === 40 ? '少なめ' :
+                    pattern.volume === 60 ? '標準' :
+                        pattern.volume === 90 ? '多め' :
+                            pattern.volume === 120 ? 'ボリューム' : `${pattern.volume}本`;
                 const curlName = pattern.curl === 'J' ? 'J（自然）' :
-                                 pattern.curl === 'C' ? 'C（標準）' : 'D（強め）';
+                    pattern.curl === 'C' ? 'C（標準）' : 'D（強め）';
                 const lengthName = pattern.length === 0.8 ? '短め' :
-                                   pattern.length === 1.0 ? '標準' : '長め';
+                    pattern.length === 1.0 ? '標準' : '長め';
                 info.textContent = `${volumeName} / ${curlName} / ${lengthName}`;
 
                 item.appendChild(canvas);
@@ -965,16 +1454,41 @@
         };
 
         window.retakePhoto = () => {
+            // すべての状態をリセット
             document.getElementById('editSection').classList.remove('active');
             document.getElementById('compareSection').classList.remove('active');
             const cameraSection = document.getElementById('cameraSection');
             cameraSection.style.display = 'flex';
             cameraSection.classList.remove('hidden');
+
+            // 変数をリセット
             capturedImage = null;
             capturedLandmarks = null;
             eyeAnalysis = null;
             savedPatterns = [];
+
+            // AI分析エリアを非表示
             document.getElementById('aiAnalysis').style.display = 'none';
+
+            // プレビューキャンバスをクリア
+            previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+
+            // ファイル入力をリセット
+            document.getElementById('fileInput').value = '';
+
+            // デフォルト設定に戻す
+            currentVolume = 60;
+            currentCurl = 'J';
+            currentLength = 1.0;
+
+            // ボタンの状態をリセット
+            document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('button[onclick="setVolume(60)"]')?.classList.add('active');
+            document.querySelector('button[onclick="setCurl(\'J\')"]')?.classList.add('active');
+            document.querySelector('button[onclick="setLength(1.0)"]')?.classList.add('active');
+
+            // まつげ画像もリセット
+            lashImage = null;
         };
 
         // Start

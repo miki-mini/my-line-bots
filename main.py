@@ -388,7 +388,7 @@ async def analyze_eye(request: EyeAnalysisRequest):
 - eyeSlant: "upturned" (上がり目) / "downturned" (下がり目) / "straight" (平行)
 - eyelidType: "monolid" (一重) / "double" (二重)
 - eyeWidth: "narrow" (狭め) / "medium" (標準) / "wide" (広め)
-- volume: 40, 60, 100, 140 のいずれか
+- volume: 40, 60, 90, 120 のいずれか
 - curl: "J", "C", "D" のいずれか
 - length: 0.8, 1.0, 1.2 のいずれか
 - reasoning: 日本語で1-2文の簡潔な理由
