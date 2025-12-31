@@ -1467,11 +1467,22 @@
 
             // スケール（長さと太さ）
             // 画像サイズが300pxになったので、スケールを調整
+            // スケール（長さと太さ）
+            // 画像サイズが300pxになったので、スケールを調整
             let scale = currentLength * lengthMultiplier * 0.12;
             if (isLower) {
                 scale *= 0.55; // Lower lashes are shorter (55%)
             }
-            context.scale(scale, scale);
+
+            // Mirror texture for Left Eye (Screen Left, side='left') or Right depending on curve
+            // Lash image curves to the Right (like > )
+            // Left Eye (Screen Right, side='left') needs curve to Right > (Normal)
+            // Right Eye (Screen Left, side='right') needs curve to Left < (Flip)
+            if (side === 'right') {
+                context.scale(-scale, scale); // Horizontal flip
+            } else {
+                context.scale(scale, scale);
+            }
             // 透明度（安定させる）
             context.globalAlpha = isLower ? 0.7 : 0.9;
 
