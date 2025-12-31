@@ -19,7 +19,7 @@ Python と Google Gemini API を活用した、多機能なLINEボットたち�
 | <img src="images/whale.jpg" width="40"> | **星くじらからの光の便り🐋💫**<br>(Star Whale)<br>![WebApp](https://img.shields.io/badge/WEBアプリ！-blue) | **天体観測 & 宇宙旅行**<br>NASAの美丽な写真や、ISSの位置・火星の風景を届けます。 | [🐍 Python](whale.py)<br>[📜 説明書](whale.md)<br>[📘 Zenn](https://zenn.dev/miki_mini/articles/9ea3f0a17c4606) |
 | <img src="images/bat.jpg" width="40"> | **コウモリの番組お知らせ🦇**<br>(TV Bat)<br>![WebApp](https://img.shields.io/badge/WEBアプリ！-orange) | **TV番組検索 & 通知**<br>「ジブリやる？」で検索。見たい番組を登録すると自動で通知します。スクレイピング不使用。 | [🐍 Python](bat.py)<br>[📜 説明書](bat.md)<br>[📘 Zenn](https://zenn.dev/miki_mini/articles/a70b65b67b5c93) |
 | <img src="images/meerkat.jpg" width="40"> | **ミーアキャットの地震警備🦦**<br>(Meerkat Quake)<br> | **地震速報 & サイト死活監視**<br>震度3以上の地震をLINE通知。登録サイトの異常も監視します。 | [🦦 GitHub](https://github.com/miki-mini/meerkat-quake)<br>[📘 Zenn](https://zenn.dev/miki_mini/articles/4cb43007f402a1) |
-| <img src="images/alpaca.jpg" width="40"> | **アルパカのまつエクサロン🦙**<br>(Alpaca Salon)<br>![WebApp](https://img.shields.io/badge/WEBアプリ！-pink) | **まつエク試着シミュレーション**<br>カメラで撮影した顔に、まつエクを重ねて仕上がりをイメージできます。 | [🐍 Python](alpaca.py)<br>[📜 説明書](alpaca.md) |
+| <img src="images/alpaca.jpg" width="40"> | **アルパカのまつエクサロン🦙**<br>(Alpaca Salon)<br>![WebApp](https://img.shields.io/badge/WEBアプリ！-pink) | **まつエク試着シミュレーション**<br>カメラで撮影した顔に、まつエクを重ねて仕上がりをイメージできます。 | [🔍 HTML](alpaca.html)<br>[📜 説明書](alpaca.md) |
 
 ## 🛠 全体で使用している技術
 

@@ -309,10 +309,10 @@
             <div class="control-row">
                 <div class="label">本数 (Volume)</div>
                 <div class="btn-group">
-                    <button onclick="setVolume(40)" class="style-btn">40本</button>
-                    <button onclick="setVolume(60)" class="style-btn active">60本</button>
-                    <button onclick="setVolume(80)" class="style-btn">80本</button>
-                    <button onclick="setVolume(100)" class="style-btn">100本</button>
+                    <button onclick="setVolume(30)" class="style-btn">30本</button>
+                    <button onclick="setVolume(50)" class="style-btn active">50本</button>
+                    <button onclick="setVolume(70)" class="style-btn">70本</button>
+                    <button onclick="setVolume(90)" class="style-btn">90本</button>
                 </div>
             </div>
             <div class="control-row">
@@ -354,7 +354,7 @@
         const statusEl = document.getElementById('status');
 
         // Settings
-        let currentVolume = 60;
+        let currentVolume = 50;
         let currentCurl = 'J';
         let currentLength = 1.0;
 
@@ -446,8 +446,11 @@
                 totalLength += Math.sqrt(dx * dx + dy * dy);
             }
 
+            // Lashes per eye (total volume is for both eyes)
+            const lashesPerEye = Math.floor(currentVolume / 2);
+
             // Calculate spacing between lashes
-            const spacing = totalLength / currentVolume;
+            const spacing = totalLength / lashesPerEye;
 
             // Draw lashes along the curve
             let accumulated = 0;
@@ -461,7 +464,7 @@
                 const segmentLength = Math.sqrt(dx * dx + dy * dy);
 
                 // Draw lashes in this segment
-                while (accumulated < segmentLength && lashCount < currentVolume) {
+                while (accumulated < segmentLength && lashCount < lashesPerEye) {
                     const t = accumulated / segmentLength;
                     const x = p1.x + dx * t;
                     const y = p1.y + dy * t;
@@ -470,8 +473,11 @@
                     const angle = Math.atan2(dy, dx);
                     const normalAngle = angle - Math.PI / 2;
 
+                    // Calculate position along entire eye (0 to 1)
+                    const totalPosition = (i + t) / points.length;
+
                     // Draw single lash
-                    drawSingleLash(context, x, y, normalAngle, i / points.length);
+                    drawSingleLash(context, x, y, normalAngle, totalPosition);
 
                     accumulated += spacing;
                     lashCount++;
@@ -485,40 +491,82 @@
             context.save();
 
             // Lash properties
-            const baseLength = 15 * currentLength;
+            const baseLength = 25 * currentLength;
 
             // Vary length based on position (longer in middle)
-            const lengthVariation = 1 - Math.abs(position - 0.5) * 0.4;
+            const lengthVariation = 1 - Math.abs(position - 0.5) * 0.3;
             const length = baseLength * lengthVariation;
 
             // Curl parameters
-            let curlStrength = 0.3;
-            if (currentCurl === 'C') curlStrength = 0.5;
-            if (currentCurl === 'D') curlStrength = 0.7;
+            let curlStrength = 0.15;
+            if (currentCurl === 'C') curlStrength = 0.25;
+            if (currentCurl === 'D') curlStrength = 0.35;
 
             // Random variations for natural look
-            const randomAngle = (Math.random() - 0.5) * 0.2;
-            const randomLength = 0.9 + Math.random() * 0.2;
+            const randomAngle = (Math.random() - 0.5) * 0.15;
+            const randomLength = 0.85 + Math.random() * 0.3;
 
-            // Draw curved lash using quadratic curve
+            // Base thickness (thicker = more realistic)
+            const baseThickness = 2.5 + Math.random() * 1.0;
+
+            // Draw shadow first (for depth)
+            context.globalAlpha = 0.3;
             context.beginPath();
-            context.moveTo(x, y);
+            context.moveTo(x + 1, y + 1);
 
-            // Control point for curve
-            const controlX = x + Math.cos(angle + randomAngle) * length * 0.6;
-            const controlY = y + Math.sin(angle + randomAngle) * length * 0.6 - length * curlStrength;
+            const shadowControlX = x + Math.cos(angle + randomAngle) * length * 0.5 + 1;
+            const shadowControlY = y + Math.sin(angle + randomAngle) * length * 0.5 - length * curlStrength + 1;
+            const shadowEndX = x + Math.cos(angle + randomAngle) * length * randomLength + 1;
+            const shadowEndY = y + Math.sin(angle + randomAngle) * length * randomLength - length * curlStrength * 1.2 + 1;
 
-            // End point
-            const endX = x + Math.cos(angle + randomAngle) * length * randomLength;
-            const endY = y + Math.sin(angle + randomAngle) * length * randomLength - length * curlStrength * 1.5;
-
-            context.quadraticCurveTo(controlX, controlY, endX, endY);
-
-            // Lash styling
-            context.strokeStyle = 'rgba(0, 0, 0, 0.8)';
-            context.lineWidth = 0.8 + Math.random() * 0.4;
+            context.quadraticCurveTo(shadowControlX, shadowControlY, shadowEndX, shadowEndY);
+            context.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+            context.lineWidth = baseThickness + 0.5;
             context.lineCap = 'round';
             context.stroke();
+
+            // Draw main lash with gradient (thick to thin)
+            context.globalAlpha = 1.0;
+
+            // Draw multiple layers for realistic thickness
+            for (let layer = 0; layer < 2; layer++) {
+                context.beginPath();
+                context.moveTo(x, y);
+
+                // Control point for curve
+                const controlX = x + Math.cos(angle + randomAngle) * length * 0.5;
+                const controlY = y + Math.sin(angle + randomAngle) * length * 0.5 - length * curlStrength;
+
+                // End point
+                const endX = x + Math.cos(angle + randomAngle) * length * randomLength;
+                const endY = y + Math.sin(angle + randomAngle) * length * randomLength - length * curlStrength * 1.2;
+
+                context.quadraticCurveTo(controlX, controlY, endX, endY);
+
+                // Gradient thickness (thicker at base, thinner at tip)
+                const thickness = layer === 0 ? baseThickness : baseThickness * 0.6;
+                context.strokeStyle = layer === 0 ? 'rgba(0, 0, 0, 0.95)' : 'rgba(0, 0, 0, 0.85)';
+                context.lineWidth = thickness;
+                context.lineCap = 'round';
+                context.stroke();
+            }
+
+            // Add subtle highlight on some lashes
+            if (Math.random() > 0.7) {
+                context.globalAlpha = 0.2;
+                context.beginPath();
+                context.moveTo(x, y);
+
+                const highlightControlX = x + Math.cos(angle + randomAngle) * length * 0.5;
+                const highlightControlY = y + Math.sin(angle + randomAngle) * length * 0.5 - length * curlStrength;
+                const highlightEndX = x + Math.cos(angle + randomAngle) * length * randomLength * 0.7;
+                const highlightEndY = y + Math.sin(angle + randomAngle) * length * randomLength * 0.7 - length * curlStrength * 1.2;
+
+                context.quadraticCurveTo(highlightControlX, highlightControlY, highlightEndX, highlightEndY);
+                context.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                context.lineWidth = 0.8;
+                context.stroke();
+            }
 
             context.restore();
         }
