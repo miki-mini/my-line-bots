@@ -101,7 +101,7 @@ def register_bat_handler(app, handler, configuration, search_model, db):
 
         # 返信送信
         try:
-            with ApiClient(configuration_bat) as api_client:
+            with ApiClient(configuration) as api_client:
                 line_bot_api = MessagingApi(api_client)
                 line_bot_api.reply_message(
                     ReplyMessageRequest(
@@ -156,7 +156,7 @@ def register_bat_handler(app, handler, configuration, search_model, db):
         push_text = "🦇 キキキ...監視中の番組が見つかったモリ！📺\n\n" + "\n\n".join(found_shows)
 
         try:
-            with ApiClient(configuration_bat) as api_client:
+            with ApiClient(configuration) as api_client:
                 line_bot_api = MessagingApi(api_client)
                 line_bot_api.broadcast(
                     BroadcastRequest(messages=[TextMessage(text=push_text)])

@@ -105,6 +105,10 @@
             align-items: center;
         }
 
+        .camera-section.hidden {
+            display: none;
+        }
+
         .camera-frame {
             padding: 15px;
             background: #fff;
@@ -129,6 +133,66 @@
             height: 100%;
             object-fit: cover;
             transform: scaleX(-1);
+        }
+
+        .face-guide {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            height: 85%;
+            border: 3px dashed rgba(212, 175, 55, 0.8);
+            border-radius: 50% 50% 45% 45% / 55% 55% 45% 45%;
+            pointer-events: none;
+            z-index: 10;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.6;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .eye-guide {
+            position: absolute;
+            width: 22%;
+            height: 9%;
+            border: 2px solid rgba(212, 175, 55, 1);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10;
+            background: rgba(212, 175, 55, 0.2);
+        }
+
+        .eye-guide.left {
+            top: 40%;
+            left: 17%;
+        }
+
+        .eye-guide.right {
+            top: 40%;
+            right: 17%;
+        }
+
+        .guide-text {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(212, 175, 55, 0.95);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.8rem;
+            z-index: 10;
+            white-space: nowrap;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
         .status {
@@ -332,6 +396,10 @@
             <div class="camera-frame">
                 <div class="camera-container">
                     <video id="video" autoplay playsinline></video>
+                    <div class="guide-text">📍 ガイドに顔を合わせてください</div>
+                    <div class="face-guide"></div>
+                    <div class="eye-guide left"></div>
+                    <div class="eye-guide right"></div>
                     <div id="status" class="status">準備中...</div>
                 </div>
             </div>
@@ -438,7 +506,8 @@
             camera = new Camera(video, {
                 onFrame: async () => {
                     // Only process if in camera mode
-                    if (document.getElementById('cameraSection').style.display !== 'none') {
+                    const cameraSection = document.getElementById('cameraSection');
+                    if (cameraSection && !cameraSection.classList.contains('hidden')) {
                         await faceMesh.send({ image: video });
                     }
                 },
@@ -470,25 +539,41 @@
 
             capturedImage = tempCanvas.toDataURL('image/png');
 
-            // Get face landmarks
-            const results = await new Promise((resolve) => {
-                faceMesh.onResults((r) => {
-                    resolve(r);
+            // Get face landmarks from current video frame
+            statusEl.textContent = '顔を検出中...';
+            statusEl.style.opacity = '1';
+
+            try {
+                const results = await new Promise((resolve, reject) => {
+                    const timeout = setTimeout(() => reject(new Error('タイムアウト')), 3000);
+
+                    faceMesh.onResults((r) => {
+                        clearTimeout(timeout);
+                        resolve(r);
+                    });
+
+                    faceMesh.send({ image: video });
                 });
-                faceMesh.send({ image: video });
-            });
 
-            if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-                capturedLandmarks = results.multiFaceLandmarks[0];
+                if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+                    // Store landmarks (no need to mirror, we'll handle it in drawing)
+                    capturedLandmarks = results.multiFaceLandmarks[0];
 
-                // Switch to edit mode
-                document.getElementById('cameraSection').style.display = 'none';
-                document.getElementById('editSection').classList.add('active');
+                    // Switch to edit mode
+                    const cameraSection = document.getElementById('cameraSection');
+                    cameraSection.style.display = 'none';
+                    cameraSection.classList.add('hidden');
+                    document.getElementById('editSection').classList.add('active');
 
-                // Draw initial preview
-                redrawPreview();
-            } else {
-                alert('顔が検出できませんでした。もう一度お試しください。');
+                    // Draw initial preview
+                    redrawPreview();
+                } else {
+                    alert('顔が検出できませんでした。\nガイドに顔を合わせて、もう一度お試しください。');
+                    statusEl.style.opacity = '0';
+                }
+            } catch (error) {
+                alert('顔の検出に失敗しました。もう一度お試しください。');
+                statusEl.style.opacity = '0';
             }
         }
 
@@ -510,8 +595,9 @@
 
                 function getPoint(index) {
                     const p = capturedLandmarks[index];
+                    // Image is already mirrored, so use coordinates directly
                     return {
-                        x: p.x * width,
+                        x: (1 - p.x) * width,  // Mirror x coordinate
                         y: p.y * height
                     };
                 }
@@ -735,7 +821,9 @@
         window.retakePhoto = () => {
             document.getElementById('editSection').classList.remove('active');
             document.getElementById('compareSection').classList.remove('active');
-            document.getElementById('cameraSection').style.display = 'flex';
+            const cameraSection = document.getElementById('cameraSection');
+            cameraSection.style.display = 'flex';
+            cameraSection.classList.remove('hidden');
             capturedImage = null;
             capturedLandmarks = null;
             savedPatterns = [];
