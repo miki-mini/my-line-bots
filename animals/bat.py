@@ -91,6 +91,10 @@ def register_bat_handler(app, handler, configuration, search_model, db):
             else:
                 reply_text = "🦇 今は何もチェックしてないモリ。\n「追加: 〇〇」で教えてくれモリ！"
 
+        elif text in ["ID", "id", "ID教えて", "自分のID"]:
+            # ID確認
+            reply_text = f"お前のIDはこれだモリ...🦇\n\n{user_id}\n\nこれをWebアプリに入れると通知が届くモリ。"
+
         else:
             # --- 通常会話（検索） ---
             reply_text = _search_tv_schedule_with_gemini(text, search_model)

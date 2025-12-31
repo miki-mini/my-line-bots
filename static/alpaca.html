@@ -469,15 +469,18 @@
                     const x = p1.x + dx * t;
                     const y = p1.y + dy * t;
 
-                    // Calculate normal direction (perpendicular to curve)
-                    const angle = Math.atan2(dy, dx);
-                    const normalAngle = angle - Math.PI / 2;
+                    // Calculate tangent angle along the curve
+                    const tangentAngle = Math.atan2(dy, dx);
+
+                    // For upper eyelid, lashes should point upward
+                    // Perpendicular upward = tangent angle + 90 degrees
+                    const lashAngle = tangentAngle + Math.PI / 2;
 
                     // Calculate position along entire eye (0 to 1)
                     const totalPosition = (i + t) / points.length;
 
                     // Draw single lash
-                    drawSingleLash(context, x, y, normalAngle, totalPosition);
+                    drawSingleLash(context, x, y, lashAngle, totalPosition);
 
                     accumulated += spacing;
                     lashCount++;
@@ -497,7 +500,7 @@
             const lengthVariation = 1 - Math.abs(position - 0.5) * 0.3;
             const length = baseLength * lengthVariation;
 
-            // Curl parameters
+            // Curl parameters (upward for upper lashes)
             let curlStrength = 0.15;
             if (currentCurl === 'C') curlStrength = 0.25;
             if (currentCurl === 'D') curlStrength = 0.35;
@@ -515,9 +518,9 @@
             context.moveTo(x + 1, y + 1);
 
             const shadowControlX = x + Math.cos(angle + randomAngle) * length * 0.5 + 1;
-            const shadowControlY = y + Math.sin(angle + randomAngle) * length * 0.5 - length * curlStrength + 1;
+            const shadowControlY = y + Math.sin(angle + randomAngle) * length * 0.5 + length * curlStrength + 1;
             const shadowEndX = x + Math.cos(angle + randomAngle) * length * randomLength + 1;
-            const shadowEndY = y + Math.sin(angle + randomAngle) * length * randomLength - length * curlStrength * 1.2 + 1;
+            const shadowEndY = y + Math.sin(angle + randomAngle) * length * randomLength + length * curlStrength * 1.2 + 1;
 
             context.quadraticCurveTo(shadowControlX, shadowControlY, shadowEndX, shadowEndY);
             context.strokeStyle = 'rgba(0, 0, 0, 0.4)';
@@ -533,13 +536,13 @@
                 context.beginPath();
                 context.moveTo(x, y);
 
-                // Control point for curve
+                // Control point for curve (upward curl)
                 const controlX = x + Math.cos(angle + randomAngle) * length * 0.5;
-                const controlY = y + Math.sin(angle + randomAngle) * length * 0.5 - length * curlStrength;
+                const controlY = y + Math.sin(angle + randomAngle) * length * 0.5 + length * curlStrength;
 
-                // End point
+                // End point (upward)
                 const endX = x + Math.cos(angle + randomAngle) * length * randomLength;
-                const endY = y + Math.sin(angle + randomAngle) * length * randomLength - length * curlStrength * 1.2;
+                const endY = y + Math.sin(angle + randomAngle) * length * randomLength + length * curlStrength * 1.2;
 
                 context.quadraticCurveTo(controlX, controlY, endX, endY);
 
@@ -558,9 +561,9 @@
                 context.moveTo(x, y);
 
                 const highlightControlX = x + Math.cos(angle + randomAngle) * length * 0.5;
-                const highlightControlY = y + Math.sin(angle + randomAngle) * length * 0.5 - length * curlStrength;
+                const highlightControlY = y + Math.sin(angle + randomAngle) * length * 0.5 + length * curlStrength;
                 const highlightEndX = x + Math.cos(angle + randomAngle) * length * randomLength * 0.7;
-                const highlightEndY = y + Math.sin(angle + randomAngle) * length * randomLength * 0.7 - length * curlStrength * 1.2;
+                const highlightEndY = y + Math.sin(angle + randomAngle) * length * randomLength * 0.7 + length * curlStrength * 1.2;
 
                 context.quadraticCurveTo(highlightControlX, highlightControlY, highlightEndX, highlightEndY);
                 context.strokeStyle = 'rgba(255, 255, 255, 0.3)';

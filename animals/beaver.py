@@ -201,8 +201,12 @@ def register_beaver_handler(app, handler, configuration, db, text_model=None):
             reply_text = ""
 
             try:
+                # 🆔 0. ID確認
+                if user_text in ["ID", "id", "ID教えて", "自分のID"]:
+                     reply_text = f"あなたのIDだでヤンス！\n\n{user_id}\n\nこれをコピーしてWebアプリに入れるでヤンス！"
+
                 # 📝 1. メモ一覧・予定一覧
-                if user_text in ["メモ一覧", "予定一覧", "スケジュール"]:
+                elif user_text in ["メモ一覧", "予定一覧", "スケジュール"]:
                     reply_text = _get_memo_list(user_id)
 
                 # 🗑️ 2. メモ削除
