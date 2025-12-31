@@ -568,3 +568,162 @@ def _process_memo_or_chat(user_id: str, user_text: str) -> str:
     except Exception as e:
         print(f"🦫 JSONパース失敗: {e}")
         return "うまく聞き取れなかったでヤンス...🦫💦"
+
+@router.get("/get-due-memos")
+def get_due_memos():
+    """時間になったメモを取得（GASの5分タイマー用）"""
+    now = datetime.now() + timedelta(hours=9)
+    current_time = now.strftime("%Y-%m-%d %H:%M")
+
+    print(f"🦫 ⏰ チェック中... 現在 {current_time} 以前の予定を探します")
+
+    if not _db:
+        return {"due_memos": []}
+
+    try:
+        docs = _db.collection("memos").stream()
+        due_memos = []
+
+        for doc in docs:
+            data = doc.to_dict()
+            reminder_time = data.get("reminder_time", "")
+
+            if (
+                reminder_time
+                and reminder_time != "NO_TIME"
+                and reminder_time <= current_time
+            ):
+                due_memos.append({
+                    "memo_id": doc.id,
+                    "user_id": data.get("user_id"),
+                    "text": data.get("text"),
+                })
+
+        if due_memos:
+            print(f"🦫 🔔 {len(due_memos)}件の通知を見つけました！")
+
+        return {"due_memos": due_memos}
+
+    except Exception as e:
+        print(f"🦫 ❌ エラー: {e}")
+        return {"due_memos": []}
+
+@router.get("/get-daily-summary-memos")
+async def get_daily_summary_memos():
+    """日次要約用のメモ取得（GASの日次タイマー用）"""
+    if not _db:
+        return {"memos_by_user": {}}
+
+    # reminder_time が空文字のものを検索（日次要約用）
+    docs = _db.collection("memos").where("reminder_time", "==", "").stream()
+    memos = {}
+
+    for d in docs:
+        uid = d.to_dict().get("user_id")
+        if uid:
+            memos.setdefault(uid, []).append({
+                "memo_id": d.id,
+                "text": d.to_dict().get("text")
+            })
+
+    return {"memos_by_user": memos}
+
+@router.get("/trigger-check-reminders")
+def trigger_check_reminders():
+    """前日・当日の予定を通知（GASの朝タイマー用）"""
+    import datetime as dt
+
+    # Check if _configuration is available
+    if not _db:
+        raise HTTPException(status_code=500, detail="No DB")
+
+    try:
+        jst = dt.timezone(dt.timedelta(hours=+9), "JST")
+        now = dt.datetime.now(jst)
+        today = now.strftime("%Y-%m-%d")
+        tomorrow = (now + dt.timedelta(days=1)).strftime("%Y-%m-%d")
+
+        notifications = {}
+        docs = _db.collection("memos").stream()
+
+        for doc in docs:
+            data = doc.to_dict()
+            uid = data.get("user_id")
+            r_time = data.get("reminder_time", "")
+            text = data.get("text", "")
+
+            if not uid or not r_time:
+                continue
+
+            date_part = r_time.split(" ")[0]
+            if date_part == today:
+                notifications.setdefault(uid, []).append(f"🔴【今日】: {text}")
+            elif date_part == tomorrow:
+                notifications.setdefault(uid, []).append(f"🟡【明日】: {text}")
+
+        if _configuration:
+             with ApiClient(_configuration) as api_client:
+                line_bot_api = MessagingApi(api_client)
+                for uid, msgs in notifications.items():
+                    push_text = "🦫 ビーバー通知でヤンス！\n\n" + "\n".join(msgs)
+                    try:
+                        line_bot_api.push_message(
+                            PushMessageRequest(
+                                to=uid, messages=[TextMessage(text=push_text)]
+                            )
+                        )
+                    except:
+                        pass
+
+        return {"status": "ok", "count": len(notifications)}
+
+    except Exception as e:
+        print(f"🦫 ❌ Check Error: {e}")
+        return {"error": str(e)}
+
+@router.get("/check_reminders")
+def check_reminders():
+    """明日の予定をチェックして通知"""
+    import datetime as dt
+
+    print("🦫 ⏰ リマインダーチェック開始...")
+
+    tomorrow = dt.date.today() + dt.timedelta(days=1)
+    tomorrow_str = tomorrow.strftime("%Y-%m-%d")
+    target_time = f"{tomorrow_str} 08:00"
+
+    print(f"🦫 🔍 検索対象の日時: {target_time}")
+
+    if not _db:
+        return {"status": "error", "message": "DB未接続"}
+
+    try:
+        docs = _db.collection("memos").where("reminder_time", "==", target_time).stream()
+
+        count = 0
+        if _configuration:
+            with ApiClient(_configuration) as api_client:
+                line_bot_api = MessagingApi(api_client)
+
+                for doc in docs:
+                    data = doc.to_dict()
+                    user_id = data.get("user_id")
+                    text = data.get("text")
+
+                    if user_id and text:
+                        print(f"🦫 📩 送信中: {user_id} -> {text}")
+                        line_bot_api.push_message(
+                            PushMessageRequest(
+                                to=user_id,
+                                messages=[
+                                    TextMessage(text=f"明日の予定でヤンス！🦫\n\n{text}")
+                                ],
+                            )
+                        )
+                        count += 1
+
+        return {"status": "success", "sent_count": count}
+
+    except Exception as e:
+        print(f"🦫 ❌ リマインダーエラー: {e}")
+        return {"status": "error", "message": str(e)}
