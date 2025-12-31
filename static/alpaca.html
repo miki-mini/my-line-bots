@@ -7,10 +7,8 @@
     <title>アルパカのまつエクサロン🦙</title>
     <link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
-        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
     <style>
         :root {
@@ -35,7 +33,6 @@
             position: relative;
         }
 
-        /* Fluffy Background Elements */
         .fluff {
             position: absolute;
             background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 70%);
@@ -74,12 +71,9 @@
         }
 
         @keyframes float {
-
-            0%,
-            100% {
+            0%, 100% {
                 transform: translateY(0) scale(1);
             }
-
             50% {
                 transform: translateY(-20px) scale(1.05);
             }
@@ -125,7 +119,6 @@
             padding: 15px;
             background: #fff;
             border-radius: 50% 50% 45% 45% / 60% 60% 40% 40%;
-            /* Organic/Fluffy shape */
             box-shadow: var(--shadow-soft);
             margin-bottom: 20px;
             position: relative;
@@ -136,7 +129,6 @@
             width: 85vw;
             max-width: 350px;
             border-radius: 200px;
-            /* Very rounded, oval-like */
             overflow: hidden;
             background-color: #000;
             aspect-ratio: 3/4;
@@ -150,17 +142,13 @@
             transform: scaleX(-1);
         }
 
-        .eyelash-overlay {
+        #canvas {
             position: absolute;
-            width: 200px;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            mix-blend-mode: multiply;
-            pointer-events: auto;
-            cursor: grab;
-            filter: contrast(1.2);
-            z-index: 20;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
         }
 
         .controls {
@@ -246,7 +234,6 @@
             display: none;
         }
 
-        /* Modal for result */
         .result-modal {
             position: fixed;
             top: 0;
@@ -285,11 +272,22 @@
             border-radius: 30px;
             cursor: pointer;
         }
+
+        .status {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            z-index: 50;
+        }
     </style>
 </head>
 
 <body>
-
     <div class="fluff"></div>
     <div class="fluff"></div>
     <div class="fluff"></div>
@@ -300,28 +298,18 @@
 
     <div class="container">
         <div class="camera-frame">
-            <div class="camera-container" id="cameraContainer">
+            <div class="camera-container">
                 <video id="video" autoplay playsinline></video>
-                <canvas id="overlayCanvas"
-                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
-                <img src="/static/single_lash.png" id="lashLeft" class="eyelash-overlay"
-                    style="left: 35%; display: none;" alt="Left Lash">
-                <img src="/static/single_lash.png" id="lashRight" class="eyelash-overlay"
-                    style="transform: translate(-50%, -50%) scaleX(-1); left: 65%; display: none;" alt="Right Lash">
+                <canvas id="canvas"></canvas>
+                <div id="status" class="status">準備中...</div>
             </div>
         </div>
 
         <div class="controls">
             <div class="control-row">
-                <div class="label">モード</div>
-                <div class="btn-group">
-                    <button id="btnAuto" onclick="setMode('auto')" class="style-btn active">自動 (Auto)</button>
-                    <button id="btnManual" onclick="setMode('manual')" class="style-btn">手動 (Manual)</button>
-                </div>
-            </div>
-            <div class="control-row">
                 <div class="label">本数 (Volume)</div>
                 <div class="btn-group">
+                    <button onclick="setVolume(40)" class="style-btn">40本</button>
                     <button onclick="setVolume(60)" class="style-btn active">60本</button>
                     <button onclick="setVolume(80)" class="style-btn">80本</button>
                     <button onclick="setVolume(100)" class="style-btn">100本</button>
@@ -335,16 +323,22 @@
                     <button onclick="setCurl('D')" class="style-btn">D</button>
                 </div>
             </div>
+            <div class="control-row">
+                <div class="label">長さ (Length)</div>
+                <div class="btn-group">
+                    <button onclick="setLength(0.8)" class="style-btn">短め</button>
+                    <button onclick="setLength(1.0)" class="style-btn active">標準</button>
+                    <button onclick="setLength(1.2)" class="style-btn">長め</button>
+                </div>
+            </div>
         </div>
-        <div class="tips">✨ まつげをドラッグして位置を調整してください ✨</div>
+        <div class="tips">✨ AIがあなたの目の形に合わせて自動調整中... ✨</div>
 
         <button class="capture-btn" onclick="takeSnapshot()">完成写真をとる</button>
 
-        <!-- Hidden Canvas -->
         <canvas id="snapshotCanvas" class="hidden"></canvas>
     </div>
 
-    <!-- Result Modal -->
     <div id="resultModal" class="result-modal">
         <h2 style="color:var(--text-dark); margin-bottom:20px; font-size:1.2rem;">✨ Beautiful! ✨</h2>
         <img id="snapshotImg" class="result-img">
@@ -355,42 +349,22 @@
 
     <script>
         const video = document.getElementById('video');
-        const overlayCanvas = document.getElementById('overlayCanvas');
-        const ctx = overlayCanvas.getContext('2d');
-        const lashLeft = document.getElementById('lashLeft');
-        const lashRight = document.getElementById('lashRight');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const statusEl = document.getElementById('status');
 
-        let isAutoMode = true;
+        // Settings
+        let currentVolume = 60;
+        let currentCurl = 'J';
+        let currentLength = 1.0;
+
         let faceMesh;
         let camera;
 
-        // Load the Single Lash Image for Canvas Drawing
-        const lashImg = new Image();
-        lashImg.src = "/static/single_lash.png";
-
-        // Mode Switching
-        window.setMode = (mode) => {
-            isAutoMode = (mode === 'auto');
-            document.getElementById('btnAuto').classList.toggle('active', isAutoMode);
-            document.getElementById('btnManual').classList.toggle('active', !isAutoMode);
-
-            if (isAutoMode) {
-                document.querySelector('.tips').innerText = "✨ AIが目の形に合わせて自動調整中... ✨";
-                lashLeft.style.display = 'none';
-                lashRight.style.display = 'none';
-                overlayCanvas.style.display = 'block';
-            } else {
-                document.querySelector('.tips').innerText = "✨ まつげをドラッグして位置を調整してください ✨";
-                lashLeft.style.display = 'block';
-                lashRight.style.display = 'block';
-                overlayCanvas.style.display = 'none'; // Or clear it
-                ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-                updateStyle(); // Apply manual styles
-            }
-        };
-
         // Initialize MediaPipe
         async function initMediaPipe() {
+            statusEl.textContent = 'MediaPipe初期化中...';
+
             faceMesh = new FaceMesh({
                 locateFile: (file) => {
                     return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
@@ -400,7 +374,7 @@
             faceMesh.setOptions({
                 maxNumFaces: 1,
                 refineLandmarks: true,
-                minDetectionConfidence: 0.8,
+                minDetectionConfidence: 0.7,
                 minTrackingConfidence: 0.5
             });
 
@@ -414,241 +388,178 @@
                 height: 720
             });
 
+            statusEl.textContent = 'カメラ起動中...';
             camera.start();
+            statusEl.textContent = '準備完了！';
+
+            setTimeout(() => {
+                statusEl.style.opacity = '0';
+            }, 2000);
         }
 
-        // Main Draw Loop
+        // Main rendering loop
         function onResults(results) {
-            // Resize canvas to match video
-            overlayCanvas.width = video.videoWidth;
-            overlayCanvas.height = video.videoHeight;
-            const width = overlayCanvas.width;
-            const height = overlayCanvas.height;
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const width = canvas.width;
+            const height = canvas.height;
 
             ctx.clearRect(0, 0, width, height);
 
-            if (!isAutoMode || !results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
+            if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
                 return;
             }
 
             const landmarks = results.multiFaceLandmarks[0];
 
+            // Get point with mirrored x-coordinate (for selfie view)
             function getPoint(index) {
                 const p = landmarks[index];
-                // Visual coordinates (Mirrored)
-                // x=0 is screen left.
-                // Raw x: 0 is camera left (subject right).
-                // Visual x = (1 - p.x) * width.
-                return { x: (1 - p.x) * width, y: p.y * height };
+                return {
+                    x: (1 - p.x) * width,
+                    y: p.y * height
+                };
             }
 
-            // Upper Lid Landmarks (Inner -> Outer)
-            // Left Eye (Screen Left / Subject Left): 33 (Inner) -> 133 (Outer)
-            // Path: 33, 246, 161, 160, 159, 158, 157, 173, 133
-            const leftEyeLidIndices = [33, 246, 161, 160, 159, 158, 157, 173, 133];
+            // Left eye upper eyelid landmarks (screen left)
+            const leftEyeIndices = [33, 246, 161, 160, 159, 158, 157, 173, 133];
+            // Right eye upper eyelid landmarks (screen right)
+            const rightEyeIndices = [362, 398, 384, 385, 386, 387, 388, 466, 263];
 
-            // Right Eye (Screen Right / Subject Right): 362 (Inner) -> 263 (Outer)
-            // Path: 362, 398, 384, 385, 386, 387, 388, 466, 263
-            const rightEyeLidIndices = [362, 398, 384, 385, 386, 387, 388, 466, 263];
+            const leftPoints = leftEyeIndices.map(getPoint);
+            const rightPoints = rightEyeIndices.map(getPoint);
 
-            const leftPoints = leftEyeLidIndices.map(getPoint);
-            const rightPoints = rightEyeLidIndices.map(getPoint);
-
-            // Draw Lashes
-            // Left Eye: Needs Flipped Image (mirrored lash)
-            // Right Eye: Needs Normal Image
-
-            drawCurvedLash(ctx, leftPoints, true);  // isLeftEye = true (Screen Left)
-            drawCurvedLash(ctx, rightPoints, false); // isLeftEye = false (Screen Right)
+            // Draw natural lashes
+            drawNaturalLashes(ctx, leftPoints, true);
+            drawNaturalLashes(ctx, rightPoints, false);
         }
 
-        function drawCurvedLash(context, points, isLeftEye) {
-            // Style Parameters
-            let opacity = 0.7;
-            if (currentVolume === 80) opacity = 0.85;
-            if (currentVolume === 100) opacity = 1.0;
+        // Draw natural-looking lashes
+        function drawNaturalLashes(context, points, isLeftEye) {
+            if (points.length < 2) return;
 
-            let scaleY = 1.0;
-            if (currentCurl === 'C') scaleY = 1.2;
-            if (currentCurl === 'D') scaleY = 1.4;
+            // Calculate total curve length
+            let totalLength = 0;
+            for (let i = 0; i < points.length - 1; i++) {
+                const dx = points[i + 1].x - points[i].x;
+                const dy = points[i + 1].y - points[i].y;
+                totalLength += Math.sqrt(dx * dx + dy * dy);
+            }
 
-            context.globalAlpha = opacity;
-            context.save();
-            context.globalCompositeOperation = 'multiply';
+            // Calculate spacing between lashes
+            const spacing = totalLength / currentVolume;
 
-            // Number of segments
-            const numSegments = points.length - 1;
-            const imgSegWidth = lashImg.width / numSegments;
+            // Draw lashes along the curve
+            let accumulated = 0;
+            let lashCount = 0;
 
-            for (let i = 0; i < numSegments; i++) {
+            for (let i = 0; i < points.length - 1; i++) {
                 const p1 = points[i];
                 const p2 = points[i + 1];
-
-                // Segment Vector
                 const dx = p2.x - p1.x;
                 const dy = p2.y - p1.y;
-                const dist = Math.hypot(dx, dy);
-                const angle = Math.atan2(dy, dx);
+                const segmentLength = Math.sqrt(dx * dx + dy * dy);
 
-                context.save();
-                context.translate(p1.x, p1.y);
-                context.rotate(angle);
+                // Draw lashes in this segment
+                while (accumulated < segmentLength && lashCount < currentVolume) {
+                    const t = accumulated / segmentLength;
+                    const x = p1.x + dx * t;
+                    const y = p1.y + dy * t;
 
-                // Scale height:
-                // Base Scale: dist / imgSegWidth * ScaleMult
-                const scaleMult = 1.5;
-                const dHeight = (lashImg.height * (dist / imgSegWidth)) * scaleY * scaleMult;
+                    // Calculate normal direction (perpendicular to curve)
+                    const angle = Math.atan2(dy, dx);
+                    const normalAngle = angle - Math.PI / 2;
 
-                if (isLeftEye) {
-                    context.scale(1, -1);
+                    // Draw single lash
+                    drawSingleLash(context, x, y, normalAngle, i / points.length);
+
+                    accumulated += spacing;
+                    lashCount++;
                 }
-
-                context.drawImage(
-                    lashImg,
-                    i * imgSegWidth, 0, imgSegWidth, lashImg.height,
-                    0, -dHeight, dist, dHeight
-                );
-
-                context.restore();
+                accumulated -= segmentLength;
             }
+        }
+
+        // Draw a single natural lash
+        function drawSingleLash(context, x, y, angle, position) {
+            context.save();
+
+            // Lash properties
+            const baseLength = 15 * currentLength;
+
+            // Vary length based on position (longer in middle)
+            const lengthVariation = 1 - Math.abs(position - 0.5) * 0.4;
+            const length = baseLength * lengthVariation;
+
+            // Curl parameters
+            let curlStrength = 0.3;
+            if (currentCurl === 'C') curlStrength = 0.5;
+            if (currentCurl === 'D') curlStrength = 0.7;
+
+            // Random variations for natural look
+            const randomAngle = (Math.random() - 0.5) * 0.2;
+            const randomLength = 0.9 + Math.random() * 0.2;
+
+            // Draw curved lash using quadratic curve
+            context.beginPath();
+            context.moveTo(x, y);
+
+            // Control point for curve
+            const controlX = x + Math.cos(angle + randomAngle) * length * 0.6;
+            const controlY = y + Math.sin(angle + randomAngle) * length * 0.6 - length * curlStrength;
+
+            // End point
+            const endX = x + Math.cos(angle + randomAngle) * length * randomLength;
+            const endY = y + Math.sin(angle + randomAngle) * length * randomLength - length * curlStrength * 1.5;
+
+            context.quadraticCurveTo(controlX, controlY, endX, endY);
+
+            // Lash styling
+            context.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+            context.lineWidth = 0.8 + Math.random() * 0.4;
+            context.lineCap = 'round';
+            context.stroke();
 
             context.restore();
         }
 
-        // Style Vars
-        let currentVolume = 60;
-        let currentCurl = 'J';
-
+        // Control functions
         window.setVolume = (vol) => {
             currentVolume = vol;
-            document.querySelectorAll('.control-row:nth-child(2) .style-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.control-row:nth-child(1) .style-btn').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
-            if (!isAutoMode) updateStyle();
         };
 
         window.setCurl = (curl) => {
             currentCurl = curl;
-            document.querySelectorAll('.control-row:nth-child(3) .style-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.control-row:nth-child(2) .style-btn').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
-            if (!isAutoMode) updateStyle();
         };
 
-        // Manual Drag Logic (Only active in Manual Mode)
-        function makeDraggable(el) {
-            let isDragging = false;
-            let startX, startY, initialLeft, initialTop;
+        window.setLength = (length) => {
+            currentLength = length;
+            document.querySelectorAll('.control-row:nth-child(3) .style-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        };
 
-            const start = (e) => {
-                if (isAutoMode) return;
-                isDragging = true;
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                startX = clientX;
-                startY = clientY;
-                initialLeft = el.offsetLeft;
-                initialTop = el.offsetTop;
-                el.style.opacity = 0.5;
-                e.preventDefault();
-            };
-
-            const move = (e) => {
-                if (!isDragging) return;
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                const dx = clientX - startX;
-                const dy = clientY - startY;
-                el.style.left = `${initialLeft + dx}px`;
-                el.style.top = `${initialTop + dy}px`;
-            };
-
-            const end = () => {
-                if (!isDragging) return;
-                isDragging = false;
-                updateStyle();
-            };
-
-            el.addEventListener('mousedown', start);
-            el.addEventListener('touchstart', start);
-            window.addEventListener('mousemove', move);
-            window.addEventListener('touchmove', move);
-            window.addEventListener('mouseup', end);
-            window.addEventListener('touchend', end);
-        }
-
-        makeDraggable(lashLeft);
-        makeDraggable(lashRight);
-
-        // Manual Update Style
-        function updateStyle() {
-            let opacity = 0.7;
-            let scaleY = 1.0;
-
-            if (currentVolume === 80) opacity = 0.85;
-            if (currentVolume === 100) opacity = 1.0;
-            if (currentCurl === 'C') scaleY = 1.2;
-            if (currentCurl === 'D') scaleY = 1.4;
-
-            [lashLeft, lashRight].forEach(lash => {
-                lash.style.opacity = opacity;
-                const isRight = lash.id === 'lashRight';
-                const flip = isRight ? 'scaleX(-1)' : '';
-                lash.style.transform = `translate(-50%, -50%) ${flip} scaleY(${scaleY})`;
-                lash.style.display = 'block';
-            });
-        }
-
-        // Snapshot Logic
+        // Snapshot function
         window.takeSnapshot = () => {
-            const canvas = document.getElementById('snapshotCanvas');
-            const context = canvas.getContext('2d');
-            const width = video.videoWidth;
-            const height = video.videoHeight;
+            const snapshotCanvas = document.getElementById('snapshotCanvas');
+            const snapshotCtx = snapshotCanvas.getContext('2d');
 
-            canvas.width = width;
-            canvas.height = height;
+            snapshotCanvas.width = video.videoWidth;
+            snapshotCanvas.height = video.videoHeight;
 
-            // Draw Video
-            context.save();
-            context.scale(-1, 1);
-            context.drawImage(video, -width, 0, width, height);
-            context.restore();
+            // Draw mirrored video
+            snapshotCtx.save();
+            snapshotCtx.scale(-1, 1);
+            snapshotCtx.drawImage(video, -snapshotCanvas.width, 0, snapshotCanvas.width, snapshotCanvas.height);
+            snapshotCtx.restore();
 
-            if (isAutoMode) {
-                // Draw the overlay canvas on top
-                context.drawImage(overlayCanvas, 0, 0);
-            } else {
-                // Manual draw logic (DOM -> Canvas mapping)
-                const containerRect = document.querySelector('.camera-container').getBoundingClientRect();
-                [lashLeft, lashRight].forEach(lash => {
-                    const lashRect = lash.getBoundingClientRect();
-                    const relativeLeft = lashRect.left - containerRect.left;
-                    const relativeTop = lashRect.top - containerRect.top;
-                    const scaleX = width / containerRect.width;
-                    const scaleY = height / containerRect.height;
-                    const drawX = relativeLeft * scaleX;
-                    const drawY = relativeTop * scaleY;
-                    const drawW = lashRect.width * scaleX;
-                    const drawH = lashRect.height * scaleY;
-                    const isRight = lash.id === 'lashRight';
+            // Draw lashes on top
+            snapshotCtx.drawImage(canvas, 0, 0);
 
-                    context.globalAlpha = lash.style.opacity || 0.7;
-                    context.save();
-                    context.globalCompositeOperation = 'multiply';
-                    context.translate(drawX + drawW / 2, drawY + drawH / 2);
-
-                    let scaleYParam = 1.0; // Recalculate based on current vars if needed or parse transform
-                    if (currentCurl === 'C') scaleYParam = 1.2;
-                    if (currentCurl === 'D') scaleYParam = 1.4;
-                    const flip = isRight ? -1 : 1;
-
-                    context.scale(flip, scaleYParam);
-                    context.drawImage(lash, -drawW / 2, -drawH / 2, drawW, drawH);
-                    context.restore();
-                    context.globalAlpha = 1.0;
-                });
-            }
-
-            const dataURL = canvas.toDataURL('image/png');
+            const dataURL = snapshotCanvas.toDataURL('image/png');
             document.getElementById('snapshotImg').src = dataURL;
             document.getElementById('downloadLink').href = dataURL;
             document.getElementById('downloadLink').download = `alpaca_salon_${Date.now()}.png`;
@@ -659,10 +570,8 @@
             document.getElementById('resultModal').classList.remove('show');
         };
 
-        // Start with Auto
-        setMode('auto');
+        // Start
         initMediaPipe();
-
     </script>
 </body>
 
