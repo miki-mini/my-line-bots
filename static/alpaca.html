@@ -527,6 +527,53 @@
         .toast.show {
             transform: translateX(-50%) translateY(0);
         }
+
+        /* Tips Modal */
+        .tips-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .tips-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .tips-content {
+            background: #fff;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 80%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .tips-content h3 {
+            color: var(--primary-gold);
+            margin-top: 0;
+        }
+
+        .tips-content ul {
+            text-align: left;
+            padding-left: 20px;
+            color: #555;
+            margin-bottom: 25px;
+        }
+
+        .tips-content li {
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 
@@ -558,8 +605,28 @@
                 <button class="btn secondary" onclick="document.getElementById('fileInput').click()">📁
                     写真をアップロード</button>
             </div>
+            <div style="margin-top: 15px;">
+                <button onclick="showTips()"
+                    style="background:none; border:none; color:#888; text-decoration:underline; cursor:pointer;">
+                    💡 きれいに撮るコツ
+                </button>
+            </div>
             <input type="file" id="fileInput" accept="image/*" style="display: none;"
                 onchange="handleFileUpload(event)">
+        </div>
+
+        <!-- Tips Modal -->
+        <div id="tipsModal" class="tips-modal" onclick="closeTips()">
+            <div class="tips-content" onclick="event.stopPropagation()">
+                <h3>✨ きれいに撮るコツ</h3>
+                <ul>
+                    <li>明るい場所で撮影しましょう☀️</li>
+                    <li>前髪が目にかからないようにピンで留めるとGood👍</li>
+                    <li>カメラに対して正面を向いてください😐</li>
+                    <li>メガネは外したほうが正確に分析できます👓</li>
+                </ul>
+                <button class="btn" onclick="closeTips()">OK</button>
+            </div>
         </div>
 
         <!-- Edit Mode -->
@@ -831,6 +898,85 @@
 
                 return null;
             }
+        }
+
+        // Tips Modal
+        function showTips() {
+            document.getElementById('tipsModal').classList.add('active');
+        }
+
+        function closeTips() {
+            document.getElementById('tipsModal').classList.remove('active');
+        }
+
+        // Capture Photo from Video
+        async function capturePhoto() {
+            const video = document.getElementById('video');
+            if (!video || !video.readyState === 4) return;
+
+            // Start Sparkle immediately for effect!
+            startMagicEffect();
+
+            // Create canvas for capture
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+
+            // Draw video frame (mirrored like the preview)
+            ctx.save();
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, -canvas.width, 0);
+            ctx.restore();
+
+            capturedImage = canvas.toDataURL('image/png');
+            isMirrored = false; // Capture is already mirrored in pixels, so treat as normal image
+
+            // Prepare for analysis
+            const cameraSection = document.getElementById('cameraSection');
+            cameraSection.style.display = 'none';
+            cameraSection.classList.add('hidden');
+            document.getElementById('editSection').classList.add('active');
+
+            statusEl.textContent = 'AI分析中...';
+            console.log('📸 写真撮影完了 -> AI分析開始');
+
+            // Run Analysis
+            eyeAnalysis = await analyzeEyeWithAI(capturedImage);
+
+            // Stop Sparkle on result
+            stopMagicEffect();
+
+            if (eyeAnalysis && eyeAnalysis.recommendations) {
+                const rec = eyeAnalysis.recommendations;
+                currentVolume = rec.volume;
+                currentCurl = rec.curl;
+                currentLength = rec.length;
+
+                // Update buttons
+                document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+                document.querySelector(`button[onclick="setVolume(${rec.volume})"]`)?.classList.add('active');
+                document.querySelector(`button[onclick="setCurl('${rec.curl}')"]`)?.classList.add('active');
+                document.querySelector(`button[onclick="setLength(${rec.length})"]`)?.classList.add('active');
+            }
+
+            // Need landmarks for redrawing lashes on the static image
+            // We need to run FaceMesh on the captured image to get precise landmarks for the static frame
+            // equivalent to what handleFileUpload does
+            statusEl.textContent = '仕上げ中...';
+
+            // Send image to FaceMesh to get landmarks for this frame
+            faceMesh.reset();
+            faceMesh.onResults((results) => {
+                if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+                    capturedLandmarks = results.multiFaceLandmarks[0];
+                    redrawPreview();
+                } else {
+                    alert('顔が検出できませんでした。もう一度撮影してください。');
+                    window.retakePhoto();
+                }
+            });
+            await faceMesh.send({ image: canvas });
         }
 
         function translateEyeShape(shape) {
@@ -1314,8 +1460,8 @@
                 scale *= 0.55; // Lower lashes are shorter (55%)
             }
             context.scale(scale, scale);
-            // 透明度（少しランダムだが、基本を濃くする）
-            context.globalAlpha = (isLower ? 0.7 : 0.85) + Math.random() * 0.15;
+            // 透明度（安定させる）
+            context.globalAlpha = isLower ? 0.7 : 0.9;
 
             // まつげ画像を描画
             context.drawImage(
@@ -1466,6 +1612,7 @@
             capturedLandmarks = null;
             eyeAnalysis = null;
             savedPatterns = [];
+            isMirrored = true; // Camera mode needs mirroring
 
             // AI分析エリアを非表示
             document.getElementById('aiAnalysis').style.display = 'none';
