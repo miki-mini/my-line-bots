@@ -1330,8 +1330,15 @@
                 totalLength += Math.sqrt(dx * dx + dy * dy);
             }
 
+            // Tuning: 0.25 creates a distinct "separated" look (clearly separate from inner corner)
+            // 0.02 was too close, 0.15 was standard. User wants "more separation".
+            const skipThresholdBase = 0.25;
+
             const lashesPerEye = Math.floor(currentVolume / 2);
-            const spacing = totalLength / lashesPerEye;
+            // Recalculate spacing to fit all lashes in the REMAINING length
+            // This ensures they extend fully to the outer corner.
+            const effectiveLength = totalLength * (1 - skipThresholdBase);
+            const spacing = effectiveLength / lashesPerEye;
 
             let accumulated = 0;
             let lashCount = 0;
@@ -1351,11 +1358,7 @@
                     const tangentAngle = Math.atan2(dy, dx);
                     const totalPosition = (i + t) / (points.length - 1);
 
-                    // Skip inner corner
-                    // Skip inner corner
-                    // Reverted to original request: Left Side (Screen Left) needs more skip (0.55)
-                    // Right Side (Screen Right) stays 0.35
-                    let skipThresholdBase = (side === 'left') ? 0.55 : 0.35;
+
 
                     const skipThreshold = isLower ? 0.2 : skipThresholdBase;
                     if (totalPosition >= skipThreshold) {
