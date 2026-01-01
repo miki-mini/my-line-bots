@@ -3,7 +3,7 @@
 **「あなたの姿勢、美しく保てていますか？」**
 フラミンゴ先生は、カメラだけであなたの姿勢をチェックし、改善のためのアドバイスやゲームを提供するAIトレーナーです。
 
-![Flamingo](../static/images/flamingo.jpg)
+<img src="images/flamingo.jpg" width="200">
 
 ## ✨ 主な機能
 
