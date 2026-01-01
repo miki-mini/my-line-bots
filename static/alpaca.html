@@ -1169,70 +1169,8 @@
             reader.readAsDataURL(file);
         };
 
-        // Capture photo
-        async function capturePhoto() {
-            const tempCanvas = document.getElementById('tempCanvas');
-            tempCanvas.width = video.videoWidth;
-            tempCanvas.height = video.videoHeight;
-            const tempCtx = tempCanvas.getContext('2d');
 
-            tempCtx.save();
-            tempCtx.scale(-1, 1);
-            tempCtx.drawImage(video, -tempCanvas.width, 0, tempCanvas.width, tempCanvas.height);
-            tempCtx.restore();
 
-            capturedImage = tempCanvas.toDataURL('image/png');
-            isMirrored = true; // Webcam is mirrored
-
-            statusEl.textContent = '顔を検出中...';
-            statusEl.style.opacity = '1';
-
-            try {
-                const results = await new Promise((resolve, reject) => {
-                    const timeout = setTimeout(() => reject(new Error('タイムアウト')), 3000);
-
-                    faceMesh.onResults((r) => {
-                        clearTimeout(timeout);
-                        resolve(r);
-                    });
-
-                    faceMesh.send({ image: video });
-                });
-
-                if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-                    capturedLandmarks = results.multiFaceLandmarks[0];
-
-                    const cameraSection = document.getElementById('cameraSection');
-                    cameraSection.style.display = 'none';
-                    cameraSection.classList.add('hidden');
-                    document.getElementById('editSection').classList.add('active');
-
-                    // Analyze with AI (Backend)
-                    eyeAnalysis = await analyzeEyeWithAI(capturedImage);
-
-                    // Apply AI recommendations
-                    if (eyeAnalysis && eyeAnalysis.recommendations) {
-                        const rec = eyeAnalysis.recommendations;
-                        currentVolume = rec.volume;
-                        currentCurl = rec.curl;
-                        currentLength = rec.length;
-
-                        document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
-                        document.querySelector(`button[onclick="setVolume(${rec.volume})"]`)?.classList.add('active');
-                        document.querySelector(`button[onclick="setCurl('${rec.curl}')"]`)?.classList.add('active');
-                        document.querySelector(`button[onclick="setLength(${rec.length})"]`)?.classList.add('active');
-                    }
-
-                    redrawPreview();
-                } else {
-                    alert('❌ 顔が検出できませんでした\n\nガイドに顔を合わせて、もう一度お試しください。');
-                    statusEl.style.opacity = '0';
-                }
-            } catch (error) {
-                alert('顔の検出に失敗しました。もう一度お試しください。');
-                statusEl.style.opacity = '0';
-            }
-        }
 
         // Redraw preview
         function redrawPreview() {
