@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>姿勢のフラミンゴ先生 🦩</title>
+    <!-- MediaPipe -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #fff;
+            font-family: 'Zen Maru Gothic', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 2;
+        }
+
+        .ui-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 3;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            max-width: 300px;
+            max-height: 80vh;
+            overflow-y: auto;
+            transition: opacity 0.3s;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 1.5rem;
+            color: #ff9a9e;
+            text-shadow: 0 0 10px rgba(255, 154, 158, 0.5);
+        }
+
+        p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-top: 5px;
+            margin-right: 5px;
+            background: #95a5a6;
+            font-size: 0.8rem;
+        }
+
+        .status-ok {
+            background: #2ecc71;
+            box-shadow: 0 0 10px #2ecc71;
+        }
+
+        .status-bad {
+            background: #e74c3c;
+            box-shadow: 0 0 10px #e74c3c;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .loading {
+            position: absolute;
+            z-index: 10;
+            font-size: 2rem;
+            color: #ff9a9e;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 2rem;
+            border-radius: 1rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff9a9e, #fad0c4);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 20px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 154, 158, 0.4);
+            font-family: inherit;
+            flex: 1;
+            min-width: 100px;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 154, 158, 0.6);
+        }
+
+        .btn-timer {
+            background: linear-gradient(45deg, #a18cd1, #fbc2eb);
+            box-shadow: 0 5px 15px rgba(161, 140, 209, 0.4);
+        }
+
+        .btn-game {
+            background: linear-gradient(45deg, #84fab0, #8fd3f4);
+            box-shadow: 0 5px 15px rgba(132, 250, 176, 0.4);
+            color: #1a5c4e;
+        }
+
+        .btn-mode {
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        /* Countdown Overlay */
+        .countdown-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 8rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            z-index: 20;
+            pointer-events: none;
+            display: none;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Freeze Indicator */
+        .freeze-indicator {
+            display: none;
+            color: #ffff00;
+            font-weight: bold;
+            margin-top: 10px;
+            text-align: center;
+            border: 2px solid #ffff00;
+            padding: 5px;
+            border-radius: 10px;
+        }
+
+        /* Game Overlay */
+        .game-overlay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: right;
+            border: 2px solid #84fab0;
+            display: none;
+            width: 200px;
+        }
+
+        .game-timer {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #84fab0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .game-msg {
+            font-size: 1rem;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+
+        /* Modal Common */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            padding: 25px;
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+            animation: popIn 0.3s ease-out;
+            position: relative;
+        }
+
+        /* Result Modal Styles */
+        .result-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .result-score-label {
+            font-size: 1rem;
+            color: #a5b4fc;
+        }
+
+        .result-score-value {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #84fab0;
+            text-shadow: 0 0 10px rgba(132, 250, 176, 0.3);
+            margin: 10px 0;
+        }
+
+        .result-unit {
+            font-size: 1.5rem;
+            color: #fff;
+        }
+
+        .high-score {
+            margin-top: 15px;
+            background: rgba(255, 215, 0, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+            color: #ffd700;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .tsubo-title {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #ffdede;
+        }
+
+        .tsubo-desc {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+        }
+
+        /* Side View Help */
+        .side-view-tips {
+            display: none;
+            margin-top: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="loading" id="loading">
+        🦩 フラミンゴ先生準備中...
+    </div>
+
+    <div class="countdown-overlay" id="countdown-display">3</div>
+
+    <div class="container">
+        <video id="input_video" playsinline></video>
+        <canvas id="output_canvas"></canvas>
+
+        <div class="game-overlay" id="game-overlay">
+            <div class="game-msg" id="game-msg">片足を上げてください</div>
+            <div class="game-timer" id="game-timer">0.00</div>
+        </div>
+
+        <div class="ui-overlay" id="main-ui">
+            <h1>🦩 姿勢のフラミンゴ先生</h1>
+            <p id="instruction-text">全身または上半身を映してください。<br>ピンクの●をタップすると効能が見れます。</p>
+
+            <div class="btn-group">
+                <button id="camera-switch-btn" class="btn">📷 カメラ</button>
+                <button id="timer-btn" class="btn btn-timer">⏱️ タイマー</button>
+            </div>
+            <div class="btn-group">
+                <button id="mode-switch-btn" class="btn btn-mode">側面チェック</button>
+                <button id="game-btn" class="btn btn-game">🦵 片足挑戦</button>
+            </div>
+
+            <button id="resume-btn" class="btn"
+                style="display:none; width: 100%; margin-top:10px; background: linear-gradient(45deg, #43cea2, #185a9d);">▶️
+                再開する</button>
+
+            <div class="freeze-indicator" id="freeze-indicator">❄️ 画面停止中</div>
+
+            <div style="margin-top: 15px;" id="status-container">
+                <div id="status-head" class="status-badge">首：計測中...</div>
+                <div id="status-shoulder" class="status-badge">肩：計測中...</div>
+                <div id="status-hip" class="status-badge">腰：計測中...</div>
+                <div id="status-knee" class="status-badge">膝：計測中...</div>
+            </div>
+
+            <div class="side-view-tips" id="side-view-tips">
+                横を向いてください。<br>
+                <span style="color:#2ecc71">緑線</span>：理想ライン<br>
+                <span style="color:#e74c3c">赤線</span>：ズレ（ストレートネック/猫背）
+            </div>
+        </div>
+    </div>
+
+    <!-- Tsubo Modal -->
+    <div id="tsubo-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('tsubo-modal')">&times;</span>
+            <h2 id="modal-title" class="tsubo-title">ツボの名前</h2>
+            <p id="modal-desc" class="tsubo-desc">ここに説明が入ります。</p>
+            <button class="btn" onclick="closeModal('tsubo-modal')">閉じる</button>
+        </div>
+    </div>
+
+    <!-- Result Modal -->
+    <div id="result-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('result-modal')">&times;</span>
+            <h2 style="color:#84fab0; margin-bottom:5px;">🦩 チャレンジ結果</h2>
+            <div class="result-box">
+                <div class="result-score-label">今回の記録</div>
+                <div class="result-score-value"><span id="result-time">0.00</span><span class="result-unit">秒</span>
+                </div>
+                <div class="high-score" id="high-score-display">👑 過去最高: 12.34秒</div>
+            </div>
+            <p style="font-size:0.9rem; opacity:0.8;">よく頑張りました！</p>
+            <button class="btn" onclick="closeModal('result-modal')">OK</button>
+        </div>
+    </div>
+
+    <script>
+        const videoElement = document.getElementById('input_video');
+        const canvasElement = document.getElementById('output_canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const loadingElement = document.getElementById('loading');
+
+        // Buttons
+        const cameraSwitchBtn = document.getElementById('camera-switch-btn');
+        const timerBtn = document.getElementById('timer-btn');
+        const resumeBtn = document.getElementById('resume-btn');
+        const gameBtn = document.getElementById('game-btn');
+        const modeSwitchBtn = document.getElementById('mode-switch-btn');
+
+        // UI
+        const countdownDisplay = document.getElementById('countdown-display');
+        const freezeIndicator = document.getElementById('freeze-indicator');
+        const mainUi = document.getElementById('main-ui');
+        const instructionText = document.getElementById('instruction-text');
+        const statusContainer = document.getElementById('status-container');
+        const sideViewTips = document.getElementById('side-view-tips');
+
+        // Modals
+        const tsuboModal = document.getElementById('tsubo-modal');
+        const resultModal = document.getElementById('result-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalDesc = document.getElementById('modal-desc');
+        const resultTimeEl = document.getElementById('result-time');
+        const highScoreEl = document.getElementById('high-score-display');
+
+        // Game UI
+        const gameOverlay = document.getElementById('game-overlay');
+        const gameMsg = document.getElementById('game-msg');
+        const gameTimerEl = document.getElementById('game-timer');
+
+        // Status Elements
+        const shoulderStatus = document.getElementById('status-shoulder');
+        const headStatus = document.getElementById('status-head');
+        const hipStatus = document.getElementById('status-hip');
+        const kneeStatus = document.getElementById('status-knee');
+
+        // State
+        let currentFacingMode = 'user';
+        let isMirror = true;
+        let activeTsubos = [];
+        let isFrozen = false;
+        let timerActive = false;
+
+        let viewMode = 'front'; // 'front' or 'side'
+
+        // Game State
+        let isGameMode = false;
+        let gameState = 'waiting_leg';
+        let gameStartTime = 0;
+        let gameScore = 0;
+
+        function updateMirror() {
+            if (currentFacingMode === 'user') {
+                videoElement.style.transform = 'scaleX(-1)';
+                canvasElement.style.transform = 'scaleX(-1)';
+                isMirror = true;
+            } else {
+                videoElement.style.transform = 'scaleX(1)';
+                canvasElement.style.transform = 'scaleX(1)';
+                isMirror = false;
+            }
+        }
+        updateMirror();
+
+        // -------------------------------------------------------------------
+        // Mode Switch (Front <-> Side)
+        // -------------------------------------------------------------------
+        modeSwitchBtn.addEventListener('click', () => {
+            if (viewMode === 'front') {
+                viewMode = 'side';
+                modeSwitchBtn.textContent = '正面チェック';
+                sideViewTips.style.display = 'block';
+                instructionText.textContent = "横を向いて、全身を映してください。";
+                // Clear front status
+                statusContainer.style.display = 'none';
+            } else {
+                viewMode = 'front';
+                modeSwitchBtn.textContent = '側面チェック';
+                sideViewTips.style.display = 'none';
+                instructionText.textContent = "全身または上半身を映してください。";
+                statusContainer.style.display = 'block';
+            }
+        });
+
+        // -------------------------------------------------------------------
+        // Timer Logic
+        // -------------------------------------------------------------------
+        timerBtn.addEventListener('click', () => {
+            if (timerActive) return;
+            startCountdown(5, () => {
+                freeze();
+            });
+        });
+
+        resumeBtn.addEventListener('click', () => {
+            unfreeze();
+        });
+
+        function startCountdown(seconds, callback) {
+            timerActive = true;
+            timerBtn.disabled = true;
+            gameBtn.disabled = true;
+            let count = seconds;
+
+            countdownDisplay.style.display = 'block';
+            countdownDisplay.textContent = count;
+
+            const interval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownDisplay.textContent = count;
+                    countdownDisplay.style.animation = 'none';
+                    countdownDisplay.offsetHeight;
+                    countdownDisplay.style.animation = null;
+                } else {
+                    clearInterval(interval);
+                    countdownDisplay.style.display = 'none';
+                    timerActive = false;
+                    timerBtn.disabled = false;
+                    gameBtn.disabled = false;
+                    if (callback) callback();
+                }
+            }, 1000);
+        }
+
+        // -------------------------------------------------------------------
+        // Game Countdown Logic
+        // -------------------------------------------------------------------
+        function startGameCountdown(callback) {
+            let count = 3;
+            countdownDisplay.style.display = 'block';
+            countdownDisplay.textContent = count;
+
+            const interval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownDisplay.textContent = count;
+                    countdownDisplay.style.animation = 'none';
+                    countdownDisplay.offsetHeight;
+                    countdownDisplay.style.animation = 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                } else if (count === 0) {
+                    countdownDisplay.textContent = "START!";
+                } else {
+                    clearInterval(interval);
+                    countdownDisplay.style.display = 'none';
+                    if (callback) callback();
+                }
+            }, 1000);
+        }
+
+
+        function freeze() {
+            isFrozen = true;
+            videoElement.pause();
+            resumeBtn.style.display = 'block';
+            timerBtn.parentElement.style.display = 'none';
+            gameBtn.parentElement.style.display = 'none';
+            // Mode switch also hide
+            modeSwitchBtn.parentElement.style.display = 'none';
+            cameraSwitchBtn.style.display = 'none';
+            freezeIndicator.style.display = 'block';
+        }
+
+        function unfreeze() {
+            isFrozen = false;
+            videoElement.play();
+            requestAnimationFrame(processVideo);
+            resumeBtn.style.display = 'none';
+            timerBtn.parentElement.style.display = 'flex';
+            gameBtn.parentElement.style.display = 'flex';
+            modeSwitchBtn.parentElement.style.display = 'flex';
+            cameraSwitchBtn.style.display = 'block';
+            freezeIndicator.style.display = 'none';
+        }
+
+        // -------------------------------------------------------------------
+        // Game Logic
+        // -------------------------------------------------------------------
+        gameBtn.addEventListener('click', () => {
+            // Force front view for game?
+            if (viewMode === 'side') {
+                modeSwitchBtn.click(); // Switch back to front
+            }
+            startGame();
+        });
+
+        function startGame() {
+            isGameMode = true;
+            gameState = 'waiting_leg';
+            mainUi.style.opacity = 0;
+            gameOverlay.style.display = 'block';
+            gameTimerEl.textContent = "0.00";
+            gameMsg.textContent = "片足を上げてください";
+        }
+
+        function stopGame() {
+            gameState = 'result';
+            gameMsg.textContent = "終了！";
+            const finalScore = parseFloat(gameScore);
+            let highScore = parseFloat(localStorage.getItem('flamingoHighScore') || '0');
+            if (finalScore > highScore) {
+                highScore = finalScore;
+                localStorage.setItem('flamingoHighScore', highScore.toFixed(2));
+            }
+            setTimeout(() => {
+                isGameMode = false;
+                mainUi.style.opacity = 1;
+                gameOverlay.style.display = 'none';
+                resultTimeEl.textContent = finalScore.toFixed(2);
+                highScoreEl.textContent = `👑 過去最高: ${highScore.toFixed(2)}秒`;
+                resultModal.style.display = "flex";
+            }, 500);
+        }
+
+        // -------------------------------------------------------------------
+        // Interaction Logic
+        // -------------------------------------------------------------------
+        canvasElement.addEventListener('click', (e) => {
+            if (isGameMode) return;
+            // Don't interact active tsubo in side view? Usually Tsubo are front map.
+            // But Side view has some tsubo? I won't support Side Tsubo for now to keep simple.
+            if (viewMode === 'side') return;
+
+            const rect = canvasElement.getBoundingClientRect();
+            let clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+
+            const scaleX = canvasElement.width / rect.width;
+            const scaleY = canvasElement.height / rect.height;
+
+            let hitX;
+            if (isMirror) hitX = (rect.width - clickX) * scaleX;
+            else hitX = clickX * scaleX;
+            const hitY = clickY * scaleY;
+
+            for (const t of activeTsubos) {
+                const dx = t.x - hitX;
+                const dy = t.y - hitY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 40) { showTsuboModal(t.data); return; }
+            }
+        });
+
+        function showTsuboModal(data) {
+            modalTitle.innerText = data.name;
+            modalDesc.innerText = data.desc;
+            tsuboModal.style.display = "flex";
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = "none";
+        }
+
+        window.onclick = function (event) {
+            if (event.target == tsuboModal) closeModal('tsubo-modal');
+            if (event.target == resultModal) closeModal('result-modal');
+        }
+
+        // -------------------------------------------------------------------
+        // Tsubo Database
+        // -------------------------------------------------------------------
+        const TSUBO_DB = [
+            { id: 'kensei', name: '肩井 (けんせい)', desc: '【効果】肩こり、頭痛、五十肩\n首の付け根と肩先のちょうど中間あたり。', type: 'body', calc: (l) => [{ x: (l[11].x + (l[11].x + l[12].x) / 2) / 2, y: l[11].y - 0.02 }, { x: (l[12].x + (l[11].x + l[12].x) / 2) / 2, y: l[12].y - 0.02 }] },
+            { id: 'chufu', name: '中府 (ちゅうふ)', desc: '【効果】呼吸、猫背、バストアップ\n鎖骨の外側下のくぼみから指1本分下。', type: 'body', calc: (l) => [{ x: l[11].x + (l[12].x - l[11].x) * 0.15, y: l[11].y + 0.05 }, { x: l[12].x + (l[11].x - l[12].x) * 0.15, y: l[12].y + 0.05 }] },
+            { id: 'kikai', name: '気海 (きかい)', desc: '【効果】元気が出る、冷え性、腰痛\nおへそから指2本分下。', type: 'body', calc: (l) => (l[23].visibility < 0.5 || l[24].visibility < 0.5) ? [] : [{ x: (l[23].x + l[24].x) / 2, y: (l[23].y + l[24].y) / 2 - 0.05 }] },
+            { id: 'zusanli', name: '足三里 (あしさんり)', desc: '【効果】胃腸、足のむくみ\n膝の外側下、指4本分下。', type: 'body', calc: (l) => (l[25].visibility < 0.5 || l[26].visibility < 0.5) ? [] : [{ x: l[25].x, y: l[25].y + 0.1 }, { x: l[26].x, y: l[26].y + 0.1 }] },
+            { id: 'sanyinjiao', name: '三陰交 (さんいんこう)', desc: '【効果】冷え、生理痛、更年期\n内くるぶしから指4本分上。', type: 'body', calc: (l) => (l[27].visibility < 0.5 || l[28].visibility < 0.5) ? [] : [{ x: l[27].x, y: l[27].y - 0.05 }, { x: l[28].x, y: l[28].y - 0.05 }] },
+            { id: 'hegu', name: '合谷 (ごうこく)', desc: '【効果】万能、頭痛、歯痛、肩こり\n親指と人差指の骨が交わるところのくぼみ。', type: 'hand', calc: (l) => { const p = []; if (l[19].visibility > 0.5 && l[21].visibility > 0.5) p.push({ x: (l[19].x + l[21].x) / 2, y: (l[19].y + l[21].y) / 2 }); if (l[20].visibility > 0.5 && l[22].visibility > 0.5) p.push({ x: (l[20].x + l[22].x) / 2, y: (l[20].y + l[22].y) / 2 }); return p; } },
+            { id: 'seimei', name: '晴明 (せいめい)', desc: '【効果】目の疲れ\n目頭の内側。', type: 'face', calc: (l) => (l[1].visibility < 0.6) ? [] : [{ x: l[1].x, y: l[1].y }, { x: l[4].x, y: l[4].y }] },
+            { id: 'taiyo', name: '太陽 (たいよう)', desc: '【効果】眼精疲労、頭痛\nこめかみ。', type: 'face', calc: (l) => (l[3].visibility < 0.6) ? [] : [{ x: (l[3].x + l[7].x) / 2, y: (l[3].y + l[7].y) / 2 }, { x: (l[6].x + l[8].x) / 2, y: (l[6].y + l[8].y) / 2 }] },
+            { id: 'geiko', name: '迎香 (げいこう)', desc: '【効果】鼻づまり\n小鼻の横。', type: 'face', calc: (l) => { if (l[0].visibility < 0.6) return []; const d = Math.abs(l[1].x - l[4].x) * 0.5; return [{ x: l[0].x - d, y: l[0].y + d * 0.5 }, { x: l[0].x + d, y: l[0].y + d * 0.5 }] } }
+        ];
+
+        // -------------------------------------------------------------------
+        // Camera & Pose
+        // -------------------------------------------------------------------
+        async function startCamera() {
+            if (window.stream) window.stream.getTracks().forEach(t => t.stop());
+            const constraints = { video: { facingMode: currentFacingMode, width: { ideal: 1280 }, height: { ideal: 720 } } };
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                window.stream = stream;
+                videoElement.srcObject = stream;
+                videoElement.onloadedmetadata = () => { videoElement.play(); requestAnimationFrame(processVideo); };
+            } catch (err) { alert("カメラエラー"); }
+        }
+
+        async function processVideo() {
+            if (isFrozen) return;
+            if (videoElement.paused || videoElement.ended) return;
+            await pose.send({ image: videoElement });
+            requestAnimationFrame(processVideo);
+        }
+
+        cameraSwitchBtn.addEventListener('click', () => {
+            currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+            updateMirror();
+            startCamera();
+        });
+
+        function onResults(results) {
+            loadingElement.style.display = 'none';
+            canvasElement.width = videoElement.videoWidth;
+            canvasElement.height = videoElement.videoHeight;
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            activeTsubos = [];
+
+            if (results.poseLandmarks) {
+                const landmarks = results.poseLandmarks;
+                const w = canvasElement.width;
+                const h = canvasElement.height;
+                const getCoords = (idx) => ({ x: landmarks[idx].x * w, y: landmarks[idx].y * h });
+
+                // ---------------------------------------------------------
+                // 1. GAME MODE
+                // ---------------------------------------------------------
+                if (isGameMode) {
+                    const yLeft = landmarks[27].y;
+                    const yRight = landmarks[28].y;
+                    const diff = Math.abs(yLeft - yRight);
+                    const isOneLegUp = diff > 0.08;
+
+                    if (gameState === 'waiting_leg') {
+                        if (isOneLegUp) {
+                            gameState = 'counting_down';
+                            gameMsg.textContent = "そのまま！";
+                            startGameCountdown(() => {
+                                gameState = 'playing';
+                                gameStartTime = Date.now();
+                                gameMsg.textContent = "計測中...🦩";
+                            });
+                        }
+                    } else if (gameState === 'playing') {
+                        const score = ((Date.now() - gameStartTime) / 1000).toFixed(2);
+                        gameTimerEl.textContent = score;
+                        gameScore = score;
+                        if (!isOneLegUp) stopGame();
+                    }
+                    drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: 'rgba(255, 255, 255, 0.5)', lineWidth: 2 });
+                    drawLandmarks(canvasCtx, results.poseLandmarks, { color: '#84fab0', lineWidth: 2, radius: 4 });
+
+                    // ---------------------------------------------------------
+                    // 2. SIDE VIEW MODE
+                    // ---------------------------------------------------------
+                } else if (viewMode === 'side') {
+                    // Detect which side is facing based on visibility
+                    // Left Ear(7), Left Shoulder(11) vs Right Ear(8), Right Shoulder(12)
+                    let useLeft = landmarks[11].visibility > landmarks[12].visibility;
+
+                    // Points of interest
+                    // Ear: 7(L)/8(R)
+                    // Shoulder: 11(L)/12(R)
+                    // Hip: 23(L)/24(R)
+                    // Knee: 25(L)/26(R)
+                    // Ankle: 27(L)/28(R)
+
+                    const earIdx = useLeft ? 7 : 8;
+                    const shIdx = useLeft ? 11 : 12;
+                    const hipIdx = useLeft ? 23 : 24;
+                    const kneeIdx = useLeft ? 25 : 26;
+                    const ankleIdx = useLeft ? 27 : 28;
+
+                    if (landmarks[ankleIdx].visibility < 0.5 || landmarks[shIdx].visibility < 0.5) {
+                        // Not enough visibility
+                        return;
+                    }
+
+                    const pAnkle = getCoords(ankleIdx);
+
+                    // Ideal Line: Vertical from Ankle
+                    canvasCtx.beginPath();
+                    canvasCtx.moveTo(pAnkle.x, 0);
+                    canvasCtx.lineTo(pAnkle.x, h);
+                    canvasCtx.strokeStyle = "#2ecc71"; // Green
+                    canvasCtx.lineWidth = 3;
+                    canvasCtx.setLineDash([10, 5]);
+                    canvasCtx.stroke();
+                    canvasCtx.setLineDash([]);
+
+                    // Actual Points
+                    drawPoint(pAnkle, "#2ecc71", "足");
+
+                    // Draw Line connecting body parts
+                    const pEar = getCoords(earIdx);
+                    const pSh = getCoords(shIdx);
+                    const pHip = getCoords(hipIdx);
+                    const pKnee = getCoords(kneeIdx);
+
+                    // 1. Straight Neck Check (Ear vs Shoulder)
+                    // If visual mirror is ON, Left Side is on Right.
+                    // Forward means:
+                    // If facing Left (visual): Head X < Shoulder X (assuming Left is x=0)
+                    // But mirrored...
+                    // Let's use absolute diff from Vertical Line relative to Shoulder?
+                    // Straight Neck: Ear is "in front of" Shoulder.
+                    // "In front" depends on facing direction.
+                    // Instead of complex vector math, let's just check deviation from Vertical (Ankle).
+                    // Ideal: Ear, Shoulder, Hip, Knee, Ankle all roughly align on X.
+
+                    const earDev = pEar.x - pAnkle.x;
+                    const shDev = pSh.x - pAnkle.x;
+                    const hipDev = pHip.x - pAnkle.x;
+
+                    // Allow some tolerance (e.g. 30px)
+                    // NOTE: This assumes camera is level.
+
+                    // Check Straight Neck (Ear far from Shoulder X)
+                    const neckDiff = Math.abs(pEar.x - pSh.x);
+                    const isStraightNeck = neckDiff > 50;
+
+                    // Check Nekoze (Shoulder is forward of Hip?)
+                    // This logic is tricky if we don't know facing.
+                    // But deviation from ideal line is a good proxy.
+                    const isNekoze = Math.abs(shDev) > 60;
+
+                    // Check Sori-goshi (Hip forward?)
+                    const isSori = Math.abs(hipDev) > 60;
+
+                    // Draw Body Line
+                    drawSegment(pEar, pSh, isStraightNeck ? "red" : "white");
+                    drawSegment(pSh, pHip, isNekoze ? "red" : "white");
+                    drawSegment(pHip, pKnee, isSori ? "red" : "white");
+                    drawSegment(pKnee, pAnkle, "white");
+
+                    drawPoint(pEar, isStraightNeck ? "red" : "white", "耳");
+                    drawPoint(pSh, isNekoze ? "red" : "white", "肩");
+                    drawPoint(pHip, isSori ? "red" : "white", "腰");
+
+                    // Warning Texts
+                    let warnings = [];
+                    if (isStraightNeck) warnings.push("⚠️ ストレートネック気味");
+                    if (isNekoze) warnings.push("⚠️ 猫背気味");
+                    if (isSori) warnings.push("⚠️ 反り腰気味");
+
+                    // Draw Warnings
+                    canvasCtx.font = "bold 20px 'Zen Maru Gothic'";
+                    canvasCtx.textAlign = "left";
+                    let yPos = 100;
+                    warnings.forEach(w => {
+                        canvasCtx.fillStyle = "#e74c3c"; // Red
+                        canvasCtx.fillText(w, 20, yPos);
+                        yPos += 30;
+                    });
+
+
+                    // ---------------------------------------------------------
+                    // 3. FRONT VIEW MODE (Default)
+                    // ---------------------------------------------------------
+                } else {
+                    drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: 'rgba(255, 255, 255, 0.3)', lineWidth: 2 });
+                    drawLandmarks(canvasCtx, results.poseLandmarks, { color: '#a5b4fc', lineWidth: 1, radius: 3 });
+
+                    checkTilt(getCoords(11), getCoords(12), shoulderStatus, "肩", 20);
+                    if (landmarks[23].visibility > 0.5 && landmarks[24].visibility > 0.5) checkTilt(getCoords(23), getCoords(24), hipStatus, "腰", 20);
+                    else setUndetected(hipStatus, "腰");
+                    if (landmarks[25].visibility > 0.5 && landmarks[26].visibility > 0.5) checkTilt(getCoords(25), getCoords(26), kneeStatus, "膝", 30);
+                    else setUndetected(kneeStatus, "膝");
+
+                    const midX = (getCoords(11).x + getCoords(12).x) / 2;
+                    if (Math.abs(getCoords(0).x - midX) > 50) { headStatus.textContent = "⚠️ 前かがみ"; headStatus.className = "status-badge status-bad"; }
+                    else { headStatus.textContent = "✅ 首：OK"; headStatus.className = "status-badge status-ok"; }
+
+                    TSUBO_DB.forEach(tsubo => {
+                        const points = tsubo.calc(landmarks);
+                        points.forEach(p => {
+                            const x = p.x * w; const y = p.y * h;
+                            if (x < 0 || x > w || y < 0 || y > h) return;
+                            drawTsuboPoint(canvasCtx, x, y, tsubo.name.split(' ')[0]);
+                            activeTsubos.push({ x, y, data: tsubo });
+                        });
+                    });
+                }
+            }
+            canvasCtx.restore();
+        }
+
+        function drawPoint(p, color, label) {
+            canvasCtx.fillStyle = color;
+            canvasCtx.beginPath(); canvasCtx.arc(p.x, p.y, 8, 0, 2 * Math.PI); canvasCtx.fill();
+            if (label) {
+                canvasCtx.fillStyle = "white";
+                canvasCtx.font = "12px sans-serif";
+                canvasCtx.fillText(label, p.x + 10, p.y);
+            }
+        }
+        function drawSegment(p1, p2, color) {
+            canvasCtx.strokeStyle = color;
+            canvasCtx.lineWidth = 4;
+            canvasCtx.beginPath(); canvasCtx.moveTo(p1.x, p1.y); canvasCtx.lineTo(p2.x, p2.y); canvasCtx.stroke();
+        }
+
+        function setUndetected(el, name) { el.textContent = `${name}：未検出`; el.className = "status-badge"; }
+        function checkTilt(p1, p2, element, name, threshold) {
+            const diffY = Math.abs(p1.y - p2.y);
+            if (diffY > threshold) { element.textContent = `⚠️ ${name}の傾き`; element.className = "status-badge status-bad"; canvasCtx.beginPath(); canvasCtx.moveTo(p1.x, p1.y); canvasCtx.lineTo(p2.x, p2.y); canvasCtx.lineWidth = 3; canvasCtx.strokeStyle = "rgba(231, 76, 60, 0.8)"; canvasCtx.stroke(); }
+            else { element.textContent = `✅ ${name}：OK`; element.className = "status-badge status-ok"; }
+        }
+        function drawTsuboPoint(ctx, x, y, label) {
+            const gradient = ctx.createRadialGradient(x, y, 0, x, y, 18);
+            gradient.addColorStop(0, "rgba(255, 105, 180, 0.9)"); gradient.addColorStop(0.6, "rgba(255, 105, 180, 0.4)"); gradient.addColorStop(1, "rgba(255, 105, 180, 0)");
+            ctx.fillStyle = gradient; ctx.beginPath(); ctx.arc(x, y, 18, 0, 2 * Math.PI); ctx.fill();
+            ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(x, y, 4, 0, 2 * Math.PI); ctx.fill();
+            ctx.fillStyle = "#fff"; ctx.font = "bold 11px 'Zen Maru Gothic'"; ctx.textAlign = "center"; ctx.shadowColor = "rgba(0,0,0,1)"; ctx.shadowBlur = 3;
+            ctx.fillText(label, x, y - 22); ctx.shadowBlur = 0;
+        }
+
+        const pose = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
+        pose.setOptions({ modelComplexity: 1, smoothLandmarks: true, enableSegmentation: false, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+        pose.onResults(onResults);
+        startCamera();
+    </script>
+</body>
+
+</html>

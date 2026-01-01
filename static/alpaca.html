@@ -605,6 +605,11 @@
                 <button class="btn secondary" onclick="document.getElementById('fileInput').click()">📁
                     写真をアップロード</button>
             </div>
+            <div style="margin-top: 10px;">
+                <button class="btn secondary" onclick="loadSampleImage()"
+                    style="font-size: 0.9rem; padding: 8px 15px; background: #fff; border: 1px solid #ddd; color: #555;">👩
+                    モデルの写真で試す</button>
+            </div>
             <div style="margin-top: 15px;">
                 <button onclick="showTips()"
                     style="background:none; border:none; color:#888; text-decoration:underline; cursor:pointer;">
@@ -633,7 +638,11 @@
         <!-- Edit Mode -->
         <div class="edit-section" id="editSection">
             <div class="ai-analysis" id="aiAnalysis" style="display: none;">
-                <h4><span class="loading"></span> AI分析中...</h4>
+                <h4><span class="loading"></span> アルパカのまつエク中🦙</h4>
+                <div style="text-align: center; margin: 10px 0;">
+                    <img src="static/images/alpaca_loading.jpg"
+                        style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                </div>
                 <div class="ai-analysis-content" id="analysisContent"></div>
             </div>
 
@@ -1011,13 +1020,8 @@
             return map[width] || width;
         }
 
-        // Handle file upload - カメラモードと同じ処理に
-        window.handleFileUpload = async (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            console.log('📁 ファイル選択:', file.name);
-
+        // Common image processing logic
+        async function processFile(file) {
             statusEl.textContent = '画像を読み込み中...';
             statusEl.style.opacity = '1';
 
@@ -1078,16 +1082,8 @@
                             };
 
                             // 一時的なリスナーを設定
-                            const originalOnResults = faceMesh.onResults;
-                            // Note: faceMesh.onResults doesn't return the old listener, but sets a new one.
-                            // We just set our one-time listener.
-
                             faceMesh.onResults((r) => {
                                 onResultsOnce(r);
-                                // カメラ用のリスナーに戻す必要があればここで戻すが、
-                                // 通常はカメラ開始時に再設定されるのでOK。
-                                // ただし、連続アップロードやカメラ再開時に備えて空にしておくのが無難？
-                                // ここではresolveするだけ。
                             });
 
                             // tempCanvasを直接送信
@@ -1109,7 +1105,7 @@
                             cameraSection.classList.add('hidden');
                             document.getElementById('editSection').classList.add('active');
 
-                            statusEl.textContent = 'AI分析中...';
+                            statusEl.textContent = 'アルパカのまつエク中🦙';
 
                             // AI分析
                             console.log('🤖 AI分析開始...');
@@ -1144,6 +1140,7 @@
                     } catch (error) {
                         console.error('❌ エラー発生:', error);
                         alert(`❌ 顔検出に失敗しました\n\n${error.message}\n\n・顔が正面を向いているか確認してください\n・明るい場所で撮影された写真を使用してください`);
+                        stopMagicEffect();
                         statusEl.style.opacity = '0';
                         document.getElementById('fileInput').value = '';
                     }
@@ -1167,6 +1164,38 @@
             };
 
             reader.readAsDataURL(file);
+        }
+
+        // Handle file upload
+        window.handleFileUpload = async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            console.log('📁 ファイル選択:', file.name);
+            processFile(file);
+        };
+
+        // Load sample image
+        window.loadSampleImage = async () => {
+            try {
+                console.log('👩 サンプル画像を読み込みます...');
+                statusEl.textContent = 'サンプル画像を読み込み中...';
+                statusEl.style.opacity = '1';
+
+                const response = await fetch('static/images/sample_model.jpg');
+                if (!response.ok) {
+                    throw new Error(`サンプル画像の取得に失敗しました (Status: ${response.status})`);
+                }
+
+                const blob = await response.blob();
+                console.log('📦 Blob取得完了:', blob.size, blob.type);
+
+                processFile(blob);
+
+            } catch (error) {
+                console.error('❌ サンプル読み込みエラー:', error);
+                alert('サンプル画像の読み込みに失敗しました。');
+                statusEl.style.opacity = '0';
+            }
         };
 
 
