@@ -152,11 +152,16 @@
             flex: 1;
             min-width: 100px;
             font-size: 0.9rem;
+            text-align: center;
         }
 
         .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(255, 154, 158, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(0);
         }
 
         .btn-timer {
@@ -173,6 +178,27 @@
         .btn-mode {
             background: linear-gradient(45deg, #f093fb, #f5576c);
             box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn-photo {
+            background: linear-gradient(45deg, #ffecd2, #fcb69f);
+            color: #d35400;
+            box-shadow: 0 5px 15px rgba(252, 182, 159, 0.4);
+        }
+
+        .btn-difficulty {
+            background: rgba(255, 255, 255, 0.2);
+            font-size: 0.8rem;
+            padding: 5px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            margin-top: 5px;
+            box-shadow: none;
+        }
+
+        .btn-difficulty.easy {
+            background: #2ecc71;
+            border-color: #27ae60;
         }
 
         /* Countdown Overlay */
@@ -229,6 +255,13 @@
         .game-msg {
             font-size: 1rem;
             color: white;
+            margin-bottom: 5px;
+        }
+
+        .difficulty-badge {
+            font-size: 0.8rem;
+            color: #f1c40f;
+            display: block;
             margin-bottom: 5px;
         }
 
@@ -341,6 +374,19 @@
             border-radius: 10px;
             font-size: 0.8rem;
         }
+
+        #flash-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1000;
+            transition: opacity 0.1s;
+        }
     </style>
 </head>
 
@@ -349,6 +395,7 @@
         🦩 フラミンゴ先生準備中...
     </div>
 
+    <div id="flash-overlay"></div>
     <div class="countdown-overlay" id="countdown-display">3</div>
 
     <div class="container">
@@ -356,6 +403,7 @@
         <canvas id="output_canvas"></canvas>
 
         <div class="game-overlay" id="game-overlay">
+            <span class="difficulty-badge" id="game-difficulty-label">Normal Mode</span>
             <div class="game-msg" id="game-msg">片足を上げてください</div>
             <div class="game-timer" id="game-timer">0.00</div>
         </div>
@@ -366,11 +414,17 @@
 
             <div class="btn-group">
                 <button id="camera-switch-btn" class="btn">📷 カメラ</button>
-                <button id="timer-btn" class="btn btn-timer">⏱️ タイマー</button>
+                <button id="take-photo-btn" class="btn btn-photo">📸 撮影</button>
             </div>
+
             <div class="btn-group">
+                <button id="timer-btn" class="btn btn-timer">⏱️ タイマー</button>
                 <button id="mode-switch-btn" class="btn btn-mode">側面チェック</button>
+            </div>
+
+            <div class="btn-group" style="align-items: center;">
                 <button id="game-btn" class="btn btn-game">🦵 片足挑戦</button>
+                <button id="difficulty-btn" class="btn btn-difficulty">Normal</button>
             </div>
 
             <button id="resume-btn" class="btn"
@@ -428,9 +482,11 @@
 
         // Buttons
         const cameraSwitchBtn = document.getElementById('camera-switch-btn');
+        const takePhotoBtn = document.getElementById('take-photo-btn');
         const timerBtn = document.getElementById('timer-btn');
         const resumeBtn = document.getElementById('resume-btn');
         const gameBtn = document.getElementById('game-btn');
+        const difficultyBtn = document.getElementById('difficulty-btn');
         const modeSwitchBtn = document.getElementById('mode-switch-btn');
 
         // UI
@@ -440,6 +496,7 @@
         const instructionText = document.getElementById('instruction-text');
         const statusContainer = document.getElementById('status-container');
         const sideViewTips = document.getElementById('side-view-tips');
+        const flashOverlay = document.getElementById('flash-overlay');
 
         // Modals
         const tsuboModal = document.getElementById('tsubo-modal');
@@ -453,6 +510,7 @@
         const gameOverlay = document.getElementById('game-overlay');
         const gameMsg = document.getElementById('game-msg');
         const gameTimerEl = document.getElementById('game-timer');
+        const gameDifficultyLabel = document.getElementById('game-difficulty-label');
 
         // Status Elements
         const shoulderStatus = document.getElementById('status-shoulder');
@@ -474,6 +532,7 @@
         let gameState = 'waiting_leg';
         let gameStartTime = 0;
         let gameScore = 0;
+        let isEasyMode = false; // Add Easy Mode
 
         function updateMirror() {
             if (currentFacingMode === 'user') {
@@ -497,7 +556,6 @@
                 modeSwitchBtn.textContent = '正面チェック';
                 sideViewTips.style.display = 'block';
                 instructionText.textContent = "横を向いて、全身を映してください。";
-                // Clear front status
                 statusContainer.style.display = 'none';
             } else {
                 viewMode = 'front';
@@ -507,6 +565,56 @@
                 statusContainer.style.display = 'block';
             }
         });
+
+        // -------------------------------------------------------------------
+        // Photo Function
+        // -------------------------------------------------------------------
+        takePhotoBtn.addEventListener('click', () => {
+            takePhoto();
+        });
+
+        function takePhoto() {
+            // Flash effect
+            flashOverlay.style.opacity = 0.8;
+            setTimeout(() => { flashOverlay.style.opacity = 0; }, 100);
+
+            // Create a temporary canvas to composite video and overlay
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = canvasElement.width;
+            tempCanvas.height = canvasElement.height;
+            const tempCtx = tempCanvas.getContext('2d');
+
+            // Draw Video (handle mirror)
+            tempCtx.save();
+            if (isMirror) {
+                tempCtx.translate(tempCanvas.width, 0);
+                tempCtx.scale(-1, 1);
+            }
+            tempCtx.drawImage(videoElement, 0, 0, tempCanvas.width, tempCanvas.height);
+            tempCtx.restore();
+
+            // Draw Overlay (handle mirror if needed, but canvas is already mirrored by CSS?)
+            // Wait, output_canvas is drawn in standard coordinates, then flipped by CSS.
+            // So to draw it correctly on tempCanvas (which is NOT flipped by CSS but by code above),
+            // we need to draw it flipped IF mirror is active.
+
+            tempCtx.save();
+            if (isMirror) {
+                tempCtx.translate(tempCanvas.width, 0);
+                tempCtx.scale(-1, 1);
+            }
+            tempCtx.drawImage(canvasElement, 0, 0);
+            tempCtx.restore();
+
+            // Download
+            const dataURL = tempCanvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            const now = new Date();
+            const timestamp = now.toISOString().replace(/[:.]/g, '-');
+            link.download = `flamingo_result_${timestamp}.png`;
+            link.href = dataURL;
+            link.click();
+        }
 
         // -------------------------------------------------------------------
         // Timer Logic
@@ -581,9 +689,9 @@
             resumeBtn.style.display = 'block';
             timerBtn.parentElement.style.display = 'none';
             gameBtn.parentElement.style.display = 'none';
-            // Mode switch also hide
             modeSwitchBtn.parentElement.style.display = 'none';
-            cameraSwitchBtn.style.display = 'none';
+            cameraSwitchBtn.parentElement.style.display = 'none'; // hide top group
+            takePhotoBtn.parentElement.style.display = 'none';
             freezeIndicator.style.display = 'block';
         }
 
@@ -595,17 +703,28 @@
             timerBtn.parentElement.style.display = 'flex';
             gameBtn.parentElement.style.display = 'flex';
             modeSwitchBtn.parentElement.style.display = 'flex';
-            cameraSwitchBtn.style.display = 'block';
+            cameraSwitchBtn.parentElement.style.display = 'flex'; // show top group
+            takePhotoBtn.parentElement.style.display = 'flex';
             freezeIndicator.style.display = 'none';
         }
 
         // -------------------------------------------------------------------
         // Game Logic
         // -------------------------------------------------------------------
+        difficultyBtn.addEventListener('click', () => {
+            isEasyMode = !isEasyMode;
+            if (isEasyMode) {
+                difficultyBtn.textContent = "Easy";
+                difficultyBtn.classList.add('easy');
+            } else {
+                difficultyBtn.textContent = "Normal";
+                difficultyBtn.classList.remove('easy');
+            }
+        });
+
         gameBtn.addEventListener('click', () => {
-            // Force front view for game?
             if (viewMode === 'side') {
-                modeSwitchBtn.click(); // Switch back to front
+                modeSwitchBtn.click();
             }
             startGame();
         });
@@ -617,23 +736,37 @@
             gameOverlay.style.display = 'block';
             gameTimerEl.textContent = "0.00";
             gameMsg.textContent = "片足を上げてください";
+
+            if (isEasyMode) {
+                gameDifficultyLabel.textContent = "Easy Mode (かんたん)";
+                gameDifficultyLabel.style.color = "#2ecc71";
+            } else {
+                gameDifficultyLabel.textContent = "Normal Mode";
+                gameDifficultyLabel.style.color = "#f1c40f";
+            }
         }
 
         function stopGame() {
             gameState = 'result';
             gameMsg.textContent = "終了！";
             const finalScore = parseFloat(gameScore);
-            let highScore = parseFloat(localStorage.getItem('flamingoHighScore') || '0');
+            // Different high score keys for difficulty? Maybe same for simplicity or user satisfaction.
+            // Let's keep it same for now, or maybe they want to cheat with easy mode lol.
+            // Let's use separate high scores.
+            const storeKey = isEasyMode ? 'flamingoHighScoreEasy' : 'flamingoHighScore';
+
+            let highScore = parseFloat(localStorage.getItem(storeKey) || '0');
             if (finalScore > highScore) {
                 highScore = finalScore;
-                localStorage.setItem('flamingoHighScore', highScore.toFixed(2));
+                localStorage.setItem(storeKey, highScore.toFixed(2));
             }
             setTimeout(() => {
                 isGameMode = false;
                 mainUi.style.opacity = 1;
                 gameOverlay.style.display = 'none';
                 resultTimeEl.textContent = finalScore.toFixed(2);
-                highScoreEl.textContent = `👑 過去最高: ${highScore.toFixed(2)}秒`;
+                let modeText = isEasyMode ? " (かんたん)" : "";
+                highScoreEl.textContent = `👑 過去最高${modeText}: ${highScore.toFixed(2)}秒`;
                 resultModal.style.display = "flex";
             }, 500);
         }
@@ -643,8 +776,6 @@
         // -------------------------------------------------------------------
         canvasElement.addEventListener('click', (e) => {
             if (isGameMode) return;
-            // Don't interact active tsubo in side view? Usually Tsubo are front map.
-            // But Side view has some tsubo? I won't support Side Tsubo for now to keep simple.
             if (viewMode === 'side') return;
 
             const rect = canvasElement.getBoundingClientRect();
@@ -745,7 +876,11 @@
                     const yLeft = landmarks[27].y;
                     const yRight = landmarks[28].y;
                     const diff = Math.abs(yLeft - yRight);
-                    const isOneLegUp = diff > 0.08;
+
+                    // Difficulty Threshold
+                    // Normal: 0.08, Easy: 0.04 (Slight lift is ok)
+                    const threshold = isEasyMode ? 0.04 : 0.08;
+                    const isOneLegUp = diff > threshold;
 
                     if (gameState === 'waiting_leg') {
                         if (isOneLegUp) {
@@ -770,80 +905,39 @@
                     // 2. SIDE VIEW MODE
                     // ---------------------------------------------------------
                 } else if (viewMode === 'side') {
-                    // Detect which side is facing based on visibility
-                    // Left Ear(7), Left Shoulder(11) vs Right Ear(8), Right Shoulder(12)
+                    // Logic ...
                     let useLeft = landmarks[11].visibility > landmarks[12].visibility;
-
-                    // Points of interest
-                    // Ear: 7(L)/8(R)
-                    // Shoulder: 11(L)/12(R)
-                    // Hip: 23(L)/24(R)
-                    // Knee: 25(L)/26(R)
-                    // Ankle: 27(L)/28(R)
-
                     const earIdx = useLeft ? 7 : 8;
                     const shIdx = useLeft ? 11 : 12;
                     const hipIdx = useLeft ? 23 : 24;
                     const kneeIdx = useLeft ? 25 : 26;
                     const ankleIdx = useLeft ? 27 : 28;
 
-                    if (landmarks[ankleIdx].visibility < 0.5 || landmarks[shIdx].visibility < 0.5) {
-                        // Not enough visibility
-                        return;
-                    }
+                    if (landmarks[ankleIdx].visibility < 0.5 || landmarks[shIdx].visibility < 0.5) return;
 
                     const pAnkle = getCoords(ankleIdx);
 
-                    // Ideal Line: Vertical from Ankle
-                    canvasCtx.beginPath();
-                    canvasCtx.moveTo(pAnkle.x, 0);
-                    canvasCtx.lineTo(pAnkle.x, h);
-                    canvasCtx.strokeStyle = "#2ecc71"; // Green
-                    canvasCtx.lineWidth = 3;
-                    canvasCtx.setLineDash([10, 5]);
-                    canvasCtx.stroke();
-                    canvasCtx.setLineDash([]);
+                    // Ideal Line
+                    canvasCtx.beginPath(); canvasCtx.moveTo(pAnkle.x, 0); canvasCtx.lineTo(pAnkle.x, h);
+                    canvasCtx.strokeStyle = "#2ecc71"; canvasCtx.lineWidth = 3; canvasCtx.setLineDash([10, 5]); canvasCtx.stroke(); canvasCtx.setLineDash([]);
 
-                    // Actual Points
                     drawPoint(pAnkle, "#2ecc71", "足");
 
-                    // Draw Line connecting body parts
                     const pEar = getCoords(earIdx);
                     const pSh = getCoords(shIdx);
                     const pHip = getCoords(hipIdx);
                     const pKnee = getCoords(kneeIdx);
 
-                    // 1. Straight Neck Check (Ear vs Shoulder)
-                    // If visual mirror is ON, Left Side is on Right.
-                    // Forward means:
-                    // If facing Left (visual): Head X < Shoulder X (assuming Left is x=0)
-                    // But mirrored...
-                    // Let's use absolute diff from Vertical Line relative to Shoulder?
-                    // Straight Neck: Ear is "in front of" Shoulder.
-                    // "In front" depends on facing direction.
-                    // Instead of complex vector math, let's just check deviation from Vertical (Ankle).
-                    // Ideal: Ear, Shoulder, Hip, Knee, Ankle all roughly align on X.
+                    const pEarX = pEar.x; const pShX = pSh.x; const pHipX = pHip.x;
 
-                    const earDev = pEar.x - pAnkle.x;
-                    const shDev = pSh.x - pAnkle.x;
-                    const hipDev = pHip.x - pAnkle.x;
-
-                    // Allow some tolerance (e.g. 30px)
-                    // NOTE: This assumes camera is level.
-
-                    // Check Straight Neck (Ear far from Shoulder X)
-                    const neckDiff = Math.abs(pEar.x - pSh.x);
+                    // Adjusted logic for side view detection
+                    const neckDiff = Math.abs(pEarX - pShX);
                     const isStraightNeck = neckDiff > 50;
+                    const shDev = Math.abs(pShX - pAnkle.x);
+                    const isNekoze = shDev > 60;
+                    const hipDev = Math.abs(pHipX - pAnkle.x);
+                    const isSori = hipDev > 60;
 
-                    // Check Nekoze (Shoulder is forward of Hip?)
-                    // This logic is tricky if we don't know facing.
-                    // But deviation from ideal line is a good proxy.
-                    const isNekoze = Math.abs(shDev) > 60;
-
-                    // Check Sori-goshi (Hip forward?)
-                    const isSori = Math.abs(hipDev) > 60;
-
-                    // Draw Body Line
                     drawSegment(pEar, pSh, isStraightNeck ? "red" : "white");
                     drawSegment(pSh, pHip, isNekoze ? "red" : "white");
                     drawSegment(pHip, pKnee, isSori ? "red" : "white");
@@ -853,22 +947,17 @@
                     drawPoint(pSh, isNekoze ? "red" : "white", "肩");
                     drawPoint(pHip, isSori ? "red" : "white", "腰");
 
-                    // Warning Texts
                     let warnings = [];
                     if (isStraightNeck) warnings.push("⚠️ ストレートネック気味");
                     if (isNekoze) warnings.push("⚠️ 猫背気味");
                     if (isSori) warnings.push("⚠️ 反り腰気味");
 
-                    // Draw Warnings
                     canvasCtx.font = "bold 20px 'Zen Maru Gothic'";
                     canvasCtx.textAlign = "left";
                     let yPos = 100;
                     warnings.forEach(w => {
-                        canvasCtx.fillStyle = "#e74c3c"; // Red
-                        canvasCtx.fillText(w, 20, yPos);
-                        yPos += 30;
+                        canvasCtx.fillStyle = "#e74c3c"; canvasCtx.fillText(w, 20, yPos); yPos += 30;
                     });
-
 
                     // ---------------------------------------------------------
                     // 3. FRONT VIEW MODE (Default)
@@ -901,35 +990,11 @@
             canvasCtx.restore();
         }
 
-        function drawPoint(p, color, label) {
-            canvasCtx.fillStyle = color;
-            canvasCtx.beginPath(); canvasCtx.arc(p.x, p.y, 8, 0, 2 * Math.PI); canvasCtx.fill();
-            if (label) {
-                canvasCtx.fillStyle = "white";
-                canvasCtx.font = "12px sans-serif";
-                canvasCtx.fillText(label, p.x + 10, p.y);
-            }
-        }
-        function drawSegment(p1, p2, color) {
-            canvasCtx.strokeStyle = color;
-            canvasCtx.lineWidth = 4;
-            canvasCtx.beginPath(); canvasCtx.moveTo(p1.x, p1.y); canvasCtx.lineTo(p2.x, p2.y); canvasCtx.stroke();
-        }
-
+        function drawPoint(p, color, label) { canvasCtx.fillStyle = color; canvasCtx.beginPath(); canvasCtx.arc(p.x, p.y, 8, 0, 2 * Math.PI); canvasCtx.fill(); if (label) { canvasCtx.fillStyle = "white"; canvasCtx.font = "12px sans-serif"; canvasCtx.fillText(label, p.x + 10, p.y); } }
+        function drawSegment(p1, p2, color) { canvasCtx.strokeStyle = color; canvasCtx.lineWidth = 4; canvasCtx.beginPath(); canvasCtx.moveTo(p1.x, p1.y); canvasCtx.lineTo(p2.x, p2.y); canvasCtx.stroke(); }
         function setUndetected(el, name) { el.textContent = `${name}：未検出`; el.className = "status-badge"; }
-        function checkTilt(p1, p2, element, name, threshold) {
-            const diffY = Math.abs(p1.y - p2.y);
-            if (diffY > threshold) { element.textContent = `⚠️ ${name}の傾き`; element.className = "status-badge status-bad"; canvasCtx.beginPath(); canvasCtx.moveTo(p1.x, p1.y); canvasCtx.lineTo(p2.x, p2.y); canvasCtx.lineWidth = 3; canvasCtx.strokeStyle = "rgba(231, 76, 60, 0.8)"; canvasCtx.stroke(); }
-            else { element.textContent = `✅ ${name}：OK`; element.className = "status-badge status-ok"; }
-        }
-        function drawTsuboPoint(ctx, x, y, label) {
-            const gradient = ctx.createRadialGradient(x, y, 0, x, y, 18);
-            gradient.addColorStop(0, "rgba(255, 105, 180, 0.9)"); gradient.addColorStop(0.6, "rgba(255, 105, 180, 0.4)"); gradient.addColorStop(1, "rgba(255, 105, 180, 0)");
-            ctx.fillStyle = gradient; ctx.beginPath(); ctx.arc(x, y, 18, 0, 2 * Math.PI); ctx.fill();
-            ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(x, y, 4, 0, 2 * Math.PI); ctx.fill();
-            ctx.fillStyle = "#fff"; ctx.font = "bold 11px 'Zen Maru Gothic'"; ctx.textAlign = "center"; ctx.shadowColor = "rgba(0,0,0,1)"; ctx.shadowBlur = 3;
-            ctx.fillText(label, x, y - 22); ctx.shadowBlur = 0;
-        }
+        function checkTilt(p1, p2, element, name, threshold) { const diffY = Math.abs(p1.y - p2.y); if (diffY > threshold) { element.textContent = `⚠️ ${name}の傾き`; element.className = "status-badge status-bad"; canvasCtx.beginPath(); canvasCtx.moveTo(p1.x, p1.y); canvasCtx.lineTo(p2.x, p2.y); canvasCtx.lineWidth = 3; canvasCtx.strokeStyle = "rgba(231, 76, 60, 0.8)"; canvasCtx.stroke(); } else { element.textContent = `✅ ${name}：OK`; element.className = "status-badge status-ok"; } }
+        function drawTsuboPoint(ctx, x, y, label) { const gradient = ctx.createRadialGradient(x, y, 0, x, y, 18); gradient.addColorStop(0, "rgba(255, 105, 180, 0.9)"); gradient.addColorStop(0.6, "rgba(255, 105, 180, 0.4)"); gradient.addColorStop(1, "rgba(255, 105, 180, 0)"); ctx.fillStyle = gradient; ctx.beginPath(); ctx.arc(x, y, 18, 0, 2 * Math.PI); ctx.fill(); ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(x, y, 4, 0, 2 * Math.PI); ctx.fill(); ctx.fillStyle = "#fff"; ctx.font = "bold 11px 'Zen Maru Gothic'"; ctx.textAlign = "center"; ctx.shadowColor = "rgba(0,0,0,1)"; ctx.shadowBlur = 3; ctx.fillText(label, x, y - 22); ctx.shadowBlur = 0; }
 
         const pose = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
         pose.setOptions({ modelComplexity: 1, smoothLandmarks: true, enableSegmentation: false, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
