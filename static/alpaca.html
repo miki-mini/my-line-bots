@@ -1363,10 +1363,10 @@
                     const skipThreshold = isLower ? 0.2 : skipThresholdBase;
                     if (totalPosition >= skipThreshold) {
                         drawSingleLashImage(context, x, y, tangentAngle, totalPosition, side, isLower);
+                        lashCount++;
                     }
 
                     accumulated += spacing;
-                    lashCount++;
                 }
                 accumulated -= segmentLength;
             }
