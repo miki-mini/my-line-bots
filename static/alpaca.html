@@ -1412,11 +1412,11 @@
                 scale *= 0.55; // Lower lashes are shorter (55%)
             }
 
-            // Mirror texture for Left Eye (Screen Left, side='left') or Right depending on curve
-            // Lash image curves to the Right (like > )
-            // Left Eye (Screen Right, side='left') needs curve to Right > (Normal)
-            // Right Eye (Screen Left, side='right') needs curve to Left < (Flip)
-            if (side === 'right') {
+            // Mirror texture based on Screen Direction (tangent)
+            // If eye flows to the Left (dx < 0, cos(angle) < 0), we need lashes to curve Left (Flip).
+            // If eye flows to the Right (dx > 0, cos(angle) > 0), we need lashes to curve Right (Normal).
+            // This handles both Standard and Mirrored images automatically.
+            if (Math.cos(baseAngle) < 0) {
                 context.scale(-scale, scale); // Horizontal flip
             } else {
                 context.scale(scale, scale);
