@@ -156,7 +156,8 @@ def register_capybara_handler(app, handler_capybara, configuration_capybara, sea
                 ルール:
                 1. 初心者にも分かりやすく、噛み砕いて解説してください。
                 2. 絵文字（📺, 🤖, 💡, 🐹, 🌸）を使って、朝から元気が出るような明るい文章に。
-                3. 最後に「今日も一日がんばるっぴ！🍊」と元気づけてください。
+                3. 【重要】冒頭の挨拶（「はっぴー！今日も元気いっぱいの...」など）は**一度だけ**にしてください。繰り返さないでください。
+                4. 最後に「今日も一日がんばるっぴ！🍊」と元気づけてください。
                 """
                 response = search_model.generate_content(prompt)
                 news_text = response.text

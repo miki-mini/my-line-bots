@@ -9,6 +9,7 @@ from linebot.v3.messaging import (
     ApiClient,
     MessagingApi,
     ReplyMessageRequest,
+    BroadcastRequest,
     TextMessage,
 )
 from linebot.v3.webhook import MessageEvent
@@ -99,6 +100,53 @@ def register_frog_handler(
 
         # LINEに返信
         send_reply(event.reply_token, msg, configuration_frog)
+
+    # ==========================================
+    # ☀️ 朝の天気配信（Broadcast）
+    # ==========================================
+    @app.post("/trigger_morning_weather")
+    def trigger_morning_weather():
+        print("☀️ 朝の天気配信を開始します...")
+
+        try:
+            if search_model:
+                JST = timezone(timedelta(hours=9))
+                today = datetime.now(JST).strftime("%Y年%m月%d日")
+
+                prompt = f"""
+                現在日時: {today}
+
+                あなたは天気予報が得意なカエル「お天気ケロくん」です。
+                今朝の「東京」の天気をGoogle検索して、みんなに教えてあげてください。
+                （※もし台風などの特異な気象情報があれば、それも一言添えて）
+
+                形式:
+                おはようケロ！🐸
+                今日の東京の天気をお知らせするケロ。
+
+                - 天気:
+                - 気温:
+                - 降水確率:
+                - アドバイス:
+
+                今日も一日がんばるケロ〜！☂️
+                """
+                response = search_model.generate_content(prompt)
+                weather_text = response.text
+            else:
+                weather_text = "今は天気が見られないケロ...💦 ごめんケロ🐸"
+
+            # 全員に送信 (Broadcast)
+            with ApiClient(configuration_frog) as api_client:
+                line_bot_api = MessagingApi(api_client)
+                line_bot_api.broadcast(
+                    BroadcastRequest(messages=[TextMessage(text=weather_text)])
+                )
+            return {"status": "ok", "message": "天気配信完了ケロ！"}
+
+        except Exception as e:
+            print(f"❌ 天気配信エラー: {e}")
+            return {"status": "error", "message": str(e)}
 
 
 def handle_text_message(user_message: str, search_model, text_model) -> str:
