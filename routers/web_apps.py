@@ -121,3 +121,12 @@ async def flamingo_page():
             return HTMLResponse(content=f.read(), headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"})
     except FileNotFoundError:
         return HTMLResponse(content="<h1>Page Not Found</h1>", status_code=404)
+
+@router.get("/butterfly", response_class=HTMLResponse)
+async def butterfly_page():
+    """Butterfly (Checko) パーソナルカラー・骨格診断（認証なし）"""
+    try:
+        with open("static/butterfly.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read(), headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"})
+    except FileNotFoundError:
+        return HTMLResponse(content="<h1>Page Not Found</h1>", status_code=404)

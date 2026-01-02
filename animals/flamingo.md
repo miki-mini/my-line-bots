@@ -19,7 +19,7 @@
 
 | ツボマップ | 側面チェック |
 |:--------:|:--------:|
-| <img src="https://storage.googleapis.com/zenn-user-upload/9cf7a17b5835-20260101.png" width="300"> | <img src="ttps://storage.googleapis.com/zenn-user-upload/df7a55b770a9-20260101.png" width="300"> |
+| <img src="https://storage.googleapis.com/zenn-user-upload/9cf7a17b5835-20260101.png" width="300"> | <img src="https://storage.googleapis.com/zenn-user-upload/df7a55b770a9-20260101.png" width="300"> |
 
 ### 3. 🔴 ツボ（経穴）マップ
 画面上の自分の体にそのまま「ツボ」が表示されます。タップすると効能が見れます。

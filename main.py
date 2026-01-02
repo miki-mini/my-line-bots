@@ -471,3 +471,127 @@ JSON以外の文字を含めないでください。"""
             "error": error_details,
             "analysis": None
         }
+
+# ---------------------------------------------------------------------------
+# 🦋 Butterfly (Checko) パーソナルカラー・骨格診断 API
+# ---------------------------------------------------------------------------
+class ButterflyDiagnosisRequest(BaseModel):
+    image: str  # Base64 encoded image
+    mode: str = "color"  # "color" or "skeleton" (skeleton uses MediaPipe mostly, but maybe we want AI opinion too?)
+    lighting: str = "sun"  # "sun", "office", "bulb"
+
+@app.post("/api/butterfly/diagnose")
+async def diagnose_butterfly(request: ButterflyDiagnosisRequest):
+    """
+    🦋 Butterfly (Checko) - AIパーソナルカラー診断API
+    """
+    try:
+        # 1. Setup Model (Use standard 1.5-flash)
+        from vertexai.generative_models import GenerativeModel, SafetySetting, HarmCategory, HarmBlockThreshold
+
+        safety_config = [
+            SafetySetting(category=HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold=HarmBlockThreshold.BLOCK_NONE),
+            SafetySetting(category=HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold=HarmBlockThreshold.BLOCK_NONE),
+            SafetySetting(category=HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold=HarmBlockThreshold.BLOCK_NONE),
+            SafetySetting(category=HarmCategory.HARM_CATEGORY_HARASSMENT, threshold=HarmBlockThreshold.BLOCK_NONE),
+        ]
+
+        # Using a fresh instance to ensure settings
+        bf_model = GenerativeModel("gemini-2.5-flash", safety_settings=safety_config)
+
+        # 2. Decode Image
+        image_data = request.image.split(',')[1] if ',' in request.image else request.image
+        image_bytes = base64.b64decode(image_data)
+
+        from vertexai.generative_models import Part
+        image_part = Part.from_data(image_bytes, mime_type="image/png")
+
+        # 3. Build Prompt (Softened)
+        lighting_text = ""
+        if request.lighting == "office":
+            lighting_text = "撮影環境は蛍光灯（青白い光）の下です。"
+        elif request.lighting == "bulb":
+            lighting_text = "撮影環境は電球（オレンジ色の光）の下です。"
+        else:
+            lighting_text = "撮影環境は自然光の想定です。"
+
+        prompt = f"""
+あなたはファッションアドバイザーです。
+この写真の人物に似合う「カラーパレット（パーソナルカラー）」を提案してください。
+また、全身が写っている場合は、スタイルがよく見える「服装のシルエット（骨格タイプ）」も提案してください。
+
+{lighting_text}
+※医療行為や断定的な診断ではなく、あくまでファッションの楽しみとしての提案をお願いします。
+
+【出力形式】
+以下のJSON形式のみを出力してください。
+
+{{
+  "personalColor": {{
+    "season": "Autumn",
+    "base": "Yellow Base",
+    "characteristics": "落ち着いたマットな肌質...",
+    "bestColors": ["Terracotta", "Mustard", "Khaki"],
+    "lightingCorrectionNote": "照明の色味を考慮し、補正して判断しました。"
+  }},
+  "skeletonType": {{
+    "type": "Straight",
+    "description": "シンプルでハリのある素材がおすすめ..."
+  }},
+  "faceType": {{
+    "shape": "Oval",
+    "impression": "Elegant"
+  }}
+}}
+
+【選択肢】
+season: Spring, Summer, Autumn, Winter
+base: Yellow Base, Blue Base
+skeletonType.type: Straight, Wave, Natural, null
+
+JSON以外のテキストは含めないでください。
+"""
+
+        # 4. Generate
+        response = bf_model.generate_content(
+            [prompt, image_part],
+            generation_config={
+                "temperature": 0.4,
+                "max_output_tokens": 1024,
+            }
+        )
+
+        # 5. Parse
+        response_text = response.text
+        print(f"🦋 Butterfly Response: {response_text[:200]}...", flush=True)
+
+        # JSON Extraction
+        json_str = None
+        json_match = re.search(r'```json\s*(.*?)\s*```', response_text, re.DOTALL)
+        if json_match:
+            json_str = json_match.group(1)
+        elif re.search(r'\{[\s\S]*\}', response_text):
+            json_str = re.search(r'\{[\s\S]*\}', response_text).group(0)
+
+        if not json_str:
+            # Fallback for safety block without exception
+            return {
+                "success": False,
+                "error": "AIからの応答が読み取れませんでした(Safety Filterなど)。別の写真を試してください。"
+            }
+
+        json_str = re.sub(r'//.*', '', json_str)
+        diagnosis = json.loads(json_str)
+
+        return {
+            "success": True,
+            "result": diagnosis
+        }
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {
+            "success": False,
+            "error": f"エラーが発生しました: {str(e)}"
+        }

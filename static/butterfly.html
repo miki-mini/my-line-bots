@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Butterfly - Personal Color & Skeleton</title>
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@300;400;500;700&family=Outfit:wght@200;400;600&display=swap"
+        rel="stylesheet">
+    <!-- MediaPipe Pose -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+        crossorigin="anonymous"></script>
+
+    <style>
+        :root {
+            --primary: #d4a5a5;
+            /* Dusty Pink */
+            --secondary: #9fa0d7;
+            /* Periwinkle */
+            --accent: #ffecd2;
+            /* Pale Gold */
+            --bg-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            --glass: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --text-main: #4a4a4a;
+        }
+
+        body {
+            font-family: 'Zen Kaku Gothic New', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            /* App-like feel */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            padding: 1rem;
+            text-align: center;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 10;
+        }
+
+        h1 {
+            margin: 0;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 200;
+            font-size: 1.5rem;
+            background: -webkit-linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.1em;
+        }
+
+        /* Main Viewport */
+        #viewport {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background: #000;
+        }
+
+        video {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            /* Mirror effect */
+        }
+
+        canvas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            /* Mirror matches video */
+            pointer-events: auto;
+            /* Allow clicking for color picking */
+        }
+
+        /* Controls Overlay */
+        #controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(to top, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0));
+            padding: 2rem 1rem 3rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            border-radius: 20px 20px 0 0;
+            z-index: 20;
+        }
+
+        .mode-switch {
+            display: flex;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 0.5rem;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .mode-btn {
+            border: none;
+            background: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: 0.3s;
+            color: #888;
+        }
+
+        .mode-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 2px 10px rgba(212, 165, 165, 0.4);
+        }
+
+        .action-group {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button.primary-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 1rem 3rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(159, 160, 215, 0.4);
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button.primary-btn:active {
+            transform: scale(0.95);
+        }
+
+        button.icon-btn {
+            background: white;
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: 0.2s;
+        }
+
+        button.icon-btn.active {
+            background: var(--secondary);
+            color: white;
+        }
+
+        /* Lighting Tools */
+        .lighting-tools {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .badge {
+            font-size: 0.8rem;
+            padding: 0.2rem 0.8rem;
+            border-radius: 12px;
+            background: #eee;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .badge.active {
+            background: var(--text-main);
+            color: white;
+        }
+
+        /* Results Modal */
+        #result-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
+            align-items: center;
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        .result-card {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .card-header {
+            height: 100px;
+            background: var(--primary);
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            padding: 1rem;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            color: white;
+            font-family: 'Outfit';
+            font-size: 2rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 0.3rem 0.8rem;
+            border-radius: 5px;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .color-palette {
+            display: flex;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+
+        .color-swatch {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #loading {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 50;
+            text-align: center;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Guide message overlay */
+        .guide-text {
+            position: absolute;
+            top: 20%;
+            width: 100%;
+            text-align: center;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            font-size: 1.2rem;
+            pointer-events: none;
+            z-index: 5;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Butterfly</h1>
+    </header>
+
+    <div id="viewport">
+        <video id="input_video" autoplay playsinline muted></video>
+        <canvas id="output_canvas"></canvas>
+        <div class="guide-text" id="guide-text">顔を映してください</div>
+
+        <div id="loading">
+            <div class="spinner"></div>
+            <p style="color: white; margin-top: 10px;">Gemini is thinking...</p>
+        </div>
+    </div>
+
+    <div id="controls">
+        <div class="mode-switch">
+            <button class="mode-btn active" onclick="setMode('color')">Personal Color</button>
+            <button class="mode-btn" onclick="setMode('skeleton')">Skeleton</button>
+        </div>
+
+        <!-- Color Mode Tools -->
+        <div id="color-tools" class="lighting-tools">
+            <span class="badge active" onclick="setLighting('sun', this)">☀️ Sun</span>
+            <span class="badge" onclick="setLighting('office', this)">🏢 Office</span>
+            <span class="badge" onclick="setLighting('bulb', this)">💡 Bulb</span>
+            <span class="badge" id="wb-status" onclick="toggleWB()">📝 WB Pick</span>
+        </div>
+
+        <div class="action-group">
+            <button class="primary-btn" onclick="captureAndDiagnose()">
+                <span>✨ Analyze</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="result-modal">
+        <!-- Content injected by JS -->
+    </div>
+
+    <script>
+        // State
+        let currentMode = 'color'; // 'color' or 'skeleton'
+        let lightingMode = 'sun';
+        let isWBPicking = false;
+        let wbCorrection = { r: 1, g: 1, b: 1 }; // Multipliers
+        let stream = null;
+
+        // Elements
+        const video = document.getElementById('input_video');
+        const canvas = document.getElementById('output_canvas');
+        const ctx = canvas.getContext('2d');
+        const guideText = document.getElementById('guide-text');
+        const loading = document.getElementById('loading');
+
+        // MediaPipe Pose
+        let pose = null;
+        let camera = null; // We might implement custom camera loop to handle both modes
+
+        async function init() {
+            // Setup MediaPipe
+            pose = new Pose({
+                locateFile: (file) => {
+                    return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
+                }
+            });
+            pose.setOptions({
+                modelComplexity: 1,
+                smoothLandmarks: true,
+                minDetectionConfidence: 0.5,
+                minTrackingConfidence: 0.5
+            });
+            pose.onResults(onPoseResults);
+
+            // Start Camera
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }
+                });
+                video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    video.play();
+                    resizeCanvas();
+                    requestAnimationFrame(loop);
+                };
+            } catch (e) {
+                alert("カメラの起動に失敗しました: " + e.message);
+            }
+        }
+
+        function resizeCanvas() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+        }
+
+        function loop() {
+            if (!video.paused && !video.ended) {
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                // Apply WB Visualization if active
+                if (wbCorrection.r !== 1) {
+                    // Visualizing WB is expensive in JS per pixel loop.
+                    // We will just apply it on Capture.
+                    // But we can show a tint overlay.
+                    ctx.fillStyle = `rgba(${255 * (1 / wbCorrection.r)}, ${255 * (1 / wbCorrection.g)}, ${255 * (1 / wbCorrection.b)}, 0.1)`;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                }
+
+                if (currentMode === 'skeleton') {
+                    // Send to MediaPipe
+                    pose.send({ image: video });
+                    // Note: pose.send is async/heavy. In a real loop we might throttle.
+                    // But for now let's trust MediaPipe's internal handling or CameraUtils.
+                    // Actually, best to use CameraUtils for skeletal tracking loop,
+                    // but we are sharing the video element.
+                    // Let's rely on requestAnimationFrame loop calling send.
+                }
+
+                // If WB Picking Mode
+                if (isWBPicking) {
+                    drawCrosshair();
+                }
+
+                // requestAnimationFrame(loop); // Loop is handled by pose.onResults or re-called?
+                // If pose is async, we shouldn't block.
+                // Let's use a simpler approach:
+                if (currentMode !== 'skeleton') {
+                    requestAnimationFrame(loop);
+                }
+            }
+        }
+
+        // Override loop for Skeleton to wait for results?
+        // Actually, MediaPipe `camera_utils` is better for this.
+        // But to keep it simple and unified:
+
+        // Revised Loop Logic
+        async function loopMain() {
+            if (video.paused || video.ended) return;
+
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            if (currentMode === 'skeleton') {
+                await pose.send({ image: video }); // This triggers onPoseResults
+            } else {
+                // Color Mode rendering
+                if (wbCorrection.r !== 1 || wbCorrection.g !== 1 || wbCorrection.b !== 1) {
+                    // Simple tint for feedback - inaccurate but fast
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'multiply';
+                    // Inverse color to neutralize? No, just showing "Corrected" state is hard without pixel manipulation.
+                    // Let's just show a text "WB Active"
+                    ctx.restore();
+
+                    ctx.fillStyle = "white";
+                    ctx.font = "20px Arial";
+                    ctx.fillText("WB Active", 20, 50);
+                }
+                if (isWBPicking) {
+                    drawCrosshair();
+                }
+                requestAnimationFrame(loopMain);
+            }
+        }
+
+        function onPoseResults(results) {
+            // Draw skeleton
+            if (currentMode === 'skeleton') {
+                // Context is already drawing image in loop?
+                // In MediaPipe CameraUtils, it clears canvas.
+                // Here we drew video already.
+
+                // Draw connectors
+                if (results.poseLandmarks) {
+                    drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS,
+                        { color: '#ffffff', lineWidth: 4 });
+                    drawLandmarks(ctx, results.poseLandmarks,
+                        { color: '#d4a5a5', lineWidth: 2, radius: 4 });
+                }
+                requestAnimationFrame(loopMain);
+            }
+        }
+
+        video.addEventListener('loadeddata', () => {
+            resizeCanvas();
+            loopMain();
+        });
+
+        // --- Interaction ---
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.mode-btn[onclick="setMode('${mode}')"]`).classList.add('active');
+
+            if (mode === 'color') {
+                guideText.innerText = "白い紙を映してWB補正、または分析ボタンを押してください";
+                if (!video.paused) requestAnimationFrame(loopMain); // Restart loop if it stalled
+            } else {
+                guideText.innerText = "全身を映してください";
+                if (!video.paused) requestAnimationFrame(loopMain);
+            }
+        }
+
+        function setLighting(mode, text) {
+            lightingMode = mode;
+            document.querySelectorAll('#color-tools .badge').forEach(b => b.classList.remove('active'));
+            text.classList.add('active');
+        }
+
+        function toggleWB() {
+            isWBPicking = !isWBPicking;
+            const btn = document.getElementById('wb-status');
+            if (isWBPicking) {
+                btn.classList.add('active');
+                guideText.innerText = "白い紙（ティッシュなど）を画面中央でクリックしてください";
+            } else {
+                btn.classList.remove('active');
+                guideText.innerText = "ホワイトバランス設定完了";
+            }
+        }
+
+        function drawCrosshair() {
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            ctx.strokeStyle = '#ff0000';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(cx - 20, cy);
+            ctx.lineTo(cx + 20, cy);
+            ctx.moveTo(cx, cy - 20);
+            ctx.lineTo(cx, cy + 20);
+            ctx.stroke();
+        }
+
+        // Click handler for WB
+        canvas.addEventListener('click', (e) => {
+            if (!isWBPicking) return;
+
+            // Pick color at center (or click pos)
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+            const pixel = ctx.getImageData(x, y, 1, 1).data;
+            // R,G,B. Calculate factors to make this White (255,255,255)
+            // Avoid div by zero
+            const r = pixel[0] || 1;
+            const g = pixel[1] || 1;
+            const b = pixel[2] || 1;
+
+            wbCorrection = {
+                r: 255 / r,
+                g: 255 / g,
+                b: 255 / b
+            };
+
+            console.log("WB Factors:", wbCorrection);
+            toggleWB(); // turn off
+            alert(`ホワイトバランスを補正しました。\nR:${pixel[0]} G:${pixel[1]} B:${pixel[2]} -> White`);
+        });
+
+        // --- Capture & Diagnose ---
+        async function captureAndDiagnose() {
+            loading.style.display = 'block';
+
+            // 1. Capture Frame to temp canvas
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = video.videoWidth;
+            tempCanvas.height = video.videoHeight;
+            const tCtx = tempCanvas.getContext('2d');
+            tCtx.drawImage(video, 0, 0);
+
+            // 2. Apply White Balance Pixel-wise (Heavy Opertaion)
+            const imgData = tCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+            const data = imgData.data;
+
+            if (wbCorrection.r !== 1) {
+                for (let i = 0; i < data.length; i += 4) {
+                    data[i] = data[i] * wbCorrection.r; // R
+                    data[i + 1] = data[i + 1] * wbCorrection.g; // G
+                    data[i + 2] = data[i + 2] * wbCorrection.b; // B
+                    // A stays same
+                }
+                tCtx.putImageData(imgData, 0, 0);
+            }
+
+            // 3. To Base64
+            const base64Image = tempCanvas.toDataURL('image/png');
+
+            try {
+                const res = await fetch('/api/butterfly/diagnose', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        image: base64Image,
+                        mode: currentMode,
+                        lighting: lightingMode
+                    })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    showResult(data.result);
+                } else {
+                    alert("エラーが発生しました: " + data.error);
+                }
+
+            } catch (e) {
+                alert("通信エラー: " + e.message);
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        function showResult(result) {
+            const modal = document.getElementById('result-modal');
+            const season = result.personalColor.season;
+            const colorTitle = `${season} ${result.personalColor.base}`; // e.g., Autumn Yellow Base
+
+            // Color mapping for header
+            let headerColor = "gray";
+            if (season === "Spring") headerColor = "#ffafcd";
+            if (season === "Summer") headerColor = "#a2d2ff";
+            if (season === "Autumn") headerColor = "#d4a373";
+            if (season === "Winter") headerColor = "#2b2d42";
+
+            const skeletonHtml = result.skeletonType ? `
+            <div class="result-card">
+                <div class="card-header" style="background: #9fa0d7;">
+                    <h2>Skeleton: ${result.skeletonType.type || "Analysing..."}</h2>
+                </div>
+                <div class="card-body">
+                    <p>${result.skeletonType.description || "特徴なし"}</p>
+                </div>
+            </div>
+        ` : '';
+
+            modal.innerHTML = `
+            <div style="width:100%; text-align:right;">
+                <button onclick="document.getElementById('result-modal').style.display='none'" style="border:none; background:none; font-size:2rem; cursor:pointer;">×</button>
+            </div>
+
+            <div class="result-card">
+                <div class="card-header" style="background: ${headerColor};">
+                    <div>
+                        <div style="color:white; font-size:0.9rem; opacity:0.8;">Personal Color</div>
+                        <h2>${colorTitle}</h2>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p>${result.personalColor.characteristics}</p>
+
+                    <h4>Best Colors</h4>
+                    <div class="color-palette">
+                        ${result.personalColor.bestColors.map(c => `
+                            <div class="color-swatch" style="background-color: ${c.toLowerCase()};" title="${c}"></div>
+                            <span style="font-size:0.8rem;">${c}</span>
+                        `).join('')}
+                    </div>
+
+                    <div style="margin-top:1rem; padding:1rem; background:#f9f9f9; border-radius:10px; font-size:0.9rem;">
+                        <strong>💡 AI Note:</strong> ${result.personalColor.lightingCorrectionNote}
+                    </div>
+                </div>
+            </div>
+
+            ${skeletonHtml}
+
+            <div class="result-card">
+                 <div class="card-header" style="background: #ccc;">
+                    <h2>Total Look</h2>
+                </div>
+                <div class="card-body">
+                    <p>Shape: ${result.faceType.shape}</p>
+                    <p>Impression: ${result.faceType.impression}</p>
+                </div>
+            </div>
+        `;
+
+            modal.style.display = 'flex';
+        }
+
+        // Init
+        window.onload = init;
+
+    </script>
+</body>
+
+</html>
