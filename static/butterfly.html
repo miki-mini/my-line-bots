@@ -9,8 +9,8 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@300;400;500;700&family=Outfit:wght@200;400;600&display=swap"
         rel="stylesheet">
-    <!-- MediaPipe Pose -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+    <!-- MediaPipe Pose (Downgraded to known stable version 0.5.163) -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1635988162/pose.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
         crossorigin="anonymous"></script>
@@ -351,9 +351,9 @@
     </div>
 
     <div id="controls">
-        <div class="mode-switch">
+        <div class="mode-switch" style="display:none;">
+            <!-- Hidden as we only have color mode now -->
             <button class="mode-btn active" onclick="setMode('color')">Personal Color</button>
-            <button class="mode-btn" onclick="setMode('skeleton')">Skeleton</button>
         </div>
 
         <!-- Color Mode Tools -->
@@ -377,7 +377,7 @@
 
     <script>
         // State
-        let currentMode = 'color'; // 'color' or 'skeleton'
+        let currentMode = 'color';
         let lightingMode = 'sun';
         let isWBPicking = false;
         let wbCorrection = { r: 1, g: 1, b: 1 }; // Multipliers
@@ -390,25 +390,9 @@
         const guideText = document.getElementById('guide-text');
         const loading = document.getElementById('loading');
 
-        // MediaPipe Pose
-        let pose = null;
-        let camera = null; // We might implement custom camera loop to handle both modes
+        // We removed MediaPipe Pose for Butterfly
 
         async function init() {
-            // Setup MediaPipe
-            pose = new Pose({
-                locateFile: (file) => {
-                    return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
-                }
-            });
-            pose.setOptions({
-                modelComplexity: 1,
-                smoothLandmarks: true,
-                minDetectionConfidence: 0.5,
-                minTrackingConfidence: 0.5
-            });
-            pose.onResults(onPoseResults);
-
             // Start Camera
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
@@ -418,7 +402,7 @@
                 video.onloadedmetadata = () => {
                     video.play();
                     resizeCanvas();
-                    requestAnimationFrame(loop);
+                    requestAnimationFrame(loopMain);
                 };
             } catch (e) {
                 alert("カメラの起動に失敗しました: " + e.message);
@@ -430,92 +414,22 @@
             canvas.height = video.videoHeight;
         }
 
-        function loop() {
-            if (!video.paused && !video.ended) {
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                // Apply WB Visualization if active
-                if (wbCorrection.r !== 1) {
-                    // Visualizing WB is expensive in JS per pixel loop.
-                    // We will just apply it on Capture.
-                    // But we can show a tint overlay.
-                    ctx.fillStyle = `rgba(${255 * (1 / wbCorrection.r)}, ${255 * (1 / wbCorrection.g)}, ${255 * (1 / wbCorrection.b)}, 0.1)`;
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                }
-
-                if (currentMode === 'skeleton') {
-                    // Send to MediaPipe
-                    pose.send({ image: video });
-                    // Note: pose.send is async/heavy. In a real loop we might throttle.
-                    // But for now let's trust MediaPipe's internal handling or CameraUtils.
-                    // Actually, best to use CameraUtils for skeletal tracking loop,
-                    // but we are sharing the video element.
-                    // Let's rely on requestAnimationFrame loop calling send.
-                }
-
-                // If WB Picking Mode
-                if (isWBPicking) {
-                    drawCrosshair();
-                }
-
-                // requestAnimationFrame(loop); // Loop is handled by pose.onResults or re-called?
-                // If pose is async, we shouldn't block.
-                // Let's use a simpler approach:
-                if (currentMode !== 'skeleton') {
-                    requestAnimationFrame(loop);
-                }
-            }
-        }
-
-        // Override loop for Skeleton to wait for results?
-        // Actually, MediaPipe `camera_utils` is better for this.
-        // But to keep it simple and unified:
-
         // Revised Loop Logic
         async function loopMain() {
             if (video.paused || video.ended) return;
 
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            if (currentMode === 'skeleton') {
-                await pose.send({ image: video }); // This triggers onPoseResults
-            } else {
-                // Color Mode rendering
-                if (wbCorrection.r !== 1 || wbCorrection.g !== 1 || wbCorrection.b !== 1) {
-                    // Simple tint for feedback - inaccurate but fast
-                    ctx.save();
-                    ctx.globalCompositeOperation = 'multiply';
-                    // Inverse color to neutralize? No, just showing "Corrected" state is hard without pixel manipulation.
-                    // Let's just show a text "WB Active"
-                    ctx.restore();
-
-                    ctx.fillStyle = "white";
-                    ctx.font = "20px Arial";
-                    ctx.fillText("WB Active", 20, 50);
-                }
-                if (isWBPicking) {
-                    drawCrosshair();
-                }
-                requestAnimationFrame(loopMain);
+            // Color Mode rendering
+            if (wbCorrection.r !== 1 || wbCorrection.g !== 1 || wbCorrection.b !== 1) {
+                ctx.fillStyle = "white";
+                ctx.font = "20px Arial";
+                ctx.fillText("WB Active", 20, 50);
             }
-        }
-
-        function onPoseResults(results) {
-            // Draw skeleton
-            if (currentMode === 'skeleton') {
-                // Context is already drawing image in loop?
-                // In MediaPipe CameraUtils, it clears canvas.
-                // Here we drew video already.
-
-                // Draw connectors
-                if (results.poseLandmarks) {
-                    drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS,
-                        { color: '#ffffff', lineWidth: 4 });
-                    drawLandmarks(ctx, results.poseLandmarks,
-                        { color: '#d4a5a5', lineWidth: 2, radius: 4 });
-                }
-                requestAnimationFrame(loopMain);
+            if (isWBPicking) {
+                drawCrosshair();
             }
+            requestAnimationFrame(loopMain);
         }
 
         video.addEventListener('loadeddata', () => {
@@ -526,17 +440,7 @@
         // --- Interaction ---
 
         function setMode(mode) {
-            currentMode = mode;
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            document.querySelector(`.mode-btn[onclick="setMode('${mode}')"]`).classList.add('active');
-
-            if (mode === 'color') {
-                guideText.innerText = "白い紙を映してWB補正、または分析ボタンを押してください";
-                if (!video.paused) requestAnimationFrame(loopMain); // Restart loop if it stalled
-            } else {
-                guideText.innerText = "全身を映してください";
-                if (!video.paused) requestAnimationFrame(loopMain);
-            }
+            // Deprecated
         }
 
         function setLighting(mode, text) {
@@ -580,8 +484,6 @@
             const y = (e.clientY - rect.top) * (canvas.height / rect.height);
 
             const pixel = ctx.getImageData(x, y, 1, 1).data;
-            // R,G,B. Calculate factors to make this White (255,255,255)
-            // Avoid div by zero
             const r = pixel[0] || 1;
             const g = pixel[1] || 1;
             const b = pixel[2] || 1;
@@ -662,10 +564,11 @@
             if (season === "Autumn") headerColor = "#d4a373";
             if (season === "Winter") headerColor = "#2b2d42";
 
-            const skeletonHtml = result.skeletonType ? `
+            // Skeleton Card: Display ONLY if type is detected (not null)
+            const skeletonHtml = (result.skeletonType && result.skeletonType.type) ? `
             <div class="result-card">
                 <div class="card-header" style="background: #9fa0d7;">
-                    <h2>Skeleton: ${result.skeletonType.type || "Analysing..."}</h2>
+                    <h2>Skeleton: ${result.skeletonType.type}</h2>
                 </div>
                 <div class="card-body">
                     <p>${result.skeletonType.description || "特徴なし"}</p>
@@ -673,9 +576,26 @@
             </div>
         ` : '';
 
+            // Face Type & Hairstyle Card
+            const faceHtml = result.faceType ? `
+            <div class="result-card">
+                 <div class="card-header" style="background: #e2c044;">
+                    <h2>Face Type: ${result.faceType.shape || "Analysing..."}</h2>
+                </div>
+                <div class="card-body" style="padding-bottom: 3rem;"> <!-- Added padding to prevent cut-off -->
+                    <p>${result.faceType.description || ""}</p>
+
+                    <h4>💇‍♀️ Recommended Hairstyles</h4>
+                    <ul style="padding-left: 20px; line-height: 1.8; margin-bottom: 10px;">
+                        ${result.faceType.bestHairstyles ? result.faceType.bestHairstyles.map(h => `<li>${h}</li>`).join('') : '<li>N/A</li>'}
+                    </ul>
+                </div>
+            </div>
+            ` : '';
+
             modal.innerHTML = `
-            <div style="width:100%; text-align:right;">
-                <button onclick="document.getElementById('result-modal').style.display='none'" style="border:none; background:none; font-size:2rem; cursor:pointer;">×</button>
+            <div style="width:100%; max-width:500px; display:flex; justify-content:flex-end; padding-bottom:10px;">
+                <button onclick="document.getElementById('result-modal').style.display='none'" style="border:none; background:rgba(255,255,255,0.5); width:40px; height:40px; border-radius:50%; font-size:1.5rem; cursor:pointer; display:flex; align-items:center; justify-content:center;">×</button>
             </div>
 
             <div class="result-card">
@@ -691,8 +611,10 @@
                     <h4>Best Colors</h4>
                     <div class="color-palette">
                         ${result.personalColor.bestColors.map(c => `
-                            <div class="color-swatch" style="background-color: ${c.toLowerCase()};" title="${c}"></div>
-                            <span style="font-size:0.8rem;">${c}</span>
+                            <div style="text-align:center;">
+                                <div class="color-swatch" style="background-color: ${c.toLowerCase()}; margin:0 auto;" title="${c}"></div>
+                                <span style="font-size:0.7rem; display:block; margin-top:5px;">${c}</span>
+                            </div>
                         `).join('')}
                     </div>
 
@@ -702,17 +624,11 @@
                 </div>
             </div>
 
+            ${faceHtml}
+
             ${skeletonHtml}
 
-            <div class="result-card">
-                 <div class="card-header" style="background: #ccc;">
-                    <h2>Total Look</h2>
-                </div>
-                <div class="card-body">
-                    <p>Shape: ${result.faceType.shape}</p>
-                    <p>Impression: ${result.faceType.impression}</p>
-                </div>
-            </div>
+            <div style="height: 50px;"></div> <!-- Spacer -->
         `;
 
             modal.style.display = 'flex';

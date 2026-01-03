@@ -60,6 +60,9 @@ def register_capybara_handler(app, handler_capybara, configuration_capybara, sea
 # ==========================================
     # 🐹 テキストメッセージ処理（検索対応 ＋ ♨️温泉モード）
     # ==========================================
+def register_capybara_handler(app, handler_capybara, configuration_capybara, search_model, text_model):
+    """カピバラのエンドポイントを登録"""
+
     @handler_capybara.add(MessageEvent, message=TextMessageContent)
     def handle_capybara_message(event):
         user_text = event.message.text
@@ -72,110 +75,120 @@ def register_capybara_handler(app, handler_capybara, configuration_capybara, sea
             today = "今日"
 
         # ♨️ 温泉モード判定（キーワード検知）
-        # ユーザーが弱音を吐いたり、癒やしを求めているかチェック
         onsen_keywords = ["疲れた", "つかれた", "しんどい", "休憩", "休みたい", "癒やして", "温泉", "つらい"]
         is_onsen_mode = any(keyword in user_text for keyword in onsen_keywords)
 
         msg = ""
         try:
-            # -------------------------------------------------
             # ♨️ 温泉モード（癒やし優先）
-            # -------------------------------------------------
             if is_onsen_mode:
-                if text_model: # 雑談なので軽量な通常モデルでOK（検索モデルでも可）
+                if text_model:
                     prompt = f"""
-                    ユーザーの発言: {user_text}
+ユーザーの発言: {user_text}
 
-                    役割: あなたは柚子湯に浸かっている、のんびり屋のカピバラです。
-                    目的: 疲れているユーザーを全力で癒やしてください。
-                    ルール:
-                    1. ニュースの話はしないでください。
-                    2. 「動物のほっこりする雑学」を1つ教えてあげるか、優しく労ってください。
-                    3. 語尾は「〜だっぴ」「〜っぴ」で、とてものんびりした口調で。
-                    4. 絵文字（♨️, 🍊, 🧼, 🌿, ☁️, 🐹）を使って、温かい雰囲気にしてください。
-                    """
-                    # モデル呼び出し（ここではtext_modelを使いますが、search_modelでも動きます）
-                    # 検索モデル(search_model)を使うと最新の動物ニュースも拾えますが、
-                    # 癒やし会話ならtext_modelの方が応答が速いことが多いです。
+役割: あなたは柚子湯に浸かっている、のんびり屋のカピバラです。
+目的: 疲れているユーザーを全力で癒やしてください。
+ルール:
+1. ニュースの話はしないでください。
+2. 「動物のほっこりする雑学」を1つ教えてあげるか、優しく労ってください。
+3. 語尾は「〜だっぴ」「〜っぴ」で、とてものんびりした口調で。
+4. 絵文字（♨️, 🍊, 🧼, 🌿, ☁️, 🐹）を使って、温かい雰囲気にしてください。
+"""
                     target_model = text_model if text_model else search_model
                     response = target_model.generate_content(prompt)
                     msg = response.text
                 else:
                     msg = "お疲れ様だっぴ...♨️ 背中流すっぴ？🧼"
 
-            # -------------------------------------------------
             # 📰 通常モード（ニュース解説）
-            # -------------------------------------------------
             elif search_model:
                 prompt = f"""
-                現在日時: {today}
-                ユーザーの質問: {user_text}
+現在日時: {today}
+ユーザーの質問: {user_text}
 
-                役割: ニュース解説が得意なカピバラ（語尾はっぴ）。
-                ルール:
-                1. Google検索で最新情報を調べて解説する。
-                2. 絵文字（🐹, ✨, 📝）を使ってかわいく分かりやすく。
-                3. ユーザーの質問に答えられない場合は、正直に検索できなかったと伝えて。
-                """
+役割: ニュース解説が得意なカピバラ（語尾はっぴ）。
+ルール:
+1. Google検索で最新情報を調べて解説する。
+2. 絵文字（🐹, ✨, 📝）を使ってかわいく分かりやすく。
+3. ユーザーの質問に答えられない場合は、正直に検索できなかったと伝えて。
+"""
                 response = search_model.generate_content(prompt)
                 msg = response.text
-
-            # フォールバック
             else:
                 msg = "ちょっと調子悪いっぴ...💦 ごめんっぴ🐹"
 
         except Exception as e:
             print(f"❌ カピバラ生成エラー: {e}")
-            msg = "エラーが出ちゃったっぴ😭 ゆっくり休むのも大事だっぴ...♨️"
+            msg = "エラーが発生したっぴ...🐹"
 
-        # LINEに返信
-        _send_reply(event, configuration_capybara, msg)
+        # 返信
+        with ApiClient(configuration_capybara) as api_client:
+            line_bot_api = MessagingApi(api_client)
+            line_bot_api.reply_message(
+                ReplyMessageRequest(
+                    reply_token=event.reply_token,
+                    messages=[TextMessage(text=msg)]
+                )
+            )
 
-    # ==========================================
-    # ☀️ 朝のニュース配信（Broadcast）
-    # ==========================================
     @app.post("/trigger_morning_news")
     def trigger_morning_news():
         print("☀️ 朝のニュース配信を開始します...")
 
         try:
             if search_model:
-            # ★ 今日の日付を取得
                 import datetime as dt
                 today = dt.date.today().strftime("%Y年%m月%d日")
 
                 prompt = f"""
-                本日は {today} です。
-                今日の日本や世界のAIニュースを3つピックアップして検索してください。
+【重要】本日の日付は {today} です。この日付のニュースのみを検索してください。
 
-                【重要】
-                - 必ず {today} 時点の最新ニュースを検索すること
-                - 1週間以上前のニュースは含めないこと
+タスク: 今日 ({today}) の日本や世界のAIニュースを3つピックアップして検索し、解説してください。
 
-                役割: カピバラ（語尾はっぴ）
-                ルール:
-                1. 初心者にも分かりやすく、噛み砕いて解説してください。
-                2. 絵文字（📺, 🤖, 💡, 🐹, 🌸）を使って、朝から元気が出るような明るい文章に。
-                3. 【重要】冒頭の挨拶（「はっぴー！今日も元気いっぱいの...」など）は**一度だけ**にしてください。繰り返さないでください。
-                4. 最後に「今日も一日がんばるっぴ！🍊」と元気づけてください。
-                """
+【厳守事項】
+- 必ず {today} 時点の最新ニュースを検索すること
+- 1週間以上前のニュースは絶対に含めないこと
+
+【出力フォーマット】
+最初の1行目: 簡潔な朝の挨拶（「はっぴー！」から始める）
+
+その後:
+### 1. [ニュースタイトル] [絵文字]
+[本文]
+**【カピバラさんからの解説】** [解説]
+
+### 2. [ニュースタイトル] [絵文字]
+[本文]
+**【カピバラさんからの解説】** [解説]
+
+### 3. [ニュースタイトル] [絵文字]
+[本文]
+**【カピバラさんからの解説】** [解説]
+
+最終行: 「今日も一日がんばるっぴ！🍊」
+
+【スタイル】
+- 役割: カピバラ（語尾は「〜っぴ」）
+- 絵文字: 📺, 🤖, 💡, 🐹, 🌸 を適度に使用
+- 初心者にも分かりやすく、朝から元気が出る明るい文章
+"""
                 response = search_model.generate_content(prompt)
                 news_text = response.text
             else:
                 news_text = "今はニュースが見られないっぴ...💦 ごめんっぴ🐹"
 
-            # 全員に送信 (Broadcast)
+            # 全員に送信
             with ApiClient(configuration_capybara) as api_client:
                 line_bot_api = MessagingApi(api_client)
                 line_bot_api.broadcast(
                     BroadcastRequest(messages=[TextMessage(text=news_text)])
                 )
+
             return {"status": "ok", "message": "ニュース配信完了っぴ！"}
 
         except Exception as e:
             print(f"❌ ニュース配信エラー: {e}")
             return {"status": "error", "message": str(e)}
-
 
     print("🐹 カピバラハンドラー登録完了")
 

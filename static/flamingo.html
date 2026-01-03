@@ -798,6 +798,89 @@
             }
         });
 
+        // -------------------------------------------------------------------
+        // 🦴 Skeleton Diagnosis (New Feature)
+        // -------------------------------------------------------------------
+        const skeletonBtn = document.createElement('button');
+        skeletonBtn.className = 'btn';
+        skeletonBtn.style.background = 'linear-gradient(45deg, #FFB75E, #ED8F03)';
+        skeletonBtn.style.color = 'white';
+        skeletonBtn.style.boxShadow = '0 5px 15px rgba(237, 143, 3, 0.4)';
+        skeletonBtn.innerHTML = '🦴 骨格診断 (AI)';
+        skeletonBtn.onclick = runSkeletonDiagnosis;
+
+        // Add button to UI (append to first btn-group)
+        document.querySelector('.btn-group').appendChild(skeletonBtn);
+
+        async function runSkeletonDiagnosis() {
+            // Flash effect
+            flashOverlay.style.opacity = 0.8;
+            setTimeout(() => { flashOverlay.style.opacity = 0; }, 200);
+
+            // Show loading
+            loadingElement.style.display = 'block';
+            loadingElement.textContent = "AIが骨格を分析中...🦴";
+
+            try {
+                // Capture Image
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvasElement.width;
+                tempCanvas.height = canvasElement.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.drawImage(videoElement, 0, 0, tempCanvas.width, tempCanvas.height);
+                const base64Image = tempCanvas.toDataURL('image/png');
+
+                // Call API
+                const res = await fetch('/api/flamingo/diagnose', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: base64Image })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    showSkeletonResult(data.result.skeletonType);
+                } else {
+                    alert("骨格診断エラー: " + data.error);
+                }
+
+            } catch (e) {
+                alert("通信エラー: " + e.message);
+            } finally {
+                loadingElement.style.display = 'none';
+            }
+        }
+
+        function showSkeletonResult(skeleton) {
+            // Re-use Tsubo Modal for simplicity or create new?
+            // Let's reuse Result Modal structure but custom content
+            const modalContents = document.querySelector('#result-modal .modal-content');
+            const originalContent = modalContents.innerHTML;
+
+            modalContents.innerHTML = `
+                <span class="close-btn" onclick="closeModal('result-modal')">&times;</span>
+                <h2 style="color:#FFB75E; margin-bottom:5px;">🦴 骨格診断結果</h2>
+                <div class="result-box" style="background: rgba(255,255,255,0.15);">
+                    <div class="result-score-label">あなたの骨格タイプ</div>
+                    <div class="result-score-value" style="color:#FFB75E; font-size: 2.5rem;">${skeleton.type}</div>
+                    <p style="text-align:left; margin-top:10px; font-size:0.9rem;">${skeleton.description}</p>
+                </div>
+                <div style="text-align:left; background:rgba(0,0,0,0.3); padding:15px; border-radius:10px; margin-bottom:15px;">
+                    <strong style="color:#FFB75E;">👗 アドバイス:</strong><br>
+                    ${skeleton.advice}
+                </div>
+                <button class="btn" onclick="location.reload()">閉じる</button>
+            `;
+
+            resultModal.style.display = "flex";
+
+            // Restore modal on close (reload handles it effectively)
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
         function showTsuboModal(data) {
             modalTitle.innerText = data.name;
             modalDesc.innerText = data.desc;

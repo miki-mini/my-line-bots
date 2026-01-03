@@ -207,7 +207,7 @@ def startup_event():
         # Initialize Google Cloud Resources
         if GCP_PROJECT_ID:
             # 1. Vertex AI
-            vertexai.init(project=GCP_PROJECT_ID, location="asia-northeast1")
+            vertexai.init(project=GCP_PROJECT_ID, location="us-central1")
 
             safety_config = [
                 SafetySetting(category=HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold=HarmBlockThreshold.BLOCK_NONE),
@@ -216,7 +216,7 @@ def startup_event():
                 SafetySetting(category=HarmCategory.HARM_CATEGORY_HARASSMENT, threshold=HarmBlockThreshold.BLOCK_NONE),
             ]
 
-            text_model = GenerativeModel("gemini-2.5-flash", safety_settings=safety_config)
+            text_model = GenerativeModel("gemini-1.5-flash", safety_settings=safety_config)
             print("✅ Gemini (text_model) Initialized!", flush=True)
 
             # Initialize Search Model (The Owl) via Wrapper
@@ -497,6 +497,8 @@ async def diagnose_butterfly(request: ButterflyDiagnosisRequest):
         ]
 
         # Using a fresh instance to ensure settings
+        # Using a fresh instance to ensure settings
+
         bf_model = GenerativeModel("gemini-2.5-flash", safety_settings=safety_config)
 
         # 2. Decode Image
@@ -516,38 +518,42 @@ async def diagnose_butterfly(request: ButterflyDiagnosisRequest):
             lighting_text = "撮影環境は自然光の想定です。"
 
         prompt = f"""
-あなたはファッションアドバイザーです。
-この写真の人物に似合う「カラーパレット（パーソナルカラー）」を提案してください。
-また、全身が写っている場合は、スタイルがよく見える「服装のシルエット（骨格タイプ）」も提案してください。
+あなたはヘアメイクとファッションのプロフェッショナルアドバイザーです。
+この写真の人物の魅力を引き出すための診断とアドバイスをしてください。
+
+1. **パーソナルカラー**: 肌や瞳の色から似合う色（シーズン）を分析。照明の色被りがある場合は補正して判断してください。
+2. **顔タイプ診断**: 顔の輪郭（丸顔、面長、ベース型など）と特徴を分析。
+3. **似合う髪型**: 顔タイプに基づいたおすすめのヘアスタイルを提案。
+4. **骨格タイプ**: もし全身が写っている場合は骨格診断も行う（写っていない場合は「判定不能」と記載）。
 
 {lighting_text}
-※医療行為や断定的な診断ではなく、あくまでファッションの楽しみとしての提案をお願いします。
+※医療判断ではなく、美容・ファッションのアドバイスとして回答してください。
 
-【出力形式】
-以下のJSON形式のみを出力してください。
-
+【出力形式（JSONのみ）】
 {{
   "personalColor": {{
     "season": "Autumn",
     "base": "Yellow Base",
-    "characteristics": "落ち着いたマットな肌質...",
+    "characteristics": "肌は陶器のようなマットな質感で...",
     "bestColors": ["Terracotta", "Mustard", "Khaki"],
-    "lightingCorrectionNote": "照明の色味を考慮し、補正して判断しました。"
+    "lightingCorrectionNote": "電球色の影響を考慮し、黄みを引いて判断しました。"
+  }},
+  "faceType": {{
+    "shape": "Round",
+    "description": "親しみやすい印象の丸顔タイプ...",
+    "bestHairstyles": ["シースルーバング", "ひし形ボブ", "顔周りにレイヤーを入れたロング"]
   }},
   "skeletonType": {{
     "type": "Straight",
-    "description": "シンプルでハリのある素材がおすすめ..."
-  }},
-  "faceType": {{
-    "shape": "Oval",
-    "impression": "Elegant"
+    "description": "上半身に厚みがあるタイプ。vネックなどが似合います..."
   }}
 }}
 
 【選択肢】
-season: Spring, Summer, Autumn, Winter
-base: Yellow Base, Blue Base
-skeletonType.type: Straight, Wave, Natural, null
+- season: Spring, Summer, Autumn, Winter
+- base: Yellow Base, Blue Base
+- faceType.shape: Round (丸顔), Oval (卵型), Long (面長), Base (ベース型), Triangle (逆三角)
+- skeletonType.type: Straight, Wave, Natural, null
 
 JSON以外のテキストは含めないでください。
 """
@@ -557,12 +563,19 @@ JSON以外のテキストは含めないでください。
             [prompt, image_part],
             generation_config={
                 "temperature": 0.4,
-                "max_output_tokens": 1024,
+                "max_output_tokens": 4096,
             }
         )
 
         # 5. Parse
-        response_text = response.text
+        print(f"🦋 Finish Reason: {response.candidates[0].finish_reason if response.candidates else 'NO CANDIDATES'}", flush=True)
+        try:
+            response_text = response.text
+        except ValueError:
+            return {
+                "success": False,
+                "error": "AIが回答を生成できませんでした（安全フィルター等が原因の可能性があります）。"
+            }
         print(f"🦋 Butterfly Response: {response_text[:200]}...", flush=True)
 
         # JSON Extraction
@@ -580,18 +593,96 @@ JSON以外のテキストは含めないでください。
                 "error": "AIからの応答が読み取れませんでした(Safety Filterなど)。別の写真を試してください。"
             }
 
-        json_str = re.sub(r'//.*', '', json_str)
-        diagnosis = json.loads(json_str)
+        try:
+            json_str = re.sub(r'//.*', '', json_str) # Remove comments
+            diagnosis = json.loads(json_str)
+            return {
+                "success": True,
+                "result": diagnosis
+            }
+        except json.JSONDecodeError as e:
+            print(f"❌ Error generating content: {e}")
+            # Fallback
+            result_json = {
+                "faceType": {
+                    "shape": "Analysis Failed",
+                    "description": "AIによる解析に失敗しました。もう一度試してください。",
+                    "bestHairstyles": ["N/A"]
+                },
+                "personalColor": {
+                    "season": "Unknown",
+                    "base": "Unknown",
+                    "characteristics": "解析できませんでした。",
+                    "bestColors": [],
+                    "lightingCorrectionNote": "エラーが発生しました。"
+                }
+            }
 
-        return {
-            "success": True,
-            "result": diagnosis
-        }
+            return {"success": True, "result": result_json}
 
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        return {
-            "success": False,
-            "error": f"エラーが発生しました: {str(e)}"
+        print(f"❌ System Error: {e}")
+        return {"success": False, "error": str(e)}
+
+
+# ==========================================
+# 🦩 Flamingo Skeleton Diagnosis Endpoint
+# ==========================================
+class FlamingoDiagnosisRequest(BaseModel):
+    image: str  # Base64 encoded image
+
+@app.post("/api/flamingo/diagnose")
+async def diagnose_flamingo(request: FlamingoDiagnosisRequest):
+    try:
+        # 1. Image Processing
+        image_data = request.image.split(',')[1] if ',' in request.image else request.image
+        image_bytes = base64.b64decode(image_data)
+        image_part = Part.from_data(data=image_bytes, mime_type="image/png")
+
+        # 2. Prompt Engineering
+        prompt = """
+        あなたはプロの骨格診断士（ファッションアナリスト）です。
+        送られた全身写真（または上半身写真）から、ユーザーの骨格タイプを診断してください。
+
+        【診断タイプ】以下の3つから最も近い1つを選んでください。
+        - Straight (ストレート): 筋肉がつきやすく、身体に厚みがある。メリハリボディ。
+        - Wave (ウェーブ): 華奢で厚みがなく、下重心。曲線的なライン。
+        - Natural (ナチュラル): 骨格がしっかりしていて、関節が大きい。フレーム感がある。
+
+        【出力形式 (JSON)】
+        ```json
+        {
+            "skeletonType": {
+                "type": "Straight" | "Wave" | "Natural",
+                "description": "あなたの体型の特徴と、この骨格タイプの説明。",
+                "advice": "似合うファッションのアドバイス（素材、シルエットなど）。"
+            }
         }
+        ```
+        """
+
+        # 3. Model Generation (Using gemini-1.5-flash for speed)
+        # Note: Using existing text_model or bf_model?
+        # Let's use a fresh instance to ensure standard settings.
+        # Use gemini-1.5-flash for Flamingo as it needs speed/availability.
+        flamingo_model = GenerativeModel("gemini-1.5-flash", safety_settings=safety_config)
+
+        response = flamingo_model.generate_content(
+            [prompt, image_part],
+            generation_config={"temperature": 0.4, "max_output_tokens": 1024}
+        )
+
+        # 4. JSON Extraction
+        txt = response.text
+        json_str = txt
+        if "```json" in txt:
+            json_str = txt.split("```json")[1].split("```")[0].strip()
+        elif "```" in txt:
+            json_str = txt.split("```")[1].split("```")[0].strip()
+
+        result_json = json.loads(json_str)
+        return {"success": True, "result": result_json}
+
+    except Exception as e:
+        print(f"❌ Flamingo Error: {e}")
+        return {"success": False, "error": str(e)}
