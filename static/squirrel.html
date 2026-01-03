@@ -246,6 +246,23 @@
             line-height: 1.6;
             margin-bottom: 30px;
         }
+
+        .center-line {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            height: 100%;
+            width: 4px;
+            background: repeating-linear-gradient(to bottom,
+                    rgba(255, 255, 255, 0.6) 0,
+                    rgba(255, 255, 255, 0.6) 20px,
+                    transparent 20px,
+                    transparent 40px);
+            transform: translateX(-50%);
+            z-index: 5;
+            pointer-events: none;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
     </style>
 </head>
 
@@ -255,6 +272,7 @@
     <div class="container">
         <video id="input_video" playsinline></video>
         <canvas id="output_canvas"></canvas>
+        <div class="center-line"></div>
 
         <!-- UI -->
         <div class="ui-layer">
@@ -397,8 +415,56 @@
             height: 720
         });
 
+        // Audio System (Synthesized Sounds)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        const SOUNDS = {
+            catch: () => playTone(880, 'sine', 0.1),
+            highCatch: () => {
+                playTone(1000, 'sine', 0.1);
+                setTimeout(() => playTone(1500, 'sine', 0.1), 50);
+            },
+            damage: () => {
+                playTone(150, 'sawtooth', 0.4, 0.3); // Low buzz
+                playTone(100, 'sawtooth', 0.4, 0.3);
+            },
+            start: () => {
+                playTone(523.25, 'triangle', 0.2); // C5
+                setTimeout(() => playTone(659.25, 'triangle', 0.2), 200); // E5
+                setTimeout(() => playTone(783.99, 'triangle', 0.4), 400); // G5
+            },
+            end: () => {
+                playTone(783.99, 'square', 0.5, 0.2); // G5
+                setTimeout(() => playTone(622.25, 'square', 0.5, 0.2), 300); // Eb5
+                setTimeout(() => playTone(523.25, 'square', 1.0, 0.5), 600); // C5
+            }
+        };
+
+        function playTone(freq, type, duration, vol = 0.1) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+            gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
         // Event Listeners
-        ELEMENTS.startBtn.addEventListener('click', startGame);
+        ELEMENTS.startBtn.addEventListener('click', () => {
+            // Resume AudioContext on user gesture
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            SOUNDS.start();
+            startGame();
+        });
 
         function startGame() {
             ELEMENTS.startScreen.classList.add('hidden');
@@ -636,6 +702,7 @@
 
             if (itemDef.type === 'chestnut') {
                 // Pain
+                SOUNDS.damage();
                 squImg.src = IMAGES.pain;
                 squBox.classList.remove('shake');
                 void squBox.offsetWidth; // trigger reflow
@@ -647,6 +714,9 @@
                 }, 1000);
             } else {
                 // Good Item
+                if (itemDef.type === 'walnut') SOUNDS.highCatch();
+                else SOUNDS.catch();
+
                 updateSquirrelImage(player);
                 // Maybe pop animation
                 squBox.classList.remove('deflate');
@@ -681,6 +751,7 @@
 
         function endGame() {
             isPlaying = false;
+            SOUNDS.end();
             ELEMENTS.resultScreen.classList.remove('hidden');
 
             let winText = "Draw!";
@@ -708,7 +779,7 @@
             ELEMENTS.resP2Img.src = p2Src;
         }
 
-        }
+
 
         camera.start();
     </script>
