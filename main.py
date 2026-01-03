@@ -19,7 +19,8 @@ from vertexai.generative_models import (
     GenerativeModel,
     SafetySetting,
     HarmCategory,
-    HarmBlockThreshold
+    HarmBlockThreshold,
+    Part
 )
 
 # Animal Handler Import (All Animals)
@@ -216,7 +217,7 @@ def startup_event():
                 SafetySetting(category=HarmCategory.HARM_CATEGORY_HARASSMENT, threshold=HarmBlockThreshold.BLOCK_NONE),
             ]
 
-            text_model = GenerativeModel("gemini-1.5-flash", safety_settings=safety_config)
+            text_model = GenerativeModel("gemini-2.5-flash", safety_settings=safety_config)
             print("✅ Gemini (text_model) Initialized!", flush=True)
 
             # Initialize Search Model (The Owl) via Wrapper
@@ -661,11 +662,19 @@ async def diagnose_flamingo(request: FlamingoDiagnosisRequest):
         ```
         """
 
-        # 3. Model Generation (Using gemini-1.5-flash for speed)
+        # 3. Model Generation (Using gemini-2.5-flash for speed)
         # Note: Using existing text_model or bf_model?
         # Let's use a fresh instance to ensure standard settings.
-        # Use gemini-1.5-flash for Flamingo as it needs speed/availability.
-        flamingo_model = GenerativeModel("gemini-1.5-flash", safety_settings=safety_config)
+        # Use gemini-2.5-flash for Flamingo as it needs speed/availability.
+
+        safety_config = [
+            SafetySetting(category=HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold=HarmBlockThreshold.BLOCK_NONE),
+            SafetySetting(category=HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold=HarmBlockThreshold.BLOCK_NONE),
+            SafetySetting(category=HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold=HarmBlockThreshold.BLOCK_NONE),
+            SafetySetting(category=HarmCategory.HARM_CATEGORY_HARASSMENT, threshold=HarmBlockThreshold.BLOCK_NONE),
+        ]
+
+        flamingo_model = GenerativeModel("gemini-2.5-flash", safety_settings=safety_config)
 
         response = flamingo_model.generate_content(
             [prompt, image_part],

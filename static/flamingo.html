@@ -807,7 +807,11 @@
         skeletonBtn.style.color = 'white';
         skeletonBtn.style.boxShadow = '0 5px 15px rgba(237, 143, 3, 0.4)';
         skeletonBtn.innerHTML = '🦴 骨格診断 (AI)';
-        skeletonBtn.onclick = runSkeletonDiagnosis;
+        skeletonBtn.innerHTML = '🦴 骨格診断 (AI)';
+        skeletonBtn.onclick = () => {
+            // Start 5 second countdown then run diagnosis
+            startCountdown(5, runSkeletonDiagnosis);
+        };
 
         // Add button to UI (append to first btn-group)
         document.querySelector('.btn-group').appendChild(skeletonBtn);
