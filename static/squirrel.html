@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>リスのほっぺたどんぐりゲーム 🐿️</title>
+    <!-- MediaPipe -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #a8d5e2;
+            /* Sky blue */
+            font-family: 'Zen Maru Gothic', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+            transform: scaleX(-1);
+            /* Mirror by default */
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 2;
+            transform: scaleX(-1);
+            /* Mirror match */
+        }
+
+        /* UI Layer */
+        .ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0));
+        }
+
+        .player-score {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            min-width: 150px;
+        }
+
+        .p1-score {
+            border: 3px solid #ff9a9e;
+            color: #d6336c;
+        }
+
+        .p2-score {
+            border: 3px solid #4facfe;
+            color: #0056b3;
+        }
+
+        .score-val {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .score-label {
+            font-size: 0.9rem;
+        }
+
+        .timer-box {
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 10px 30px;
+            border-radius: 30px;
+            font-size: 2rem;
+            font-weight: bold;
+            height: fit-content;
+        }
+
+        /* Footer / Squirrels */
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 20px;
+            height: 250px;
+            /* Space for squirrels */
+        }
+
+        .squirrel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            transition: transform 0.2s;
+        }
+
+        /* Mirror visuals for P1/P2 logic ??
+           If detecting left/right of SCREEN, visuals should match.
+           P1 (Left side of screen) -> Left Squirrel
+           P2 (Right side of screen) -> Right Squirrel
+        */
+
+        .squirrel-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3));
+        }
+
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+        }
+
+        @keyframes shake {
+
+            10%,
+            90% {
+                transform: translate3d(-2px, 0, 0) rotate(-5deg);
+            }
+
+            20%,
+            80% {
+                transform: translate3d(4px, 0, 0) rotate(5deg);
+            }
+
+            30%,
+            50%,
+            70% {
+                transform: translate3d(-8px, 0, 0) rotate(-10deg);
+            }
+
+            40%,
+            60% {
+                transform: translate3d(8px, 0, 0) rotate(10deg);
+            }
+        }
+
+        .deflate {
+            animation: deflate 0.5s ease-out;
+        }
+
+        @keyframes deflate {
+            0% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1.0);
+            }
+        }
+
+        /* Start Overlay */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            pointer-events: auto;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff9a9e, #fad0c4);
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4);
+            transition: transform 0.1s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        .result-title {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .tutorial {
+            font-size: 1.2rem;
+            text-align: center;
+            max-width: 600px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Video & Canvas -->
+    <div class="container">
+        <video id="input_video" playsinline></video>
+        <canvas id="output_canvas"></canvas>
+
+        <!-- UI -->
+        <div class="ui-layer">
+            <div class="header">
+                <div class="player-score p1-score">
+                    <div class="score-label">Player 1 (左)</div>
+                    <div class="score-val" id="p1-score">0</div>
+                </div>
+
+                <div class="timer-box" id="timer">60</div>
+
+                <div class="player-score p2-score">
+                    <div class="score-label">Player 2 (右)</div>
+                    <div class="score-val" id="p2-score">0</div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <div class="squirrel-container" id="p1-squirrel-box">
+                    <img src="images/squirrel/squirrel_neutral.png" class="squirrel-img" id="p1-img">
+                </div>
+                <div class="squirrel-container" id="p2-squirrel-box">
+                    <img src="images/squirrel/squirrel_neutral.png" class="squirrel-img" id="p2-img">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Start Screen -->
+    <div class="overlay" id="start-screen">
+        <h1>🐿️ リスのほっぺたゲーム 🐿️</h1>
+        <div class="tutorial">
+            <p>【遊び方】</p>
+            <p>画面の前に二人で立ってください！<br>
+                左の人が Player 1、右の人が Player 2 です。</p>
+            <p>上から落ちてくる <span style="color:#e67e22">🌰どんぐり</span> や <span style="color:#d35400">🥔くるみ</span>
+                を手でキャッチ！<br>
+                <span style="color:#27ae60">⚠️ イガ栗</span> に触ると痛いよ！(減点)
+            </p>
+            <p>ほっぺたをパンパンにした方が勝ち！</p>
+        </div>
+        <button class="btn" id="start-btn">ゲームスタート！</button>
+    </div>
+
+    <!-- Result Screen -->
+    <div class="overlay hidden" id="result-screen">
+        <div class="result-title">Time Up!</div>
+        <h2 id="winner-text">Winner: ???</h2>
+        <div style="display:flex; gap:40px; align-items:flex-end; margin: 30px 0;">
+            <div style="text-align:center;">
+                <p>Player 1</p>
+                <img src="images/squirrel/squirrel_neutral.png" id="res-p1-img" width="150" height="150"
+                    style="object-fit:contain;">
+            </div>
+            <div style="text-align:center;">
+                <p>Player 2</p>
+                <img src="images/squirrel/squirrel_neutral.png" id="res-p2-img" width="150" height="150"
+                    style="object-fit:contain;">
+            </div>
+        </div>
+        <button class="btn" onclick="location.reload()">もう一回遊ぶ</button>
+    </div>
+
+    <script>
+        // Assets Paths
+        const IMAGES = {
+            neutral: 'images/squirrel/squirrel_neutral.png',
+            cheek1: 'images/squirrel/squirrel_cheek_1.png',
+            cheek2: 'images/squirrel/squirrel_cheek_2.png',
+            win: 'images/squirrel/squirrel_win.png',
+            pain: 'images/squirrel/squirrel_pain.png',
+            acorn: 'images/squirrel/item_acorn.png',
+            walnut: 'images/squirrel/item_walnut.png',
+            chestnut: 'images/squirrel/item_chestnut.png'
+        };
+
+        const ELEMENTS = {
+            video: document.getElementById('input_video'),
+            canvas: document.getElementById('output_canvas'),
+            p1Score: document.getElementById('p1-score'),
+            p2Score: document.getElementById('p2-score'),
+            p1Img: document.getElementById('p1-img'),
+            p2Img: document.getElementById('p2-img'),
+            timer: document.getElementById('timer'),
+            startScreen: document.getElementById('start-screen'),
+            resultScreen: document.getElementById('result-screen'),
+            startBtn: document.getElementById('start-btn'),
+            winnerText: document.getElementById('winner-text'),
+            resP1Img: document.getElementById('res-p1-img'),
+            resP2Img: document.getElementById('res-p2-img')
+        };
+
+        const ctx = ELEMENTS.canvas.getContext('2d');
+
+        // Game State
+        let isPlaying = false;
+        let timeLeft = 60;
+        let lastTime = 0;
+        let itemSpawnTimer = 0;
+        let items = []; // {x, y, type, radius, speed, active}
+        let score = { p1: 0, p2: 0 };
+        let cheekState = { p1: 0, p2: 0 }; // 0: Neutral, 1: Cheek1, 2: Cheek2
+
+        // Configuration
+        const MAX_SCORE = 1000; // Just for reference
+        const CHEEK_THRESHOLDS = [50, 200]; // Score to reach cheek levels
+
+        // Item Types
+        const ITEM_TYPES = {
+            acorn: { type: 'acorn', score: 10, speed: 0.005, radius: 0.05, img: new Image() },
+            walnut: { type: 'walnut', score: 30, speed: 0.007, radius: 0.06, img: new Image() },
+            chestnut: { type: 'chestnut', score: -50, speed: 0.006, radius: 0.055, img: new Image() }
+        };
+
+        // Load Images
+        ITEM_TYPES.acorn.img.src = IMAGES.acorn;
+        ITEM_TYPES.walnut.img.src = IMAGES.walnut;
+        ITEM_TYPES.chestnut.img.src = IMAGES.chestnut;
+
+        // MediaPipe Setup
+        const hands = new Hands({
+            locateFile: (file) => {
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+            }
+        });
+        hands.setOptions({
+            maxNumHands: 4, // Allow up to 4 hands (2 players x 2 hands)
+            modelComplexity: 1,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+
+        hands.onResults(onResults);
+
+        const camera = new Camera(ELEMENTS.video, {
+            onFrame: async () => {
+                await hands.send({ image: ELEMENTS.video });
+            },
+            width: 1280,
+            height: 720
+        });
+
+        // Event Listeners
+        ELEMENTS.startBtn.addEventListener('click', startGame);
+
+        function startGame() {
+            ELEMENTS.startScreen.classList.add('hidden');
+            isPlaying = true;
+            timeLeft = 60;
+            score = { p1: 0, p2: 0 };
+            items = [];
+            updateUI();
+
+            // Audio workaround: Create logic if we had audio.
+
+            // Game Loop
+            requestAnimationFrame(gameLoop);
+        }
+
+        function spawnItem() {
+            const types = ['acorn', 'acorn', 'acorn', 'walnut', 'chestnut'];
+            const key = types[Math.floor(Math.random() * types.length)];
+            const def = ITEM_TYPES[key];
+
+            items.push({
+                x: Math.random() * 0.9 + 0.05, // 5% to 95% width
+                y: -0.1,
+                type: key,
+                def: def,
+                active: true
+            });
+        }
+
+        function gameLoop(timestamp) {
+            if (!isPlaying) return;
+
+            const dt = timestamp - lastTime;
+            lastTime = timestamp;
+
+            // Timer
+            if (Math.floor(timestamp / 1000) > Math.floor((timestamp - dt) / 1000)) {
+                timeLeft--;
+                ELEMENTS.timer.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    endGame();
+                    return;
+                }
+            }
+
+            // Spawn
+            itemSpawnTimer += dt;
+            if (itemSpawnTimer > 800) { // Spawn every 0.8s
+                spawnItem();
+                itemSpawnTimer = 0;
+            }
+
+            // Update Items
+            items.forEach(item => {
+                if (!item.active) return;
+                item.y += item.def.speed * (dt / 16); // speed adjust
+                if (item.y > 1.1) item.active = false;
+            });
+
+            // Clean items
+            items = items.filter(i => i.active);
+
+            // Note: Drawing is done in onResults mostly, but we need to draw items even if no hands?
+            // MediaPipe onResults fires only when frame is processed.
+            // We should draw items on top of the canvas CLEARED by onResults?
+            // Actually, onResults clears canvas. So we rely on onResults to trigger the draw.
+            // But if video stops, onResults stops. Video is running.
+            // If we want consistent 60fps game loop, we should separate Logic from Draw,
+            // but for simple AR, hooking to onResults is easier for synchronization with video.
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function onResults(results) {
+            // Setup Canvas
+            ELEMENTS.canvas.width = ELEMENTS.video.videoWidth;
+            ELEMENTS.canvas.height = ELEMENTS.video.videoHeight;
+
+            // Draw Video (Mirrored handled by CSS, but for canvas drawing we draw normal then CSS flips it?
+            // No, MediaPipe results are normalized.
+            // If check hands, we need to know where they are VISUALLY.
+            // The canvas is CSS transformed scaleX(-1).
+            // So if we draw at x=0.1 (Left), it appears at Right.
+            // This is confusing.
+            // Let's standardise:
+            // Logic coordinate: 0.0 (Left Logic) to 1.0 (Right Logic).
+            // Visual coordinate: 0.0 (Left Screen) to 1.0 (Right Screen).
+            // If CSS Mirror is ON: Logic 0.0 is Visual Right (1.0).
+            //
+            // Actually, `start-screen` says "Left is P1, Right is P2".
+            // If user sees themselves in mirror:
+            // User stands on Left side of room -> Appears on Left side of Mirror (Visual Left).
+            // So P1 is Visual Left.
+            // Visual Left (CSS flipped) corresponds to... ?
+            //
+            // Let's look at `flamingo.html`:
+            // `videoElement.style.transform = 'scaleX(-1)';`
+            // `canvasElement.style.transform = 'scaleX(-1)';`
+            //
+            // MediaPipe Landmarks (x,y) are normalized [0,1].
+            // x=0 is "Left of the image sent to MP".
+            // If Camera sends normal image, x=0 is Left.
+            // If we display this image mirrored (scaleX(-1)), then x=0 (Image Left) is displayed at Visual Right.
+            //
+            // Wait.
+            // Camera sees: [ User Left | User Right ]
+            // Image data:  [ User Left | User Right ] (Assuming no hardware flip)
+            // MP x=0 is User Left.
+            // MP x=1 is User Right.
+            //
+            // Display (scaleX(-1)):
+            // [ User Right | User Left ]
+            //
+            // So Visual Left is User Right.
+            // Visual Right is User Left.
+            //
+            // This is "Mirror Mode".
+            // If I raise my Right Hand (Stage Right), I want to see the hand on the Right side of screen.
+            // Real Right Hand -> Camera Left side of Frame -> MP x ~ 0.2 -> Displayed at Visual Right (due to flip).
+            // Correct.
+            //
+            // So:
+            // MP x < 0.5 (Camera Left) -> Displayed Right (Visual P2).
+            // MP x > 0.5 (Camera Right) -> Displayed Left (Visual P1).
+            //
+            // So:
+            // P1 (Visual Left) is MP x > 0.5
+            // P2 (Visual Right) is MP x < 0.5
+            //
+            // Let's double check.
+            // User 1 stands on Left (Stage Left).
+            // Camera sees User 1 on Right side of frame.
+            // MP x > 0.5.
+            // Displayed on Left side (due to flip).
+            // So P1 is x > 0.5. OK.
+
+            ctx.save();
+            ctx.clearRect(0, 0, ELEMENTS.canvas.width, ELEMENTS.canvas.height);
+
+            // We don't strictly need to draw the video on canvas because video tag is behind.
+            // But we can draw guides or items.
+            // We must draw items "un-mirrored" so that when flipped they look right?
+            // Or we draw items in logical coordinates and let CSS flip them?
+            // Items text might be flipped if we let CSS flip canvas.
+            // Images will be flipped.
+            // If we want items to NOT look flipped, we should draw them flipped?
+            // Actually, simple items (symmetric acorn) don't matter.
+            // But "Left P1" text or similar would matter.
+            // Our UI (HTML) is separate and NOT flipped (except video/canvas).
+            // So items drawn on canvas WILL be flipped by CSS.
+            //
+            // Item Logic:
+            // x=0.0 (Logic Left) -> Display Right.
+            // If we want item to fall on Visual Left (P1), we need Logic Right (x > 0.5).
+            //
+            // So:
+            // Spawn items 0 to 1.
+            // Visual P1 (Left) is Logic x > 0.5
+            // Visual P2 (Right) is Logic x < 0.5
+            //
+            // OK.
+
+            // Draw Items
+            items.forEach(item => {
+                const img = item.def.img;
+                const aspect = img.width / img.height || 1;
+                const w = item.def.radius * ELEMENTS.canvas.width;
+                const h = w / aspect;
+
+                // Draw image centered at item.x, item.y
+                // Note: Canvas is width/height pixels. item.x is 0..1
+                const drawX = item.x * ELEMENTS.canvas.width - w / 2;
+                const drawY = item.y * ELEMENTS.canvas.height - h / 2;
+
+                ctx.drawImage(img, drawX, drawY, w, h);
+            });
+
+            // Collision Detection
+            if (results.multiHandLandmarks && isPlaying) {
+                // Draw Connectors
+                // drawConnectors(ctx, results.multiHandLandmarks, HAND_CONNECTIONS, {color: '#00FF00', lineWidth: 5});
+                // drawLandmarks(ctx, results.multiHandLandmarks, {color: '#FF0000', lineWidth: 2});
+
+                for (const landmarks of results.multiHandLandmarks) {
+                    // Index finger tip (8)
+                    const tip = landmarks[8];
+
+                    // Logic x, y
+                    const hx = tip.x;
+                    const hy = tip.y;
+
+                    // Determine Player
+                    // P1 (Visual Left) = MP x > 0.5
+                    // P2 (Visual Right) = MP x < 0.5
+                    const isP1 = hx > 0.5;
+                    const playerKey = isP1 ? 'p1' : 'p2';
+
+                    // Hand circle visual (debug/feedback)
+                    ctx.beginPath();
+                    ctx.arc(hx * ELEMENTS.canvas.width, hy * ELEMENTS.canvas.height, 20, 0, 2 * Math.PI);
+                    ctx.fillStyle = isP1 ? 'rgba(255, 105, 180, 0.5)' : 'rgba(79, 172, 254, 0.5)';
+                    ctx.fill();
+
+                    // Check collisions
+                    items.forEach(item => {
+                        if (!item.active) return;
+
+                        const dx = (item.x - hx);
+                        // aspect correction?
+                        // simple distance in normalized coords is okay if aspect is close to 16:9, but y is usually smaller logic distance.
+                        // let's use simple rect or Euclidean
+                        const dist = Math.sqrt(dx * dx + (item.y - hy) * (item.y - hy));
+
+                        // Interaction Radius ~ 0.05 - 0.1
+                        if (dist < 0.08) {
+                            // Caught!
+                            item.active = false;
+                            handleCatch(playerKey, item.def);
+                        }
+                    });
+                }
+            }
+            ctx.restore();
+        }
+
+        function handleCatch(player, itemDef) {
+            // Update Score
+            score[player] += itemDef.score;
+            if (score[player] < 0) score[player] = 0;
+            updateUI(player);
+
+            // Trigger Animation
+            const squImg = player === 'p1' ? ELEMENTS.p1Img : ELEMENTS.p2Img;
+            const squBox = player === 'p1' ? document.getElementById('p1-squirrel-box') : document.getElementById('p2-squirrel-box');
+
+            if (itemDef.type === 'chestnut') {
+                // Pain
+                squImg.src = IMAGES.pain;
+                squBox.classList.remove('shake');
+                void squBox.offsetWidth; // trigger reflow
+                squBox.classList.add('shake');
+
+                // Reset to neutral after 1 sec? or keep low cheek?
+                setTimeout(() => {
+                    if (isPlaying) updateSquirrelImage(player);
+                }, 1000);
+            } else {
+                // Good Item
+                updateSquirrelImage(player);
+                // Maybe pop animation
+                squBox.classList.remove('deflate');
+                void squBox.offsetWidth;
+                squBox.classList.add('deflate'); // reuse deflate for pop? no, deflate shrinks.
+                // We want Bump? Overkill for now.
+            }
+        }
+
+        function updateSquirrelImage(player) {
+            const s = score[player];
+            const imgEl = player === 'p1' ? ELEMENTS.p1Img : ELEMENTS.p2Img;
+
+            // State Logic
+            if (s >= CHEEK_THRESHOLDS[1]) {
+                imgEl.src = IMAGES.cheek2;
+            } else if (s >= CHEEK_THRESHOLDS[0]) {
+                imgEl.src = IMAGES.cheek1;
+            } else {
+                imgEl.src = IMAGES.neutral;
+            }
+        }
+
+        function updateUI(player) {
+            if (player) {
+                ELEMENTS[player + 'Score'].textContent = score[player];
+            } else {
+                ELEMENTS.p1Score.textContent = score.p1;
+                ELEMENTS.p2Score.textContent = score.p2;
+            }
+        }
+
+        function endGame() {
+            isPlaying = false;
+            ELEMENTS.resultScreen.classList.remove('hidden');
+
+            let winText = "Draw!";
+            const p1 = score.p1;
+            const p2 = score.p2;
+
+            let p1Src = IMAGES.neutral;
+            let p2Src = IMAGES.neutral;
+
+            if (p1 > p2) {
+                winText = "Winner: Player 1!";
+                p1Src = IMAGES.win;
+                p2Src = IMAGES.pain; // Loser cries? or Neutral
+            } else if (p2 > p1) {
+                winText = "Winner: Player 2!";
+                p1Src = IMAGES.pain;
+                p2Src = IMAGES.win;
+            } else {
+                p1Src = IMAGES.win; // Both win?
+                p2Src = IMAGES.win;
+            }
+
+            ELEMENTS.winnerText.textContent = winText;
+            ELEMENTS.resP1Img.src = p1Src;
+            ELEMENTS.resP2Img.src = p2Src;
+        }
+
+    </script>
+</body>
+
+</html>
