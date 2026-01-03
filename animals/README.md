@@ -21,6 +21,7 @@ Python と Google Gemini API を活用した、多機能なLINEボットたち�
 | <img src="images/meerkat.jpg" width="40"> | **ミーアキャットの地震警備🦦**<br>(Meerkat Quake)<br> | **地震速報 & サイト死活監視**<br>震度3以上の地震をLINE通知。登録サイトの異常も監視します。 | [🦦 GitHub](https://github.com/miki-mini/meerkat-quake)<br>[📘 Zenn](https://zenn.dev/miki_mini/articles/4cb43007f402a1) |
 | <img src="images/alpaca.jpg" width="40"> | **アルパカのまつエクサロン🦙**<br>(Alpaca Salon)<br>![WebApp](https://img.shields.io/badge/WEBアプリ！-pink) | **まつエク試着シミュレーション**<br>カメラで撮影した顔に、まつエクを重ねて仕上がりをイメージできます。 | [🔍 HTML](../static/alpaca.html)<br>[📜 説明書](alpaca.md) |
 | <img src="images/flamingo.jpg" width="40"> | **姿勢のフラミンゴ先生**<br>(Flamingo Sensei)<br>![WebApp](https://img.shields.io/badge/WEBアプリ！-pink) | **姿勢矯正 & バランスゲーム**<br>カメラで姿勢の歪みをチェック。完全無料でプライバシーも安全です。 | [🔍 HTML](../static/flamingo.html)<br>[📜 説明書](flamingo.md) |
+| <img src="images/butterfly.jpg" width="40"> | **美の蝶々パーソナル🦋**<br>(Butterfly Checko)<br>![WebApp](https://img.shields.io/badge/WEBアプリ！-purple) | **パーソナルカラー & 顔タイプ診断**<br>AIが似合う色と髪型を診断。※骨格診断はフラミンゴへ移動しました。 | [🔍 HTML](../static/butterfly.html)<br>[📜 説明書](butterfly.md) |
 
 ## 🛠 全体で使用している技術
 
