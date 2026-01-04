@@ -15,7 +15,7 @@ from pydantic import BaseModel
 from vertexai.generative_models import GenerativeModel, Part
 from google.cloud import firestore
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt (Debug: Disable for deployment check)
 # import japanize_matplotlib  # 日本語化 (Debug: Disable for deployment check)
 import pandas as pd
 
