@@ -263,6 +263,41 @@
             pointer-events: none;
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
         }
+
+        .fever-text {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5rem;
+            font-weight: bold;
+            color: #ffeb3b;
+            text-shadow: 0 0 20px #ff5722;
+            z-index: 50;
+            display: none;
+            animation: pulse 0.5s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from {
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            to {
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .btn-hard {
+            background: linear-gradient(45deg, #FF512F, #DD2476);
+            box-shadow: 0 5px 15px rgba(221, 36, 118, 0.4);
+        }
     </style>
 </head>
 
@@ -273,6 +308,7 @@
         <video id="input_video" playsinline></video>
         <canvas id="output_canvas"></canvas>
         <div class="center-line"></div>
+        <div class="fever-text" id="fever-text">FEVER TIME!!</div>
 
         <!-- UI -->
         <div class="ui-layer">
@@ -314,7 +350,10 @@
             </p>
             <p>ほっぺたをパンパンにした方が勝ち！</p>
         </div>
-        <button class="btn" id="start-btn">ゲームスタート！</button>
+        <div class="btn-group">
+            <button class="btn" id="start-btn-normal">ふつう (Normal)</button>
+            <button class="btn btn-hard" id="start-btn-hard">むずかしい (Hard)</button>
+        </div>
     </div>
 
     <!-- Result Screen -->
@@ -359,10 +398,12 @@
             timer: document.getElementById('timer'),
             startScreen: document.getElementById('start-screen'),
             resultScreen: document.getElementById('result-screen'),
-            startBtn: document.getElementById('start-btn'),
+            startBtnNormal: document.getElementById('start-btn-normal'),
+            startBtnHard: document.getElementById('start-btn-hard'),
             winnerText: document.getElementById('winner-text'),
             resP1Img: document.getElementById('res-p1-img'),
-            resP2Img: document.getElementById('res-p2-img')
+            resP2Img: document.getElementById('res-p2-img'),
+            feverText: document.getElementById('fever-text')
         };
 
         const ctx = ELEMENTS.canvas.getContext('2d');
@@ -375,6 +416,8 @@
         let items = []; // {x, y, type, radius, speed, active}
         let score = { p1: 0, p2: 0 };
         let cheekState = { p1: 0, p2: 0 }; // 0: Neutral, 1: Cheek1, 2: Cheek2
+        let currentDifficulty = 'normal'; // 'normal' or 'hard'
+        let isFever = false;
 
         // Configuration
         const MAX_SCORE = 1000; // Just for reference
@@ -414,6 +457,11 @@
             width: 1280,
             height: 720
         });
+
+        // Loop Speed Control
+        // Assuming 60fps (~16ms).
+        // For logic update we use delta time.
+
 
         // Audio System (Synthesized Sounds)
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -459,17 +507,28 @@
         }
 
         // Event Listeners
-        ELEMENTS.startBtn.addEventListener('click', () => {
-            // Resume AudioContext on user gesture
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            SOUNDS.start();
-            startGame();
+        ELEMENTS.startBtnNormal.addEventListener('click', () => {
+            initAudio();
+            startGame('normal');
         });
 
-        function startGame() {
+        ELEMENTS.startBtnHard.addEventListener('click', () => {
+            initAudio();
+            startGame('hard');
+        });
+
+        function initAudio() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            SOUNDS.start();
+        }
+
+        function startGame(difficulty) {
+            currentDifficulty = difficulty;
             ELEMENTS.startScreen.classList.add('hidden');
             isPlaying = true;
             timeLeft = 60;
+            isFever = false;
+            ELEMENTS.feverText.style.display = 'none';
             score = { p1: 0, p2: 0 };
             items = [];
             updateUI();
@@ -482,6 +541,17 @@
 
         function spawnItem() {
             const types = ['acorn', 'acorn', 'acorn', 'walnut', 'chestnut'];
+            if (currentDifficulty === 'hard') {
+                // More walnuts and chestnuts in hard mode? Or just speed?
+                // Actually chestnut is penalty. Hard mode = More chestnuts?
+                types.push('chestnut', 'chestnut');
+            }
+            if (isFever) {
+                // Fever: Acorns and Walnuts shower! Less chestnuts
+                // Increase likelihood of good items
+                types.push('acorn', 'acorn', 'walnut', 'walnut');
+            }
+
             const key = types[Math.floor(Math.random() * types.length)];
             const def = ITEM_TYPES[key];
 
@@ -504,15 +574,31 @@
             if (Math.floor(timestamp / 1000) > Math.floor((timestamp - dt) / 1000)) {
                 timeLeft--;
                 ELEMENTS.timer.textContent = timeLeft;
+
+                // Fever Check
+                if (timeLeft === 10) {
+                    isFever = true;
+                    ELEMENTS.feverText.style.display = 'block';
+                    // Optional: Fever Sound
+                    playTone(1500, 'square', 0.5);
+                }
+
                 if (timeLeft <= 0) {
                     endGame();
                     return;
                 }
             }
 
-            // Spawn
+            // Spawn Logic
+            let spawnInterval = 800; // Normal
+            if (currentDifficulty === 'hard') spawnInterval = 500;
+
+            if (isFever) {
+                spawnInterval = 200; // Super fast!
+            }
+
             itemSpawnTimer += dt;
-            if (itemSpawnTimer > 800) { // Spawn every 0.8s
+            if (itemSpawnTimer > spawnInterval) {
                 spawnItem();
                 itemSpawnTimer = 0;
             }
@@ -520,7 +606,15 @@
             // Update Items
             items.forEach(item => {
                 if (!item.active) return;
-                item.y += item.def.speed * (dt / 16); // speed adjust
+
+                let speedMultiplier = 1.0;
+                if (currentDifficulty === 'hard') speedMultiplier = 1.5;
+                if (isFever) {
+                    // Maybe varying speeds in fever?
+                    // Let's keep it consistent or slightly faster
+                }
+
+                item.y += item.def.speed * speedMultiplier * (dt / 16);
                 if (item.y > 1.1) item.active = false;
             });
 
