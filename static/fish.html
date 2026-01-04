@@ -84,7 +84,8 @@
         let lastSharkTime = 0;
 
         // Audio Context (created on first interaction)
-        let audioCtx;
+
+
 
         function resize() {
             width = window.innerWidth;
@@ -101,6 +102,15 @@
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            // Play BGM
+            if (!bgm) {
+                bgm = new Audio('static/images/fish/fish.mp3');
+                bgm.loop = true;
+                bgm.volume = 0.4; // Slightly lower volume
+                bgm.play().catch(e => console.log('Auto-play prevented:', e));
+            } else if (bgm.paused) {
+                bgm.play().catch(e => console.log('Playback failed:', e));
             }
         }
 
@@ -149,6 +159,7 @@
         }
         window.addEventListener('click', initAudio);
         window.addEventListener('touchstart', initAudio);
+
 
         // ==========================================
         // Classes

@@ -15,5 +15,5 @@ requests
 pydantic
 aiofiles
 pandas
-matplotlib
+
 omdb
