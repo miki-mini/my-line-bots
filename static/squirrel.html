@@ -372,6 +372,9 @@
             <button class="btn" id="start-btn-normal">ふつう (Normal)</button>
             <button class="btn btn-hard" id="start-btn-hard">むずかしい (Hard)</button>
         </div>
+        <div style="margin-top: 20px; font-size: 0.8rem; color: #ddd;">
+            BGM by Sound Of Incense
+        </div>
     </div>
 
     <!-- Result Screen -->
@@ -484,6 +487,13 @@
 
         // Audio System (Synthesized Sounds)
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Audio System (Synthesized Sounds & BGM)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        const BGM = new Audio('static/images/squirrel/BGM_-_050_-_Hurry_Up.mp3');
+        BGM.loop = true;
+        BGM.volume = 0.3;
 
         const SOUNDS = {
             catch: () => playTone(880, 'sine', 0.1),
