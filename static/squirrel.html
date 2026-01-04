@@ -865,6 +865,7 @@
         function endGame() {
             isPlaying = false;
             SOUNDS.end();
+            BGM.pause();
             ELEMENTS.resultScreen.classList.remove('hidden');
 
             let winText = "Draw!";
