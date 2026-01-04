@@ -66,6 +66,7 @@
 | <img src="animals/images/alpaca.jpg" width="40"> | **アルパカのまつエクサロン🦙**<br>[(Alpaca)](animals/alpaca.md) | **まつエクシミュレーション**<br>写真でまつげエクステの仕上がりをAIシミュレーション。 | `Face Mesh` `Canvas` |
 | <img src="animals/images/flamingo.jpg" width="40"> | **姿勢のフラミンゴ先生**<br>[(Flamingo)](animals/flamingo.md) | **姿勢矯正 & ゲーム**<br>エッジAIで姿勢の歪みをチェック＆片足バランスゲーム。完全無料・安心設計。 | `MediaPipe` `Client-Side AI` |
 | <img src="animals/images/butterfly.png" width="40"> | **美の蝶々パーソナル🦋**<br>[(Butterfly)](animals/butterfly.md) | **パーソナルカラー & 顔タイプ**<br>AIが似合うシーズンカラーと顔型に合う髪型を診断。 | `Gemini 2.5` `FastAPI` |
+| <img src="animals/images/squirrel.png" width="40"> | **リスのほっぺたどんぐりゲーム🐿️**<br>[(Squirrel)](animals/squirrel.md) | **対戦アクションゲーム**<br>カメラで手を認識し、落ちてくるどんぐりをキャッチしてほっぺたを膨らませる2人対戦ゲーム。 | `MediaPipe Hands` `Web Audio API` |
 
 👉 **[詳細ドキュメントとデモはこちら (animals/README.md)](animals/README.md)**
 
