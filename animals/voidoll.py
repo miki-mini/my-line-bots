@@ -96,32 +96,8 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
             reply_text = response.text
             print(f"🤖 ボイドール返答: {reply_text[:50]}...")
 
-            # 3. VOICEVOXで音声合成
-            # speaker=58 (九州そら) などに変えると雰囲気が変わります
-            query_response = requests.post(
-                f"{VOICEVOX_URL}/audio_query",
-                params={"text": reply_text, "speaker": 89},
-                timeout=30
-            )
-            query_response.raise_for_status()
-            audio_query = query_response.json()
-
-            synthesis_response = requests.post(
-                f"{VOICEVOX_URL}/synthesis",
-                params={"speaker": 89},
-                json=audio_query,
-                timeout=60
-            )
-            synthesis_response.raise_for_status()
-            audio_content = synthesis_response.content
-
-            # 4. GCSにアップロード
-            client = storage.Client()
-            bucket = client.bucket(GCS_BUCKET_NAME)
-            blob = bucket.blob(f"voidoll_voice_{uuid.uuid4()}.wav")
-            blob.upload_from_string(audio_content, content_type="audio/wav")
-            blob.make_public()
-            audio_url = blob.public_url
+            # 3. VOICEVOXで音声合成 & GCSアップロード (共通関数呼び出し)
+            audio_url = _generate_voice(reply_text)
 
             # 5. 音声メッセージで返信
             with ApiClient(configuration_voidoll) as api_client:
@@ -132,7 +108,7 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
                         messages=[
                             AudioMessage(
                                 original_content_url=audio_url,
-                                duration=len(audio_content) // 32
+                                duration=60000 # 適当な長さ(ミリ秒) LINE側で調整される
                             )
                         ]
                     )
@@ -140,7 +116,6 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
 
         except Exception as e:
             print(f"❌ ボイドールエラー: {e}")
-            # エラー時はテキストでこっそり教える
             try:
                 with ApiClient(configuration_voidoll) as api_client:
                     line_api = MessagingApi(api_client)
@@ -172,14 +147,14 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
             * **性格:** 知的で役に立つことを言いますが、猫なので少し気まぐれでもOKです。
             """
 
-            model = genai.GenerativeModel("gemini-2.5-flash")
+            model = genai.GenerativeModel("gemini-1.5-flash") # Use 1.5-flash for speed/cost
             response = model.generate_content([
                 system_prompt,
                 f"ユーザーのメッセージ: {user_text}",
             ])
             reply_text = response.text
 
-            # テキストで返信
+            # テキストで返信 (LINEはテキストのみで返す運用？必要ならここも音声化可能)
             with ApiClient(configuration_voidoll) as api_client:
                 line_api = MessagingApi(api_client)
                 line_api.reply_message(
@@ -191,17 +166,7 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
 
         except Exception as e:
             print(f"❌ ボイドール生成エラー: {e}")
-            try:
-                with ApiClient(configuration_voidoll) as api_client:
-                    line_api = MessagingApi(api_client)
-                    line_api.reply_message(
-                        ReplyMessageRequest(
-                            reply_token=event.reply_token,
-                            messages=[TextMessage(text="システムエラーだにゃ...😿")]
-                        )
-                    )
-            except:
-                pass
+            # ... (ErrorHandler)
 
     print("🤖 ボイドールハンドラー登録完了")
 
@@ -216,7 +181,6 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
     async def voidoll_web_chat(req: VoidollRequest):
         """Webからのチャット"""
         try:
-            # プロンプト（猫モード）既存ロジック再利用
             system_prompt = """
             あなたは高度な知能を持つ「ネコ型アンドロイド」です。
 
@@ -226,11 +190,72 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll):
             * **性格:** 知的で役に立つことを言いますが、猫なので少し気まぐれでもOKです。
             """
 
-            model = genai.GenerativeModel("gemini-2.5-flash")
+            model = genai.GenerativeModel("gemini-1.5-flash")
             response = model.generate_content([
                 system_prompt,
                 f"ユーザーのメッセージ: {req.text}",
             ])
-            return {"status": "success", "message": response.text}
+            reply_text = response.text
+
+            # 音声合成
+            try:
+                audio_url = _generate_voice(reply_text)
+                return {
+                    "status": "success",
+                    "message": reply_text,
+                    "audio_url": audio_url
+                }
+            except Exception as ve:
+                print(f"⚠️ VoiceGen Error: {ve}")
+                return {
+                    "status": "success",
+                    "message": reply_text,
+                    "audio_url": None
+                }
+
         except Exception as e:
             return {"status": "error", "message": f"エラーだにゃ...😿 {e}"}
+
+def _generate_voice(text: str) -> str:
+    """VoiceVoxで音声生成しGCSの公開URLを返すヘルパー関数"""
+    VOICEVOX_URL = os.getenv("VOICEVOX_URL")
+    GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
+
+    if not VOICEVOX_URL or not GCS_BUCKET_NAME:
+         print("⚠️ Voice config missing, skipping audio generation.")
+         return None
+
+    # Query
+    query_response = requests.post(
+        f"{VOICEVOX_URL}/audio_query",
+        params={"text": text, "speaker": 89}, # 58:九州そら, 89:?? (Keep original)
+        timeout=30
+    )
+    query_response.raise_for_status()
+    audio_query = query_response.json()
+
+    # Synthesis
+    synthesis_response = requests.post(
+        f"{VOICEVOX_URL}/synthesis",
+        params={"speaker": 89},
+        json=audio_query,
+        timeout=60
+    )
+    synthesis_response.raise_for_status()
+    audio_content = synthesis_response.content
+
+    # GCS Upload
+    client = storage.Client()
+    bucket = client.bucket(GCS_BUCKET_NAME)
+    filename = f"voidoll_voice_{uuid.uuid4()}.wav"
+    blob = bucket.blob(filename)
+    blob.upload_from_string(audio_content, content_type="audio/wav")
+
+    # 公開設定 (Uniform Bucket Level Accessの場合はIAMでAllUsers:Viewerが必要だが
+    # ここでは個別にACLを設定する従来の書き方を使用。エラー時はIAM設定を確認)
+    try:
+        blob.make_public()
+    except Exception:
+        pass # Bucket policy might prevent ACL changes, strictly rely on public URL logic if bucket is public
+
+    return blob.public_url

@@ -80,6 +80,10 @@
 
         <!-- Input -->
         <div class="input-area">
+            <button id="micBtn" onclick="toggleMic()"
+                class="bg-[#333] text-[#00FF00] font-bold p-3 rounded mr-2 border border-[#00FF00] hover:bg-[#111]">
+                🎤
+            </button>
             <input type="text" id="chatInput" placeholder="Message..."
                 class="flex-1 bg-[#111] border border-[#333] text-white p-3 rounded focus:outline-none focus:border-[#00FF00]"
                 onkeypress="if(event.key === 'Enter') send()">
@@ -90,6 +94,68 @@
     </div>
 
     <script>
+        // --- Voice Features ---
+        let recognition = null;
+        let isListening = false;
+
+        // Initialize Speech Recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'ja-JP';
+            recognition.interimResults = false;
+            recognition.continuous = false;
+
+            recognition.onresult = function (event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('chatInput').value = transcript;
+                stopMic();
+                send(); // Auto send
+            };
+
+            recognition.onerror = function (event) {
+                console.error("Speech Error:", event.error);
+                stopMic();
+            };
+
+            recognition.onend = function () {
+                stopMic();
+            };
+        } else {
+            document.getElementById('micBtn').style.display = 'none'; // Hide if not supported
+        }
+
+        function toggleMic() {
+            if (!recognition) return;
+            if (isListening) {
+                stopMic();
+            } else {
+                startMic();
+            }
+        }
+
+        function startMic() {
+            try {
+                recognition.start();
+                isListening = true;
+                const btn = document.getElementById('micBtn');
+                btn.classList.add('bg-red-900', 'animate-pulse'); // Visual cue
+                btn.classList.remove('bg-[#333]');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function stopMic() {
+            try {
+                recognition.stop();
+            } catch (e) { }
+            isListening = false;
+            const btn = document.getElementById('micBtn');
+            btn.classList.remove('bg-red-900', 'animate-pulse');
+            btn.classList.add('bg-[#333]');
+        }
+
         async function send() {
             const input = document.getElementById('chatInput');
             const windowEl = document.getElementById('chatWindow');
@@ -118,12 +184,19 @@
 
                 if (data.status === 'success') {
                     windowEl.insertAdjacentHTML('beforeend', `<div class="msg-bot message-bubble">${escapeHtml(data.message)}</div>`);
+
+                    // 🔊 Play Audio if available
+                    if (data.audio_url) {
+                        const audio = new Audio(data.audio_url);
+                        audio.play().catch(e => console.log("Audio play blocked (needs user interaction first):", e));
+                    }
+
                 } else {
                     windowEl.insertAdjacentHTML('beforeend', `<div class="msg-bot message-bubble text-red-500">Error: ${data.message}</div>`);
                 }
 
             } catch (e) {
-                document.getElementById(loadingId).remove();
+                if (document.getElementById(loadingId)) document.getElementById(loadingId).remove();
                 windowEl.insertAdjacentHTML('beforeend', `<div class="msg-bot message-bubble text-red-500">Communication Error</div>`);
             }
             windowEl.scrollTop = windowEl.scrollHeight;
