@@ -73,13 +73,14 @@
         // Game Objects
         const fishes = [];
         const bubbles = [];
+        const rareAnimals = []; // Octopus, Turtle, etc.
         let shark = null;
 
         // Constants
         const NUM_FISH = 60;
         const FISH_SPEED_LIMIT = 4;
         const FISH_FORCE_LIMIT = 0.1;
-        const SHARK_SPAWN_INTERVAL = 15000; // ms
+        const SHARK_SPAWN_INTERVAL = 8000; // Reduced to 8 seconds
         let lastSharkTime = 0;
 
         // Audio Context (created on first interaction)
@@ -136,6 +137,14 @@
                 gain.gain.linearRampToValueAtTime(0, now + 0.3);
                 osc.start(now);
                 osc.stop(now + 0.3);
+            } else if (type === 'rare') { // Rare animal sound
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.linearRampToValueAtTime(600, now + 0.5);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
             }
         }
         window.addEventListener('click', initAudio);
@@ -404,6 +413,126 @@
             }
         }
 
+        // 🐙 Octopus Class
+        class Octopus {
+            constructor() {
+                this.pos = new Vector(Math.random() * width, height + 100);
+                this.vel = new Vector(0, -0.5); // Moves up slowly
+                this.size = 40;
+                this.wobble = Math.random() * 100;
+            }
+
+            update() {
+                this.pos.add(this.vel);
+                this.wobble += 0.1;
+                this.pos.x += Math.sin(this.wobble) * 1.5; // Sway side to side
+
+                if (this.pos.y < -100) return true; // Gone off top
+                return false;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.pos.x, this.pos.y);
+
+                // Head
+                ctx.fillStyle = "#FF7F50"; // Coral color
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Eyes
+                ctx.fillStyle = "white";
+                ctx.beginPath();
+                ctx.arc(-15, -5, 10, 0, Math.PI * 2);
+                ctx.arc(15, -5, 10, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = "black";
+                ctx.beginPath();
+                ctx.arc(-15, -5, 4, 0, Math.PI * 2);
+                ctx.arc(15, -5, 4, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Legs (Waving)
+                ctx.lineCap = "round";
+                ctx.strokeStyle = "#FF7F50";
+                ctx.lineWidth = 12;
+                for (let i = 0; i < 8; i++) {
+                    ctx.beginPath();
+                    let legAngle = Math.PI / 8 + i * (Math.PI / 4.5);
+                    let wave = Math.sin(this.wobble + i) * 10;
+                    ctx.moveTo(Math.cos(legAngle) * 10, Math.sin(legAngle) * 10 + 20);
+                    ctx.quadraticCurveTo(
+                        Math.cos(legAngle) * 50 + wave,
+                        Math.sin(legAngle) * 50 + 40,
+                        Math.cos(legAngle) * 60 + wave,
+                        Math.sin(legAngle) * 60 + 80
+                    );
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        // 🐢 Turtle Class
+        class Turtle {
+            constructor() {
+                this.pos = new Vector(width + 100, Math.random() * (height - 200) + 100);
+                this.vel = new Vector(-1, 0); // Moves left slowly
+                this.size = 50;
+                this.paddleAngle = 0;
+            }
+
+            update() {
+                this.pos.add(this.vel);
+                this.paddleAngle += 0.1;
+
+                if (this.pos.x < -100) return true; // Gone off left
+                return false;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.pos.x, this.pos.y);
+
+                // Flippers (Back)
+                ctx.fillStyle = "#2E8B57"; // SeaGreen
+                ctx.save();
+                ctx.rotate(Math.sin(this.paddleAngle) * 0.3);
+                ctx.fillRect(-20, -30, 40, 15);
+                ctx.fillRect(-20, 15, 40, 15);
+                ctx.restore();
+
+                // Shell
+                ctx.fillStyle = "#006400"; // DarkGreen
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.size, this.size * 0.7, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Pattern
+                ctx.strokeStyle = "#8FBC8F";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.size * 0.7, this.size * 0.5, 0, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Head
+                ctx.fillStyle = "#2E8B57";
+                ctx.beginPath();
+                ctx.arc(-this.size, 0, 20, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Eyes
+                ctx.fillStyle = "black";
+                ctx.beginPath();
+                ctx.arc(-this.size - 5, -5, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
         class Bubble {
             constructor() {
                 this.pos = new Vector(Math.random() * width, height + 20);
@@ -519,6 +648,25 @@
                 }
             }
 
+            // 3.5 Rare Animals Logic
+            if (Math.random() < 0.002) { // Small chance each frame
+                if (Math.random() < 0.5) {
+                    rareAnimals.push(new Octopus());
+                    playSound('rare');
+                } else {
+                    rareAnimals.push(new Turtle());
+                    playSound('rare');
+                }
+            }
+            for (let i = rareAnimals.length - 1; i >= 0; i--) {
+                let animal = rareAnimals[i];
+                let done = animal.update();
+                animal.draw();
+                if (done) {
+                    rareAnimals.splice(i, 1);
+                }
+            }
+
             // 4. Bubble Logic
             if (Math.random() < 0.03) {
                 bubbles.push(new Bubble());
@@ -556,6 +704,7 @@
             requestAnimationFrame(animate);
         }
 
+        init();
         // ==========================================
         // MediaPipe Hands Setup
         // ==========================================
@@ -606,7 +755,7 @@
         });
         camera.start();
 
-        init();
+
     </script>
 </body>
 

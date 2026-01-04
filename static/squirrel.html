@@ -264,6 +264,18 @@
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
         }
 
+        .tree-decoration {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 500px;
+            height: auto;
+            z-index: 4;
+            opacity: 0.9;
+            pointer-events: none;
+        }
+
         .fever-text {
             position: absolute;
             top: 30%;
@@ -307,6 +319,7 @@
     <div class="container">
         <video id="input_video" playsinline></video>
         <canvas id="output_canvas"></canvas>
+        <img src="static/images/squirrel/tree.png" class="tree-decoration">
         <div class="center-line"></div>
         <div class="fever-text" id="fever-text">FEVER TIME!!</div>
 
