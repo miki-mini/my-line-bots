@@ -16,7 +16,7 @@ from vertexai.generative_models import GenerativeModel, Part
 from google.cloud import firestore
 
 import matplotlib.pyplot as plt
-import japanize_matplotlib  # 日本語化
+# import japanize_matplotlib  # 日本語化 (Debug: Disable for deployment check)
 import pandas as pd
 
 
@@ -133,14 +133,16 @@ async def _generate_weight_graph():
 
         plt.figure(figsize=(6, 4))
         if not df.empty:
-            plt.plot(df["日付"], df["体重"], marker="o", color="#ff7f0e", label="体重(kg)")
+            # plt.plot(df["日付"], df["体重"], marker="o", color="#ff7f0e", label="体重(kg)")
+            pass
 
-        plt.title("体重の推移", fontsize=14)
-        plt.xlabel("日付")
-        plt.ylabel("体重 (kg)")
-        plt.grid(True, linestyle="--", alpha=0.6)
+        # plt.title("体重の推移", fontsize=14)
+        # plt.xlabel("日付")
+        # plt.ylabel("体重 (kg)")
+        # plt.grid(True, linestyle="--", alpha=0.6)
         if not df.empty:
-            plt.legend()
+            # plt.legend()
+            pass
 
         buf = io.BytesIO()
         plt.savefig(buf, format="png", bbox_inches="tight")
@@ -184,14 +186,16 @@ async def _generate_calories_graph():
 
         plt.figure(figsize=(6, 4))
         if dates:
-            plt.bar(dates, kcals, color="#2ca02c", label="摂取カロリー")
+            # plt.bar(dates, kcals, color="#2ca02c", label="摂取カロリー")
+            pass
 
-        plt.title("日々の摂取カロリー", fontsize=14)
-        plt.xlabel("日付")
-        plt.ylabel("kcal")
-        plt.grid(axis="y", linestyle="--", alpha=0.6)
+        # plt.title("日々の摂取カロリー", fontsize=14)
+        # plt.xlabel("日付")
+        # plt.ylabel("kcal")
+        # plt.grid(axis="y", linestyle="--", alpha=0.6)
         if dates:
-            plt.legend()
+            # plt.legend()
+            pass
 
         buf = io.BytesIO()
         plt.savefig(buf, format="png", bbox_inches="tight")
