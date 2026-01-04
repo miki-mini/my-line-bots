@@ -1,4 +1,6 @@
 import os
+# Matplotlibのキャッシュディレクトリを/tmpに設定 (Cloud Run対策)
+os.environ['MPLCONFIGDIR'] = '/tmp'
 import uvicorn
 from fastapi import FastAPI, Request, BackgroundTasks, Depends
 from core.auth_handler import get_current_username
