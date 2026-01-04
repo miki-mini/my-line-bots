@@ -120,7 +120,7 @@ uvicorn main:app --reload
 
 顔画像を分析し、パーソナルカラーと顔タイプを診断します。
 
-<img src="https://storage.googleapis.com/zenn-user-upload/da7e54ccfe82-20260103.png" width="300">
+<img src="https://storage.googleapis.com/zenn-user-upload/6a3ed3c723c3-20260104.png" width="300">
 
 **リクエスト:**
 ```json
