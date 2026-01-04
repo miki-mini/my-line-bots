@@ -15,5 +15,5 @@ requests
 pydantic
 aiofiles
 pandas
-
+pillow
 omdb

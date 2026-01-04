@@ -87,6 +87,10 @@
 
 
 
+        // Audio Context (created on first interaction)
+        let audioCtx;
+        let bgm = null;
+
         function resize() {
             width = window.innerWidth;
             height = window.innerHeight;
@@ -99,6 +103,9 @@
         // ==========================================
         // Sound Engine
         // ==========================================
+        // ==========================================
+        // Sound Engine
+        // ==========================================
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -108,7 +115,15 @@
                 bgm = new Audio('static/images/fish/fish.mp3');
                 bgm.loop = true;
                 bgm.volume = 0.4; // Slightly lower volume
-                bgm.play().catch(e => console.log('Auto-play prevented:', e));
+
+                // Wait for data to be loaded to prevent freezing
+                bgm.addEventListener('canplaythrough', () => {
+                    bgm.play().catch(e => console.log('Auto-play prevented:', e));
+                }, { once: true });
+
+                // Fallback attempt
+                bgm.load();
+
             } else if (bgm.paused) {
                 bgm.play().catch(e => console.log('Playback failed:', e));
             }
