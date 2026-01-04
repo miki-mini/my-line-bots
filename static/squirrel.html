@@ -322,11 +322,6 @@
 
     <!-- Video & Canvas -->
     <div id="game-container">
-        <!-- Debug Log -->
-        <div id="debug-log"
-            style="position:fixed; top:0; left:0; background:rgba(0,0,0,0.7); color:#0f0; font-size:12px; z-index:9999; max-height:100px; overflow:auto; padding:5px; width:50%; pointer-events:none;">
-        </div>
-
         <video id="input-video" playsinline></video>
         <canvas id="output_canvas"></canvas>
         <img src="static/images/squirrel/tree.png" class="tree-decoration">
@@ -500,21 +495,6 @@
         BGM.volume = 0.3;
         BGM.preload = 'auto'; // Preload the audio
 
-        // DEBUG LOGGING
-        const debugDiv = document.getElementById('debug-log');
-        function log(msg) {
-            debugDiv.innerHTML += msg + "<br>";
-            console.log(msg);
-        }
-
-        BGM.addEventListener('loadstart', () => log('BGM: loadstart'));
-        BGM.addEventListener('canplay', () => log('BGM: canplay'));
-        BGM.addEventListener('error', (e) => {
-            const err = BGM.error;
-            log(`BGM Error: code=${err ? err.code : 'unknown'} msg=${err ? err.message : ''}`);
-        });
-        BGM.addEventListener('playing', () => log('BGM: playing!'));
-
         const SOUNDS = {
             catch: () => playTone(880, 'sine', 0.1),
             highCatch: () => {
@@ -583,11 +563,8 @@
             updateUI();
 
             // Start BGM
-            log('Starting BGM...');
             BGM.currentTime = 0;
-            BGM.play()
-                .then(() => log('BGM Play Promise Resolved'))
-                .catch(e => log("BGM Play failed: " + e.name + " - " + e.message));
+            BGM.play().catch(e => console.log("BGM Play failed:", e));
 
             // Game Loop
             requestAnimationFrame(gameLoop);
