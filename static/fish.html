@@ -85,15 +85,17 @@
         let lastSharkTime = 0;
 
         // Images
-        const sharkImg = new Image(); sharkImg.src = 'static/images/fish/shark.png';
-        const turtleImg = new Image(); turtleImg.src = 'static/images/fish/turtle.png';
-        const turtleKiraImg = new Image(); turtleKiraImg.src = 'static/images/fish/turtle.kirakira.png';
-        const octopusImg = new Image(); octopusImg.src = 'static/images/fish/octopus.png';
-        const octopusSumiImg = new Image(); octopusSumiImg.src = 'static/images/fish/octopus.sumi.png';
+        const sharkImg = new Image(); sharkImg.src = '/static/images/fish/shark.png';
+        const turtleImg = new Image(); turtleImg.src = '/static/images/fish/turtle..png'; // Double dot based on file list
+        const turtleKiraImg = new Image(); turtleKiraImg.src = '/static/images/fish/turtle.kirakira.png';
+        const octopusImg = new Image(); octopusImg.src = '/static/images/fish/octopus.png';
+        const octopusSumiImg = new Image(); octopusSumiImg.src = '/static/images/fish/octopus.sumi.png';
+
+        // Audio
+        const bgmSrc = '/static/images/fish/fish.mp3';
 
         // Audio Context (created on first interaction)
         let audioCtx;
-        let bgm = null;
 
         function resize() {
             width = window.innerWidth;
@@ -113,7 +115,7 @@
             }
             // Play BGM
             if (!bgm) {
-                bgm = new Audio('static/images/fish/fish.mp3');
+                bgm = new Audio('/static/images/fish/fish.mp3');
                 bgm.loop = true;
                 bgm.volume = 0.4; // Slightly lower volume
 

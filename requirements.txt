@@ -17,3 +17,4 @@ aiofiles
 pandas
 pillow
 omdb
+flet
