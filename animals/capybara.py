@@ -5,6 +5,7 @@
 # ========================================
 
 import datetime as dt
+from datetime import timezone, timedelta
 
 from fastapi import Request, HTTPException
 from linebot.v3.messaging import (
@@ -26,14 +27,12 @@ class CapybaraChatRequest(BaseModel):
 # Globals
 _search_model = None
 _text_model = None
+JST = timezone(timedelta(hours=9), 'JST')
 
 def register_capybara_handler(app, handler_capybara, configuration_capybara, search_model, text_model):
     global _search_model, _text_model
     _search_model = search_model
     _text_model = text_model
-    """
-    カピバラのWebhookエンドポイントとハンドラーを登録する
-    """
     """
     カピバラのWebhookエンドポイントとハンドラーを登録する
     """
@@ -57,20 +56,17 @@ def register_capybara_handler(app, handler_capybara, configuration_capybara, sea
             raise HTTPException(status_code=400, detail=str(e))
         return "OK"
 
-# ==========================================
+    # ==========================================
     # 🐹 テキストメッセージ処理（検索対応 ＋ ♨️温泉モード）
     # ==========================================
-def register_capybara_handler(app, handler_capybara, configuration_capybara, search_model, text_model):
-    """カピバラのエンドポイントを登録"""
-
     @handler_capybara.add(MessageEvent, message=TextMessageContent)
     def handle_capybara_message(event):
         user_text = event.message.text
         print(f"🐹 カピバラ受信: {user_text}")
 
-        # 今日の日付を取得
+        # 今日の日付を取得 (JST)
         try:
-            today = dt.date.today().strftime("%Y年%m月%d日")
+            today = dt.datetime.now(JST).strftime("%Y年%m月%d日")
         except Exception as e:
             today = "今日"
 
@@ -137,8 +133,8 @@ def register_capybara_handler(app, handler_capybara, configuration_capybara, sea
 
         try:
             if search_model:
-                import datetime as dt
-                today = dt.date.today().strftime("%Y年%m月%d日")
+                # JSTで日付取得
+                today = dt.datetime.now(JST).strftime("%Y年%m月%d日")
 
                 prompt = f"""
 【重要】本日の日付は {today} です。この日付のニュースのみを検索してください。
@@ -219,11 +215,12 @@ router = APIRouter()
 @router.get("/api/capybara/news")
 async def get_capybara_news():
     """Webアプリ用: 今日のニュースを取得"""
+    global _search_model # グローバル変数を参照
     if not _search_model:
         return {"news": "機能がメンテナンス中だっぴ...🐹 (Model loading)"}
 
-    import datetime as dt
-    today = dt.date.today().strftime("%Y年%m月%d日")
+    # JSTで日付取得
+    today = dt.datetime.now(JST).strftime("%Y年%m月%d日")
 
     prompt = f"""
     本日は {today} です。
@@ -244,6 +241,7 @@ async def get_capybara_news():
 @router.post("/api/capybara/chat")
 async def chat_capybara_web(req: CapybaraChatRequest):
     """Webアプリ用: チャット"""
+    global _search_model # グローバル変数を参照
     if not _search_model:
         return {"reply": "今は眠いっぴ... (Model Not Loaded)"}
 
