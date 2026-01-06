@@ -21,7 +21,9 @@ MediaPipe Handsを使用した、2人対戦型の手を使ったインタラク�
 
 ## 🚀 デモ
 
-[ライブデモ](https://your-demo-url.com) *(準備中)*
+| ゲーム中 | 結果画面 |
+|:---:|:---:|
+| <img src="https://storage.googleapis.com/zenn-user-upload/d61312e69e40-20260106.png" width="300"> | <img src="https://storage.googleapis.com/zenn-user-upload/b8015cbee24a-20260106.png" width="300"> |
 
 ## 📋 動作環境
 
@@ -157,6 +159,11 @@ const ITEM_TYPES = {
 - モバイル端末ではパフォーマンスが低下する場合があります（PC推奨）
 - 一部のブラウザでは音声の自動再生がブロックされます（ユーザー操作が必要）
 - 初回アクセス時にカメラの許可が必要です
+
+画面が狭いですがスマホでも一応遊べます♪
+
+<img src="https://storage.googleapis.com/zenn-user-upload/e85189f060f5-20260106.png" width="300">
+
 
 ## 🤝 コントリビューション
 
