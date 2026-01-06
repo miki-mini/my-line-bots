@@ -94,7 +94,7 @@
 
         // Images
         const sharkImg = new Image(); sharkImg.src = '/static/images/fish/shark.png';
-        const turtleImg = new Image(); turtleImg.src = '/static/images/fish/turtle..png'; // Double dot based on file list
+        const turtleImg = new Image(); turtleImg.src = '/static/images/fish/turtle.png';
         const turtleKiraImg = new Image(); turtleKiraImg.src = '/static/images/fish/turtle.kirakira.png';
         const octopusImg = new Image(); octopusImg.src = '/static/images/fish/octopus.png';
         const octopusSumiImg = new Image(); octopusSumiImg.src = '/static/images/fish/octopus.sumi.png';
@@ -515,6 +515,10 @@
                     this.sparkling = true;
                     this.sparkleTimer = 60; // 1 second approx
                     playSound('magic');
+                    // Spawn Sparkles
+                    for (let i = 0; i < 10; i++) {
+                        effects.push(new Sparkle(this.pos.x, this.pos.y));
+                    }
                 }
             }
 
@@ -531,6 +535,38 @@
                     ctx.drawImage(img, -this.size / 2, -this.size / 2, this.size, this.size);
                 }
 
+                ctx.restore();
+            }
+        }
+
+        // ✨ Sparkle Effect
+        class Sparkle {
+            constructor(x, y) {
+                this.pos = new Vector(x, y);
+                this.vel = new Vector((Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4);
+                this.alpha = 1.0;
+                this.size = Math.random() * 5 + 5;
+            }
+            update() {
+                this.pos.add(this.vel);
+                this.alpha -= 0.02;
+                return this.alpha <= 0;
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.pos.x, this.pos.y);
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = "#FFD700"; // Gold
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                // Shine cross
+                ctx.strokeStyle = "white";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(-this.size * 1.5, 0); ctx.lineTo(this.size * 1.5, 0);
+                ctx.moveTo(0, -this.size * 1.5); ctx.lineTo(0, this.size * 1.5);
+                ctx.stroke();
                 ctx.restore();
             }
         }

@@ -1,4 +1,3 @@
-
 import flet as ft
 from dotenv import load_dotenv
 import os
@@ -33,34 +32,25 @@ def main(page: ft.Page):
     page.bgcolor = DARK_BG
 
     # Service
-    print("DEBUG: Initializing Service...")
-    voidoll = None
-    try:
-        # voidoll = VoidollService()  # FAILSAFE: Commented out for debugging
-        # service_status = "Connected to Neural Network"
-        service_status = "Service Disabled (Debug Mode)"
-        print("DEBUG: Service init skipped for debugging")
-    except Exception as e:
-        print(f"DEBUG: Service Error: {e}")
-        voidoll = None
-        service_status = f"Service Error: {e}"
+    voidoll = VoidollService()
 
     # ==============================
     # 🧩 UI Components
     # ==============================
-    print("DEBUG: Creating UI components...")
 
     # 1. Header (Avatar & Status)
+    # Using a simple icon if image fails
     avatar_icon = ft.Icon("memory", size=80, color=NEON_GREEN)
 
     status_text = ft.Text(
-        f"SYSTEM ONLINE - {service_status}",
+        "SYSTEM ONLINE - Connected to Neural Network",
         size=12,
         color=NEON_GREEN,
         font_family="Consolas"
     )
 
     # 2. Chat History (ListView)
+    # We wrap it in a container to give it a border or background if needed
     chat_list = ft.ListView(
         expand=True,
         spacing=10,
@@ -83,6 +73,8 @@ def main(page: ft.Page):
         icon=ft.Icon("send", color=NEON_GREEN),
         on_click=lambda e: send_message(None)
     )
+
+    # NOTE: ft.Audio is removed due to compatibility issues. Using winsound instead.
 
     # ==============================
     # ⚡ Logic
@@ -114,10 +106,6 @@ def main(page: ft.Page):
         txt_input.value = ""
         txt_input.focus()
         page.update()
-
-        if not voidoll:
-            add_chat_bubble("Error: Voidoll Service not initialized.", is_user=False, is_error=True)
-            return
 
         # 2. Loading State
         status_text.value = "PROCESSING DATA..."
@@ -154,6 +142,8 @@ def main(page: ft.Page):
             bg_color = "#4a0000"
 
         # Alignments
+        # Try to use explicit Alignment objects to avoid 'has no attribute' error if it persists
+        # But 'ft.alignment.center_right' is standard. If it fails, I will use ft.Alignment(1, 0)
         align_obj = ft.Alignment(1, 0) if is_user else ft.Alignment(-1, 0)
 
         bubble = ft.Container(
@@ -195,16 +185,15 @@ def main(page: ft.Page):
         padding=ft.padding.only(top=10)
     )
 
-    # Simplified Layout to ensure visibility
+    # Simplified Layout (No global expand, just column)
     page.add(
         header,
         ft.Container(
             content=chat_list,
-            height=500, # Explicit height to prevent collapse
+            height=400, # Fixed height for testing
             border=ft.border.all(1, NEON_GREEN),
             border_radius=5,
-            padding=10,
-            expand=True # Try expand=True within this flex context
+            padding=10
         ),
         input_area
     )
@@ -214,9 +203,4 @@ def main(page: ft.Page):
     page.update()
 
 if __name__ == "__main__":
-    # Force web browser view for reliability
-    try:
-        ft.app(target=main, view="web_browser")
-    except Exception as e:
-        print(f"Error: {e}")
-        ft.app(target=main)
+    ft.app(main)
