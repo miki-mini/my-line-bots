@@ -14,6 +14,10 @@ from core.voidoll_service import VoidollService
 
 # Load environment variables (api keys)
 load_dotenv()
+if os.getenv("GOOGLE_API_KEY"):
+    print("DEBUG: GOOGLE_API_KEY found in env.")
+else:
+    print("DEBUG: GOOGLE_API_KEY NOT FOUND in env.")
 
 def main(page: ft.Page):
     # ==============================
@@ -34,12 +38,11 @@ def main(page: ft.Page):
 
     # Service
     print("DEBUG: Initializing Service...")
-    voidoll = None
     try:
-        # voidoll = VoidollService()  # FAILSAFE: Commented out for debugging
-        # service_status = "Connected to Neural Network"
-        service_status = "Service Disabled (Debug Mode)"
-        print("DEBUG: Service init skipped for debugging")
+        voidoll = VoidollService()
+        service_status = "Connected to Neural Network"
+        # service_status = "Service Disabled (Debug Mode)"
+        # print("DEBUG: Service init skipped for debugging")
     except Exception as e:
         print(f"DEBUG: Service Error: {e}")
         voidoll = None
@@ -51,10 +54,11 @@ def main(page: ft.Page):
     print("DEBUG: Creating UI components...")
 
     # 1. Header (Avatar & Status)
-    avatar_icon = ft.Icon("memory", size=80, color=NEON_GREEN)
+    # ft.Icon causes freeze, using Text instead
+    avatar_text = ft.Text("🤖 VOIDOLL SYSTEM", size=20, weight="bold", color=NEON_GREEN)
 
     status_text = ft.Text(
-        f"SYSTEM ONLINE - {service_status}",
+        f"STATUS: {service_status}",
         size=12,
         color=NEON_GREEN,
         font_family="Consolas"
@@ -79,8 +83,10 @@ def main(page: ft.Page):
         on_submit=lambda e: send_message(e)
     )
 
-    send_button = ft.IconButton(
-        icon=ft.Icon("send", color=NEON_GREEN),
+    # ft.IconButton/Icon causes freeze, using ElevatedButton
+    send_button = ft.ElevatedButton(
+        content=ft.Text("SEND", color=DARK_BG),
+        bgcolor=NEON_GREEN,
         on_click=lambda e: send_message(None)
     )
 
@@ -112,7 +118,7 @@ def main(page: ft.Page):
         # 1. Add User Message to Chat
         add_chat_bubble(user_message, is_user=True)
         txt_input.value = ""
-        txt_input.focus()
+        # txt_input.focus() # Causes async warning in some versions
         page.update()
 
         if not voidoll:
@@ -179,7 +185,7 @@ def main(page: ft.Page):
     # Header Section
     header = ft.Container(
         content=ft.Column([
-            ft.Container(content=avatar_icon, alignment=ft.Alignment(0, 0)),
+            ft.Container(content=avatar_text, alignment=ft.Alignment(0, 0)),
             ft.Container(content=status_text, alignment=ft.Alignment(0, 0)),
         ]),
         padding=10,
@@ -214,9 +220,10 @@ def main(page: ft.Page):
     page.update()
 
 if __name__ == "__main__":
-    # Force web browser view for reliability
+    # Launch in native window
     try:
-        ft.app(target=main, view="web_browser")
+        ft.app(target=main)
     except Exception as e:
         print(f"Error: {e}")
-        ft.app(target=main)
+        # Fallback to browser if native fails
+        ft.app(target=main, view="web_browser")

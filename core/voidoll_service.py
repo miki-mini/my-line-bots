@@ -1,8 +1,8 @@
-
 import os
 import uuid
 import requests
-import google.generativeai as genai
+import vertexai
+from vertexai.generative_models import GenerativeModel
 from google.cloud import storage
 
 class VoidollService:
@@ -10,20 +10,30 @@ class VoidollService:
         self.voicevox_url = os.getenv("VOICEVOX_URL")
         self.gcs_bucket_name = os.getenv("GCS_BUCKET_NAME")
 
-        # Initialize Gemini
-        # Note: API key should be set in environment variable GOOGLE_API_KEY by default for genai
-        # If not, it might need explicit configuration here, but usually genai.configure() is called globally or env var is used.
-        # Assuming genai is configured globally in main.py, but for desktop app we might need to configure it.
-        # Ideally, we check if it needs config.
-        pass
+        # Initialize Vertex AI (Matches main.py logic)
+        project_id = os.getenv("GCP_PROJECT_ID")
+        if project_id:
+            try:
+                vertexai.init(project=project_id, location="us-central1")
+                print(f"DEBUG: Vertex AI Initialized for project {project_id}")
+                self.use_vertex = True
+            except Exception as e:
+                print(f"⚠️ Vertex AI Init Error: {e}")
+                self.use_vertex = False
+        else:
+            print("⚠️ GCP_PROJECT_ID not found. AI features may fail.")
+            self.use_vertex = False
 
     def generate_chat_reply(self, user_text: str, is_audio_input: bool = False) -> str:
         """
-        Generates a text reply from Voidoll using Gemini.
+        Generates a text reply from Voidoll using Gemini (Vertex AI).
         """
+        if not self.use_vertex:
+            return "システムエラー: AI接続設定（GCP_PROJECT_ID）が見つからないにゃ。"
+
         try:
-            model_name = "gemini-2.5-flash" if is_audio_input else "gemini-1.5-flash"
-            model = genai.GenerativeModel(model_name)
+            model_name = "gemini-2.5-flash"
+            model = GenerativeModel(model_name)
 
             system_prompt = """
             あなたは高度な知能を持つ「ネコ型アンドロイド」です。
