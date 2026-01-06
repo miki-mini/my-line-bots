@@ -24,6 +24,7 @@ def main(page: ft.Page):
     # ⚙️ App Configuration
     # ==============================
     page.title = "Voidoll Desktop Terminal"
+    page.window_icon = "voidoll.ico" # Set Window Icon
     page.vertical_alignment = "start"
     page.theme_mode = "dark"
     page.window_width = 450
