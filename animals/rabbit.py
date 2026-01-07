@@ -14,6 +14,16 @@ from linebot.v3.messaging import ApiClient, MessagingApi, ReplyMessageRequest, T
 db = firestore.Client()
 RABBIT_COLLECTION = "rabbit_users"
 
+
+def get_rabbit_reply(text: str) -> str:
+    """
+    メッセージを受け取って、月うさぎとしての返信を返す純粋関数
+    """
+    reply = "うさぎは月で餅をついています...🐇🌕"
+    if "おはよう" in text:
+        reply = "おはよう！今日もキラキラ光る月のかけらを集めよう✨"
+    return reply
+
 def register_rabbit_handler(app, handler_rabbit, configuration_rabbit, auth_dependency=None):
     """
     月うさぎのエンドポイントを登録
@@ -35,9 +45,8 @@ def register_rabbit_handler(app, handler_rabbit, configuration_rabbit, auth_depe
     def handle_rabbit_message(event):
         # シンプルな返信のみ実装（LINE側）
         text = event.message.text
-        reply = "うさぎは月で餅をついています...🐇🌕"
-        if "おはよう" in text:
-            reply = "おはよう！今日もキラキラ光る月のかけらを集めよう✨"
+        reply = get_rabbit_reply(text)
+
 
         with ApiClient(configuration_rabbit) as api_client:
             line_api = MessagingApi(api_client)

@@ -33,6 +33,52 @@ def register_bat_handler(app, handler, configuration, search_model, db):
     _db = db
     _search_model = search_model
 
+
+def process_bat_command(text: str, user_id: str, db, search_model) -> str:
+    """
+    コウモリのコマンド処理ロジック（テスト可能）
+    """
+    reply_text = ""
+    # --- コマンド処理 ---
+    if text.startswith("追加:") or text.startswith("追加："):
+        # キーワード追加
+        keyword = text.split(":", 1)[1].split("：", 1)[-1].strip()
+        if keyword:
+            _add_to_watch_list(db, user_id, keyword)
+            reply_text = f"🦇 「{keyword}」を監視リストに入れたモリ！\n放送が見つかったら教えるモリ〜📺"
+        else:
+            reply_text = "🦇 追加したい番組名を入れてモリ！\n例：「追加: ポケモン」"
+
+    elif text.startswith("削除:") or text.startswith("削除："):
+        # キーワード削除
+        keyword = text.split(":", 1)[1].split("：", 1)[-1].strip()
+        if keyword:
+            if _remove_from_watch_list(db, user_id, keyword):
+                reply_text = f"🦇 「{keyword}」をリストから消したモリ。"
+            else:
+                reply_text = f"🦇 「{keyword}」はリストになかったモリ..."
+        else:
+            reply_text = "🦇 削除したい番組名を入れてモリ！\n例：「削除: ジブリ」"
+
+    elif text == "リスト" or text == "一覧":
+        # リスト確認
+        keywords = _get_user_watch_list(db, user_id)
+        if keywords:
+            list_str = "\n".join([f"・{k}" for k in keywords])
+            reply_text = f"🦇 今チェックしてる番組だモリ：\n\n{list_str}"
+        else:
+            reply_text = "🦇 今は何もチェックしてないモリ。\n「追加: 〇〇」で教えてくれモリ！"
+
+    elif text in ["ID", "id", "ID教えて", "自分のID"]:
+        # ID確認
+        reply_text = f"あなたのIDはこれだモリ...🦇\n\n{user_id}\n\nこれをWebアプリに入れると通知が届くモリ。"
+
+    else:
+        # --- 通常会話（検索） ---
+        reply_text = _search_tv_schedule_with_gemini(text, search_model)
+
+    return reply_text
+
     # ==========================================
     # 🦇 Webhook エンドポイント
     # ==========================================
@@ -59,45 +105,9 @@ def register_bat_handler(app, handler, configuration, search_model, db):
         print(f"🦇 受信: {text}")
 
         user_id = event.source.user_id
-        reply_text = ""
 
-        # --- コマンド処理 ---
-        if text.startswith("追加:") or text.startswith("追加："):
-            # キーワード追加
-            keyword = text.split(":", 1)[1].split("：", 1)[-1].strip()
-            if keyword:
-                _add_to_watch_list(db, user_id, keyword)
-                reply_text = f"🦇 「{keyword}」を監視リストに入れたモリ！\n放送が見つかったら教えるモリ〜📺"
-            else:
-                reply_text = "🦇 追加したい番組名を入れてモリ！\n例：「追加: ポケモン」"
+        reply_text = process_bat_command(text, user_id, _db, _search_model)
 
-        elif text.startswith("削除:") or text.startswith("削除："):
-            # キーワード削除
-            keyword = text.split(":", 1)[1].split("：", 1)[-1].strip()
-            if keyword:
-                if _remove_from_watch_list(db, user_id, keyword):
-                    reply_text = f"🦇 「{keyword}」をリストから消したモリ。"
-                else:
-                    reply_text = f"🦇 「{keyword}」はリストになかったモリ..."
-            else:
-                reply_text = "🦇 削除したい番組名を入れてモリ！\n例：「削除: ジブリ」"
-
-        elif text == "リスト" or text == "一覧":
-            # リスト確認
-            keywords = _get_user_watch_list(db, user_id)
-            if keywords:
-                list_str = "\n".join([f"・{k}" for k in keywords])
-                reply_text = f"🦇 今チェックしてる番組だモリ：\n\n{list_str}"
-            else:
-                reply_text = "🦇 今は何もチェックしてないモリ。\n「追加: 〇〇」で教えてくれモリ！"
-
-        elif text in ["ID", "id", "ID教えて", "自分のID"]:
-            # ID確認
-            reply_text = f"あなたのIDはこれだモリ...🦇\n\n{user_id}\n\nこれをWebアプリに入れると通知が届くモリ。"
-
-        else:
-            # --- 通常会話（検索） ---
-            reply_text = _search_tv_schedule_with_gemini(text, search_model)
 
         # 返信送信
         try:

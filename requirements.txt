@@ -18,3 +18,7 @@ pandas
 pillow
 omdb
 flet
+pytest
+pytest-cov
+
+

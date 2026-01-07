@@ -176,6 +176,22 @@ BEAVER_CHANNEL_SECRET=...
 uvicorn main:app --reload
 ```
 
+### テストの実行
+
+`pytest` コマンドでテストを実行できます。
+
+```bash
+# 全てのテストを実行
+pytest
+
+# 特定のファイルのテストを実行
+pytest tests/test_bat.py
+
+# 詳細表示（-v）
+pytest -v
+```
+
+
 ---
 
 ## 🔗 関連リンク

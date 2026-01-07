@@ -132,19 +132,32 @@ def register_penguin_handler(app, handler_penguin, configuration_penguin, text_m
 # ---------------------------------------------------------
 
 
-def handle_email_request(event, text, user_id, conf, model):
+
+def parse_email_request(text: str):
+    """
+    メール作成リクエストのテキストをパースする純粋関数
+    Returns: (target_email, raw_subject, raw_body) or (None, None, None)
+    """
     parts = text.split("\n")
     if len(parts) < 3:
+        return None, None, None
+
+    target_email = parts[0].replace("メール：", "").strip()
+    raw_subject = parts[1].strip()
+    raw_body = "\n".join(parts[2:])
+
+    return target_email, raw_subject, raw_body
+
+def handle_email_request(event, text, user_id, conf, model):
+    target_email, raw_subject, raw_body = parse_email_request(text)
+
+    if not target_email:
         reply_simple_message(
             event.reply_token,
             "形式が違うペン💦\nメール：宛先\n件名\n本文\nの順で頼むペン！",
             conf,
         )
         return
-
-    target_email = parts[0].replace("メール：", "").strip()
-    raw_subject = parts[1].strip()
-    raw_body = "\n".join(parts[2:])
 
     subject, body = call_gemini_email(raw_subject, raw_body, model)
     pending_emails[user_id] = {"to": target_email, "subject": subject, "body": body}
