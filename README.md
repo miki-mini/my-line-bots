@@ -66,8 +66,8 @@
 | <img src="animals/images/alpaca.jpg" width="40"> | **アルパカのまつエクサロン🦙**<br>[(Alpaca)](animals/alpaca.md) | **まつエクシミュレーション**<br>写真でまつげエクステの仕上がりをAIシミュレーション。 | `Face Mesh` `Canvas` |
 | <img src="animals/images/flamingo.jpg" width="40"> | **姿勢のフラミンゴ先生**<br>[(Flamingo)](animals/flamingo.md) | **姿勢矯正 & ゲーム**<br>エッジAIで姿勢の歪みをチェック＆片足バランスゲーム。完全無料・安心設計。 | `MediaPipe` `Client-Side AI` |
 | <img src="animals/images/butterfly.png" width="40"> | **美の蝶々パーソナル🦋**<br>[(Butterfly)](animals/butterfly.md) | **パーソナルカラー & 顔タイプ**<br>AIが似合うシーズンカラーと顔型に合う髪型を診断。 | `Gemini 2.5` `FastAPI` |
-| <img src="animals/images/squirrel.png" width="40"> | **リスのほっぺたどんぐりゲーム🐿️**<br>(Squirrel Game)<br>![WebApp](https://img.shields.io/badge/WEBアプリ！-brown) | **対戦アクションゲーム**<br>カメラで手を認識し、落ちてくるどんぐりをキャッチしてほっぺたを膨らませる2人対戦ゲーム。 | [🔍 HTML](static/squirrel.html)<br>[📜 説明書](animals/squirrel.md) |
-| <img src="animals/images/fish.jpg" width="40"> | **カラフルお魚のお部屋水族館🐠**<br>(Fish Room Aquarium)<br>![WebApp](https://img.shields.io/badge/WEBアプリ！-blue) | **バーチャル水族館**<br>手で魚と触れ合える癒やしの空間。サメやタコも登場します。 | [🔍 HTML](static/fish.html) |
+| <img src="animals/images/squirrel.png" width="40"> | **リスのほっぺたどんぐりゲーム🐿️**<br>[(Squirrel)](animals/squirrel.md) | **対戦アクションゲーム**<br>カメラで手を認識し、落ちてくるどんぐりをキャッチしてほっぺたを膨らませる2人対戦ゲーム。 | `MediaPipe Hands` `Canvas` `Web Audio` |
+| <img src="animals/images/fish.jpg" width="40"> | **カラフルお魚のお部屋水族館🐠**<br>[(Fish)](static/fish.html) | **バーチャル水族館**<br>手で魚と触れ合える癒やしの空間。サメやタコも登場します。 | `MediaPipe Hands` `Canvas` `Audio` |
 
 👉 **[詳細ドキュメントとデモはこちら (animals/README.md)](animals/README.md)**
 
