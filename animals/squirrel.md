@@ -3,7 +3,7 @@
 MediaPipe Handsを使用した、2人対戦型の手を使ったインタラクティブゲームです。
 画面上から落ちてくるどんぐりやくるみを手でキャッチして、リスのほっぺたをパンパンに膨らませた方が勝ちです！
 
-<img src="mages/squirrel.png" width="300">
+<img src="images/squirrel.png" width="300">
 
 ## 🎮 機能
 
