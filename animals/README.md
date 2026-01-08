@@ -23,7 +23,7 @@ Python と Google Gemini API を活用した、多機能なLINEボットたち�
 | <img src="images/flamingo.jpg" width="40"> | **姿勢のフラミンゴ先生**<br>(Flamingo Sensei)<br>![WebApp](https://img.shields.io/badge/WEBアプリ！-pink) | **姿勢矯正 & バランスゲーム**<br>カメラで姿勢の歪みをチェック。完全無料でプライバシーも安全です。 | [🔍 HTML](../static/flamingo.html)<br>[📜 説明書](flamingo.md)<br>[📘 Zenn](https://zenn.dev/miki_mini/articles/b316596a39a59c) |
 | <img src="images/butterfly.png" width="40"> | **美の蝶々パーソナル🦋**<br>(Butterfly Checko)<br>![WebApp](https://img.shields.io/badge/WEBアプリ！-purple) | **パーソナルカラー & 顔タイプ診断**<br>AIが似合う色と髪型を診断。※骨格診断はフラミンゴへ移動しました。 | [🔍 HTML](../static/butterfly.html)<br>[📜 説明書](butterfly.md)<br>[📘 Zenn](https://zenn.dev/miki_mini/articles/8aa118abc591e8) |
 | <img src="images/squirrel.png" width="40"> | **リスのほっぺたどんぐりゲーム🐿️**<br>(Squirrel Game)<br>![WebApp](https://img.shields.io/badge/WEBアプリ！-brown) | **対戦アクションゲーム**<br>カメラで手を認識し、落ちてくるどんぐりをキャッチしてほっぺたを膨らませる2人対戦ゲーム。 | [🔍 HTML](../static/squirrel.html)<br>[📜 説明書](squirrel.md)<br>[📘 Zenn](https://zenn.dev/miki_mini/articles/66ad9e4a3073af) |
-| <img src="images/fish.jpg" width="40"> | **カラフルお魚のお部屋水族館🐠**<br>(Fish Room Aquarium)<br>![WebApp](https://img.shields.io/badge/WEBアプリ！-blue) | **バーチャル水族館**<br>手で魚と触れ合える癒やしの空間。サメやタコも登場します。 | [🔍 HTML](../static/fish.html) |
+| <img src="images/fish.jpg" width="40"> | **カラフルお魚のお部屋水族館🐠**<br>(Fish Room Aquarium)<br>![WebApp](https://img.shields.io/badge/WEBアプリ！-blue) | **バーチャル水族館**<br>手で魚と触れ合える癒やしの空間。サメやタコも登場します。 | [🔍 HTML](../static/fish.html)<br>[📜 説明書](fish.md) |
 
 ## 🛠 全体で使用している技術
 
