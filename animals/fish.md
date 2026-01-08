@@ -1,6 +1,6 @@
 # 🐠 Digital Art Aquarium - おうちデジタル水族館
 
-<img src="images/fish.jpg" width="300">
+<img src="images/fish.jpg" width="400">
 
 Webカメラとブラウザだけで遊べる、インタラクティブな水族館アートアプリです。
 デジタルアートミュージアムのような体験型アートに憧れて作りました！
@@ -31,7 +31,7 @@ Webカメラとブラウザだけで遊べる、インタラクティブな水�
 
 | プロジェクターで投影すれば、大画面でプレイが楽しめます🐟 | スマホでもできます📱 |
 |:--------:|:--------:|
-| <img src="https://storage.googleapis.com/zenn-user-upload/ef3ace613e45-20260107.png " width="400"> | <img src="https://storage.googleapis.com/zenn-user-upload/55df69939f90-20260108.png " width="200"> |
+| <img src="https://storage.googleapis.com/zenn-user-upload/ef3ace613e45-20260107.png" width="400"> | <img src="https://storage.googleapis.com/zenn-user-upload/55df69939f90-20260108.png" width="200"> |
 
 ### Prerequisites
 
@@ -92,34 +92,33 @@ npm run build
 ## 🏗️ Architecture
 
 ```mermaid
-graph TB
-    subgraph Client["Browser (Client Side)"]
-        A[Web Camera] --> B[MediaPipe Hands]
-        B --> C[Hand Landmarks<br/>21 points]
-        C --> D[Canvas Rendering Engine]
+flowchart TB
+    subgraph Client ["ブラウザ (クライアント)"]
+        A["Webカメラ"] --> B["MediaPipe Hands"]
+        B --> C["手の座標データ<br/>21個のランドマーク"]
+        C --> D["Canvas描画エンジン"]
 
-        D --> E[Fish Flock Logic<br/>Boids Algorithm]
-        D --> F[Shark/Rare Animals]
-        D --> G[Bubble System]
-        D --> H[Effects System]
+        D --> E["Fish群れロジック<br/>Boidsアルゴリズム"]
+        D --> F["Shark/レア動物ロジック"]
+        D --> G["Bubbleロジック"]
+        D --> H["エフェクト処理"]
 
-        E --> I[Canvas 2D Context]
+        E --> I["Canvas 2D Context"]
         F --> I
         G --> I
         H --> I
 
-        J[Web Audio API] --> K[BGM Player]
-        J --> L[Sound Effects<br/>Oscillator]
+        J["Web Audio API"] --> K["BGM再生"]
+        J --> L["効果音生成<br/>Oscillator"]
 
-        I --> M[Display]
+        I --> M["画面表示"]
     end
 
-    subgraph Server["FastAPI Server (Optional)"]
-        N[Static File Hosting]
-        O[LINE Bot API]
+    subgraph ServerSide ["FastAPI サーバー (静的配信)"]
+        N["静的ファイル<br/>(.html, .js, .png)"]
     end
 
-    Server -.-> Client
+    N -.-> Client
 
     style A fill:#e1f5ff
     style B fill:#fff3e0
