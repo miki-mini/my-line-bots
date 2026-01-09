@@ -60,7 +60,7 @@
 | <img src="animals/images/penguin.jpg" width="40"> | **スーパー秘書ペンギン🐧**<br>[(Penguin)](animals/penguin.md) | **メール代行 & 接待**<br>用件を送るだけでビジネスメールを作成・送信。接待のお店選びも。 | `Gmail API` `Search` |
 | <img src="animals/images/capybara.jpg" width="40"> | **AIトピックのカピバラ解説**<br>[(Capybara)](animals/capybara.md) | **ニュース解説**<br>最新のAIニュースなどを検索し、分かりやすく要約・解説。 | `Google Search` |
 | <img src="animals/images/mole.jpg" width="40"> | **もぐら駅長**<br>[(Mole)](animals/mole.md) | **交通案内**<br>駅の時刻表や乗り換え案内をサポート。 | `Train Logic` |
-| <img src="animals/images/voidoll.jpg" width="40"> | **🤖おしゃべりVoidollねこ🐱**<br>[(Voidoll)](animals/voidoll.md) | **音声対話**<br>テキストだけでなく、音声ファイルでの自然な会話が可能。 | `Audio Processing` |
+| <img src="animals/images/voidoll.jpg" width="40"> | **🤖おしゃべりVoidollねこ🐱**<br>[(Voidoll)](animals/voidoll.md) | **音声対話 (Desktop App)**<br>FletによるWindowsネイティブアプリ。遅延のない音声会話を実現。 | `Python (Flet)` `Vertex AI` `Winsound` |
 | <img src="animals/images/whale.jpg" width="40"> | **星くじらからの光の便り🐋💫**<br>[(Whale)](animals/whale.md) | **癒やし & 宇宙**<br>NASAのAPIを使って、美しい宇宙の写真や情報を届ける。 | `NASA API` |
 | <img src="animals/images/bat.jpg" width="40"> | **コウモリの番組お知らせ🦇**<br>[(Bat)](animals/bat.md) | **番組通知**<br>指定したタレントやキーワードのTV出演情報を毎朝通知。 | `Web Scraping` |
 | <img src="animals/images/alpaca.jpg" width="40"> | **アルパカのまつエクサロン🦙**<br>[(Alpaca)](animals/alpaca.md) | **まつエクシミュレーション**<br>写真でまつげエクステの仕上がりをAIシミュレーション。 | `Face Mesh` `Canvas` |
