@@ -238,7 +238,7 @@ wave_sound.mp3
 
 ## 📚 Related Articles
 
-Zenn記事:
+Zenn記事:[📘 Zenn](https://zenn.dev/miki_mini/articles/214983f7aedad5)
 
 ---
 
