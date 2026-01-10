@@ -26,9 +26,32 @@ class WeightRequest(BaseModel):
 
 
 
+
 # ==========================================
 # 🧠 Core Logic Functions (Reusable)
 # ==========================================
+def extract_json_from_text(text: str) -> dict:
+    """
+    AIの返答テキストからJSONオブジェクトを抽出する
+    Markdown記号(```json ... ```)なども除去してパースを試みる
+    """
+    # 1. ```json ... ``` の除去
+    text = text.replace("```json", "").replace("```", "")
+
+    # 2. 最初に見つかった { から } までを抽出
+    match = re.search(r"\{.*\}", text, re.DOTALL)
+    if match:
+        json_str = match.group(0)
+        return json.loads(json_str)
+
+    # 3. リトライ: そのままロードしてみる
+    try:
+        return json.loads(text)
+    except:
+        pass
+
+    raise ValueError("JSON parse failed")
+
 async def _process_image_analysis(image_file: UploadFile):
     print(f"🦉 フクロウ: 画像分析開始 - {image_file.filename}")
     try:
@@ -60,12 +83,12 @@ async def _process_image_analysis(image_file: UploadFile):
         print(f"🦉 AI Response: {text_response[:100]}...")
 
         # 4. AIの返事からJSON部分だけを抽出
-        match = re.search(r"\{.*\}", text_response, re.DOTALL)
-        if match:
-            json_str = match.group(0)
-            result = json.loads(json_str)
-        else:
-            raise ValueError("AIの返答からJSONが見つかりませんでした。")
+
+        # 4. AIの返事からJSON部分だけを抽出
+        try:
+            result = extract_json_from_text(text_response)
+        except ValueError:
+             raise ValueError("AIの返答からJSONが見つかりませんでした。")
 
         # 5. Firestoreにカロリーを記録
         db = firestore.Client()
