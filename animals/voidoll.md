@@ -59,7 +59,7 @@ LINEだけでなく、PCのアイコンダブルクリックで起動できる�
 文字での相談もOK。猫耳アンドロイドが即レス！
 
 ### Desktop版（Flet）
-<img src="images/desktop_screenshot.png" width="600" alt="Desktop App">
+<img src="https://storage.googleapis.com/zenn-user-upload/3a0db6c9b6e8-20260110.png" width="600" alt="Desktop App">
 
 *ターミナル風のネオングリーン/黒のUIで、テキストチャットができます*
 
@@ -261,13 +261,7 @@ voidoll/
 
 Developed by **miki-mini** <small>feat. Antigravity</small>
 
----
 
-## ⭐ サポート (Support)
-
-このプロジェクトが役に立ったら、ぜひスターをお願いします！⭐
-
-何か問題があれば、Issueを立ててください。
 
 ---
 

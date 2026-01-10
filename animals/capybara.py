@@ -20,8 +20,14 @@ from linebot.v3.webhooks import MessageEvent, TextMessageContent
 from linebot.v3.exceptions import InvalidSignatureError
 from pydantic import BaseModel
 
+
 class CapybaraChatRequest(BaseModel):
     message: str
+
+def check_onsen_mode(text: str) -> bool:
+    """温泉モード（癒やしモード）かどうかを判定する"""
+    onsen_keywords = ["疲れた", "つかれた", "しんどい", "休憩", "休みたい", "癒やして", "温泉", "つらい"]
+    return any(keyword in text for keyword in onsen_keywords)
 
 
 # Globals
@@ -71,8 +77,10 @@ def register_capybara_handler(app, handler_capybara, configuration_capybara, sea
             today = "今日"
 
         # ♨️ 温泉モード判定（キーワード検知）
-        onsen_keywords = ["疲れた", "つかれた", "しんどい", "休憩", "休みたい", "癒やして", "温泉", "つらい"]
-        is_onsen_mode = any(keyword in user_text for keyword in onsen_keywords)
+
+        # ♨️ 温泉モード判定（キーワード検知）
+        is_onsen_mode = check_onsen_mode(user_text)
+
 
         msg = ""
         try:

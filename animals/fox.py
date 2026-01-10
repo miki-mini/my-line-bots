@@ -20,6 +20,20 @@ from fastapi import Request, HTTPException
 _search_model = None
 _text_model = None
 
+def extract_youtube_id(text: str) -> str | None:
+    """
+    テキストからYouTubeの動画IDを抽出する
+    対応: youtube.com/watch?v=ID, youtu.be/ID
+    """
+    if not text:
+        return None
+
+    youtube_regex = r"(?:https?://)?(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]+)"
+    match = re.search(youtube_regex, text)
+    if match:
+        return match.group(1)
+    return None
+
 
 
 def register_fox_handler(app, handler_fox, configuration_fox, search_model, text_model):
@@ -62,11 +76,10 @@ def register_fox_handler(app, handler_fox, configuration_fox, search_model, text
 
         try:
             # YouTube URLの検出 (短縮URLやモバイルURLにも対応)
-            youtube_regex = r"(?:https?://)?(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]+)"
-            match = re.search(youtube_regex, user_message)
+            video_id = extract_youtube_id(user_message)
 
-            if match:
-                video_id = match.group(1)
+            if video_id:
+
                 print(f"🦊 YouTube動画ID検出: {video_id}")
 
                 # 処理中のメッセージを送る（オプション: LINEの仕様上、応答は1回なのでここはスキップしますが、ログには残します）
@@ -270,11 +283,10 @@ async def fox_web_summary(req: FoxRequest):
     print(f"🦊 Web Request: {url}")
 
     # URLからID抽出
-    youtube_regex = r"(?:https?://)?(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]+)"
-    match = re.search(youtube_regex, url)
+    video_id = extract_youtube_id(url)
 
-    if match:
-        video_id = match.group(1)
+    if video_id:
+
         # Use globals initialized by register handler
         summary = summarize_youtube_with_search(video_id, _search_model, _text_model)
         return {"status": "success", "summary": summary}

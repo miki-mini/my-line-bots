@@ -435,8 +435,35 @@ def check_reminders():
     print("🦫 ビーバーハンドラー登録完了")
 
 
+
 # ========================================
 # 内部ヘルパー関数
+# ========================================
+def parse_delete_indices(text: str) -> list[int]:
+    """
+    メモ削除コマンドから削除対象のインデックス（0始まり）を抽出する
+    例: "メモ削除 1 3" -> [0, 2]
+    """
+
+    input_str = (
+        text.replace("メモ削除", "")
+        .replace(",", " ")
+        .replace("、", " ")
+        .replace("と", " ")
+    )
+
+    target_indices = []
+    for s in input_str.split():
+        if s.strip().isdigit():
+            # ユーザーは1始まりで指定してくるので、-1して0始まりにする
+            val = int(s) - 1
+            if val >= 0:
+                target_indices.append(val)
+
+    return target_indices
+
+# ========================================
+# 以下、元のヘルパー関数
 # ========================================
 def _get_memo_list(user_id: str) -> str:
     """メモ一覧を取得"""
@@ -471,16 +498,8 @@ def _get_memo_list(user_id: str) -> str:
 def _delete_memos(user_id: str, user_text: str) -> str:
     """メモを削除（複数対応）"""
     try:
-        input_str = (
-            user_text.replace("メモ削除", "")
-            .replace(",", " ")
-            .replace("、", " ")
-        )
 
-        target_indices = []
-        for s in input_str.split():
-            if s.strip().isdigit():
-                target_indices.append(int(s) - 1)
+        target_indices = parse_delete_indices(user_text)
 
         if not target_indices:
             raise ValueError("数字が見つかりません")
