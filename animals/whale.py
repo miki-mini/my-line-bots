@@ -170,11 +170,17 @@ def get_whale_reply_content(user_text: str, model=None) -> list:
 # ==========================================
 # 🔭 NASA APOD API から天文写真を取得
 # ==========================================
-def _get_nasa_apod_image():
+def calculate_past_date(days_ago: int) -> str:
+    """今日からN日前の日付をYYYY-MM-DD形式で返す"""
+    return (datetime.now() - timedelta(days=days_ago)).strftime("%Y-%m-%d")
+
+def _get_nasa_apod_image(target_date: str = None):
     # NASA APIキー
     api_key = os.getenv("NASA_API_KEY", "DEMO_KEY")
-    days_ago = random.randint(0, 30)
-    target_date = (datetime.now() - timedelta(days=days_ago)).strftime("%Y-%m-%d")
+
+    if not target_date:
+        days_ago = random.randint(0, 30)
+        target_date = calculate_past_date(days_ago)
 
     apod_url = "https://api.nasa.gov/planetary/apod"
     params = {"api_key": api_key, "date": target_date, "thumbs": True}

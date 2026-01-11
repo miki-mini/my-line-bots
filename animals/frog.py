@@ -473,7 +473,7 @@ def extract_location_from_message(message: str) -> str:
 
     # 「〇〇の場所」「〇〇への行き方」などのパターン
     patterns = [
-        r"(.+?)(?:の|へ|に)(?:場所|行き方|アクセス|地図)",
+        r"(.+?)(?:への|へ|の|に)(?:場所|行き方|アクセス|地図)", # "への" を先頭に追加して優先マッチ
         r"(.+?)(?:って|は)(?:どこ|何処)",
         r"(.+?)(?:を教えて|教えて)",
     ]
@@ -483,7 +483,12 @@ def extract_location_from_message(message: str) -> str:
         if match:
             location = match.group(1).strip()
             # 不要な語を削除
-            location = location.replace("教えて", "").replace("どこ", "").strip()
+            location = (
+                location.replace("教えて", "")
+                .replace("どこ", "")
+                .replace("場所", "")
+                .strip()
+            )
             if location:
                 return location
 

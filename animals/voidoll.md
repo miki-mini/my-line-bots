@@ -253,7 +253,8 @@ voidoll/
 ## 📝 記事 (Articles)
 
 この開発について詳しく解説した記事を公開しています：
-- [ZENNの記事URL]
+- [📘 ZennBOT](https://zenn.dev/miki_mini/articles/fca9c087522f71)
+- [📘 Zennデスクトップアプリ](https://zenn.dev/miki_mini/articles/4f58bafdb6c47c)
 
 ---
 

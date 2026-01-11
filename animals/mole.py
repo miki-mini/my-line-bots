@@ -213,6 +213,30 @@ def register_mole_handler(app, handler_mole, configuration_mole, text_model):
             print(f"❌ 返信送信エラー: {e}")
 
 
+
+def filter_upcoming_trains(timetables: list, current_time_hm: str) -> list:
+    """
+    時刻表データから、現在時刻(HH:MM)以降の電車を抽出してソートする
+    """
+    upcoming = []
+    for t in timetables:
+        direction = t.get("odpt:railwayDirection", "").split(":")[-1]
+
+        for tr in t.get("odpt:stationTimetableObject", []):
+            dept_time = tr.get("odpt:departureTime")
+            dest = tr.get("odpt:destinationStation", ["?"])[0].split(".")[-1]
+
+            if dept_time and dept_time > current_time_hm:
+                upcoming.append({
+                    "time": dept_time,
+                    "dest": dest,
+                    "dir": direction
+                })
+
+    # 時刻順にソート
+    upcoming.sort(key=lambda x: x["time"])
+    return upcoming
+
 def get_timetable(station_data: dict) -> str:
     """
     ODPT APIで時刻表を取得
@@ -283,24 +307,10 @@ def get_timetable(station_data: dict) -> str:
 
         print(f"⏰ 現在時刻: {now_hm}")
 
+        print(f"⏰ 現在時刻: {now_hm}")
+
         # 今後の電車を抽出
-        upcoming = []
-        for t in timetables:
-            direction = t.get("odpt:railwayDirection", "").split(":")[-1]
-
-            for tr in t.get("odpt:stationTimetableObject", []):
-                dept_time = tr.get("odpt:departureTime")
-                dest = tr.get("odpt:destinationStation", ["?"])[0].split(".")[-1]
-
-                if dept_time and dept_time > now_hm:
-                    upcoming.append({
-                        "time": dept_time,
-                        "dest": dest,
-                        "dir": direction
-                    })
-
-        # 時刻順にソート
-        upcoming.sort(key=lambda x: x["time"])
+        upcoming = filter_upcoming_trains(timetables, now_hm)
 
         # 上位5件を取得
         top5 = upcoming[:5]
