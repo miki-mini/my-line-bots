@@ -28,6 +28,7 @@ jobs:
       - name: Run Tests
         run: |
           pip list
+          python tests/debug_ci.py
           pytest -v
 
   deploy:
