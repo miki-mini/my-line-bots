@@ -46,7 +46,7 @@ def test_generate_chat_reply(mock_vertex_init, mock_gen_model_cls):
     assert "ユーザーの入力: おはよう" in call_args[1]
 
 @patch("requests.post")
-@patch("google.cloud.storage.Client")
+@patch("core.voidoll_service.storage.Client")
 @patch("vertexai.init")
 @patch.dict(os.environ, {"GCP_PROJECT_ID": "test-project", "VOICEVOX_URL": "http://test-voicevox", "GCS_BUCKET_NAME": "test-bucket"})
 def test_generate_voice_url_success(mock_vertex_init, mock_storage_cls, mock_post):
