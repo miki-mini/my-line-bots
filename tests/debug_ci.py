@@ -24,30 +24,36 @@ try:
     # Add root to sys.path just in case (though usually implicit)
     sys.path.append(os.getcwd())
 
-    import animals.frog
-    print("animals.frog imported OK")
-    import animals.voidoll
-    print("animals.voidoll imported OK")
-    import core.voidoll_service
-    print("core.voidoll_service imported OK")
-    import animals.mole
-    print("animals.mole imported OK")
-    import animals.bat
-    print("animals.bat imported OK")
-    import animals.beaver
-    print("animals.beaver imported OK")
-    import animals.capybara
-    print("animals.capybara imported OK")
-    import animals.fox
-    print("animals.fox imported OK")
-    import animals.penguin
-    print("animals.penguin imported OK")
-    import animals.rabbit
-    print("animals.rabbit imported OK")
-    import animals.whale
-    print("animals.whale imported OK")
-    import animals.owl
-    print("animals.owl imported OK")
+    modules_to_test = [
+        "animals.frog",
+        "animals.voidoll",
+        "core.voidoll_service",
+        "animals.mole",
+        "animals.bat",
+        "animals.beaver",
+        "animals.capybara",
+        "animals.fox",
+        "animals.penguin",
+        "animals.rabbit",
+        "animals.whale",
+        "animals.owl"
+    ]
+
+    import importlib
+    failed_modules = []
+
+    for module_name in modules_to_test:
+        try:
+            print(f"Importing {module_name}...", end=" ")
+            importlib.import_module(module_name)
+            print("OK")
+        except Exception as e:
+            print(f"FAILED! Error: {e}")
+            failed_modules.append(module_name)
+
+    if failed_modules:
+        print(f"!!! CRITICAL: The following modules failed to import: {failed_modules}")
+        sys.exit(1)
 
     print("--- DEBUG: All Checks Passed ---")
 
