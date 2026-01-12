@@ -80,23 +80,29 @@ class SearchModelWrapper:
     """動物たちが今まで通り使えるようにするラッパー"""
 
     def __init__(self, project_id, location="asia-northeast1"):
-        from google import genai
-        from google.genai import types
+        try:
+            from google import genai
+            from google.genai import types
+            self.client = genai.Client(
+                vertexai=True,
+                project=project_id,
+                location=location
+            )
+            self.types = types
+        except ImportError:
+            print("⚠️ google.genai not found, SearchModelWrapper disabled")
+            self.client = None
+            self.types = None
 
-        self.client = genai.Client(
-            vertexai=True,
-            project=project_id,
-            location=location
-        )
         self.model_name = "gemini-2.5-flash"
-        self.types = types
 
     def generate_content(self, prompt, generation_config=None):
         """今まで通りの呼び出し方で使える"""
-        from google.genai import types
+        if not self.client:
+             raise ImportError("google.genai library is missing")
 
         config_dict = {
-            "tools": [types.Tool(google_search=types.GoogleSearch())]
+            "tools": [self.types.Tool(google_search=self.types.GoogleSearch())]
         }
 
         if generation_config:
