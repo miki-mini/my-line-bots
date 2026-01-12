@@ -7,7 +7,7 @@
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 > [!NOTE]
-> ✨ <a href="https://usagi-oekaki-service-1032484155743.asia-northeast1.run.app" target="_blank"><strong>Live Demo Portal / デモサイトはこちら</strong></a> ✨
+> ✨ <a href="https://usagi-oekaki-service-1032484155743.asia-northeast1.run.app" target="_blank"><strong>Live Demo Portal / **デモサイトはこちら** </strong></a> ✨
 ><br>
 > BOTたちが集まるポータルサイトを公開しました！(PC / Mobile 対応)
 
