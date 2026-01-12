@@ -28,7 +28,30 @@ jobs:
       - name: Run Tests
         run: |
           pip list
-          pytest -v
+          echo "=== Running sanity check ==="
+          pytest tests/test_sanity.py
+          echo "=== Running bat tests ==="
+          pytest tests/test_bat.py
+          echo "=== Running beaver tests ==="
+          pytest tests/test_beaver.py
+          echo "=== Running capybara tests ==="
+          pytest tests/test_capybara.py
+          echo "=== Running fox tests ==="
+          pytest tests/test_fox.py
+          echo "=== Running frog tests ==="
+          pytest tests/test_frog.py
+          echo "=== Running mole tests ==="
+          pytest tests/test_mole.py
+          echo "=== Running owl tests ==="
+          pytest tests/test_owl.py
+          echo "=== Running penguin tests ==="
+          pytest tests/test_penguin.py
+          echo "=== Running rabbit tests ==="
+          pytest tests/test_rabbit.py
+          echo "=== Running voidoll tests ==="
+          pytest tests/test_voidoll_service.py
+          echo "=== Running whale tests ==="
+          pytest tests/test_whale.py
 
   deploy:
     needs: test
