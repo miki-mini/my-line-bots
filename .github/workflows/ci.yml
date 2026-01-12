@@ -28,7 +28,8 @@ jobs:
       - name: Run Tests
         run: |
           pip list
-          pytest tests/test_sanity.py
+          python tests/debug_ci.py
+          pytest -v
 
   deploy:
     needs: test

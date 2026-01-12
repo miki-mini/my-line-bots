@@ -30,8 +30,24 @@ try:
     print("animals.voidoll imported OK")
     import core.voidoll_service
     print("core.voidoll_service imported OK")
-    import main
-    print("main imported OK")
+    import animals.mole
+    print("animals.mole imported OK")
+    import animals.bat
+    print("animals.bat imported OK")
+    import animals.beaver
+    print("animals.beaver imported OK")
+    import animals.capybara
+    print("animals.capybara imported OK")
+    import animals.fox
+    print("animals.fox imported OK")
+    import animals.penguin
+    print("animals.penguin imported OK")
+    import animals.rabbit
+    print("animals.rabbit imported OK")
+    import animals.whale
+    print("animals.whale imported OK")
+    import animals.owl
+    print("animals.owl imported OK")
 
     print("--- DEBUG: All Checks Passed ---")
 
