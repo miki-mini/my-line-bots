@@ -15,6 +15,7 @@ module_names = [
     "vertexai.generative_models",
     "winsound",
     "flet",
+    "googlemaps",
 ]
 
 for module_name in module_names:
