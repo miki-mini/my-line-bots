@@ -69,6 +69,13 @@ def register_frog_handler(
     handler_frog.add(MessageEvent, message=TextMessageContent)(handle_frog_message_event)
     handler_frog.add(MessageEvent, message=LocationMessageContent)(handle_frog_location_event)
 
+    # ==========================================
+    # ☀️ 朝の天気配信（Broadcast）
+    # ==========================================
+    @app.post("/trigger_morning_weather")
+    def trigger_morning_weather():
+        return broadcast_morning_weather(search_model, configuration_frog)
+
     print("🐸 Frog Handler Registered (Refactored)")
 
 # ==========================================
@@ -118,12 +125,6 @@ def handle_frog_location_event(event):
     # LINEに返信
     send_reply(event.reply_token, msg, _configuration_frog)
 
-    # ==========================================
-    # ☀️ 朝の天気配信（Broadcast）
-    # ==========================================
-    @app.post("/trigger_morning_weather")
-    def trigger_morning_weather():
-        return broadcast_morning_weather(search_model, configuration_frog)
 
 def broadcast_morning_weather(search_model, configuration):
     """
