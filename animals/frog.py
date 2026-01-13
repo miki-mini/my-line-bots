@@ -3,6 +3,7 @@ frog.py - お天気ケロくん（Googleマップ機能付き + 位置情報対�
 """
 
 import os
+import requests
 from datetime import datetime, timedelta, timezone
 import datetime as dt
 from linebot.v3.messaging import (
@@ -20,13 +21,15 @@ from linebot.v3.exceptions import InvalidSignatureError
 # Globals
 _search_model = None
 _text_model = None
+_configuration_frog = None
 
 def register_frog_handler(
     app, handler_frog, configuration_frog, search_model, text_model
 ):
-    global _search_model, _text_model
+    global _search_model, _text_model, _configuration_frog
     _search_model = search_model
     _text_model = text_model
+    _configuration_frog = configuration_frog
     """
     カエルのハンドラーを登録
 
@@ -62,101 +65,125 @@ def register_frog_handler(
 
         return {"status": "ok"}
 
-    @handler_frog.add(MessageEvent, message=TextMessageContent)
-    def handle_frog_message(event):
-        """カエルのテキストメッセージ処理"""
+    # 手動でハンドラーを登録（関数を外に出すため）
+    handler_frog.add(MessageEvent, message=TextMessageContent)(handle_frog_message_event)
+    handler_frog.add(MessageEvent, message=LocationMessageContent)(handle_frog_location_event)
 
-        print(f"🐸 カエル受信（テキスト）: {event.message.text}")
-        print(
-            f"🐸 ユーザーID: {event.source.user_id if hasattr(event.source, 'user_id') else 'unknown'}"
-        )
-        print(f"🐸 reply_token: {event.reply_token}")
+    print("🐸 Frog Handler Registered (Refactored)")
 
-        user_message = event.message.text
-        msg = handle_text_message(user_message, search_model, text_model)
+# ==========================================
+# Event Handlers (Top Level)
+# ==========================================
 
-        # LINEに返信
-        send_reply(event.reply_token, msg, configuration_frog)
+def handle_frog_message_event(event):
+    """カエルのテキストメッセージ処理（イベントハンドラー）"""
 
-    @handler_frog.add(MessageEvent, message=LocationMessageContent)
-    def handle_frog_location(event):
-        """カエルの位置情報メッセージ処理"""
+    print(f"🐸 カエル受信（テキスト）: {event.message.text}")
 
-        print(f"🐸📍 カエル受信（位置情報）")
-        print(f"🐸 タイトル: {event.message.title}")
-        print(f"🐸 住所: {event.message.address}")
-        print(f"🐸 緯度: {event.message.latitude}")
-        print(f"🐸 経度: {event.message.longitude}")
+    # ユーザーID取得（属性チェック）
+    user_id = "unknown"
+    if hasattr(event, 'source'):
+        if hasattr(event.source, 'user_id'):
+            user_id = event.source.user_id
 
-        # 位置情報から天気を取得
-        msg = handle_location_message(
-            event.message.latitude,
-            event.message.longitude,
-            event.message.address,
-            event.message.title,
-            search_model,
-            text_model,
-        )
+    print(f"🐸 ユーザーID: {user_id}")
+    print(f"🐸 reply_token: {event.reply_token}")
 
-        # LINEに返信
-        send_reply(event.reply_token, msg, configuration_frog)
+    user_message = event.message.text
+    # グローバルモデルを使用
+    msg = handle_text_message(user_message, _search_model, _text_model)
+
+    # LINEに返信
+    send_reply(event.reply_token, msg, _configuration_frog)
+
+def handle_frog_location_event(event):
+    """カエルの位置情報メッセージ処理（イベントハンドラー）"""
+
+    print(f"🐸📍 カエル受信（位置情報）")
+    print(f"🐸 タイトル: {event.message.title}")
+    print(f"🐸 住所: {event.message.address}")
+    print(f"🐸 緯度: {event.message.latitude}")
+    print(f"🐸 経度: {event.message.longitude}")
+
+    # 位置情報から天気を取得
+    msg = handle_location_message(
+        event.message.latitude,
+        event.message.longitude,
+        event.message.address,
+        event.message.title,
+        _search_model,
+        _text_model,
+    )
+
+    # LINEに返信
+    send_reply(event.reply_token, msg, _configuration_frog)
 
     # ==========================================
     # ☀️ 朝の天気配信（Broadcast）
     # ==========================================
     @app.post("/trigger_morning_weather")
     def trigger_morning_weather():
-        print("☀️ 朝の天気配信を開始します...")
+        return broadcast_morning_weather(search_model, configuration_frog)
 
-        try:
-            if search_model:
-                JST = timezone(timedelta(hours=9))
-                today = datetime.now(JST).strftime("%Y年%m月%d日")
+def broadcast_morning_weather(search_model, configuration):
+    """
+    朝の天気配信ロジック（テスト用に抽出）
 
-                prompt = f"""
-                現在日時: {today}
+    Args:
+        search_model: Geminiモデル
+        configuration: LINE API設定
+    """
+    print("☀️ 朝の天気配信を開始します...")
 
-                あなたは天気予報が得意なカエル「お天気ケロくん」です。
-                今朝の「東京」の天気をGoogle検索して、以下のフォーマットで教えてあげてください。
+    try:
+        if search_model:
+            JST = timezone(timedelta(hours=9))
+            today = datetime.now(JST).strftime("%Y年%m月%d日")
 
-                【重要】
-                - 出力フォーマットを**厳密に**守ってください。
-                - 1行目の「📅」の横には、必ず「{today} (曜日)」の形式で日付を入れてください。（例: 1月7日 (水)）
-                - 気温や風速は検索した実際の値を入れてください。数値が不明な場合は「不明」としてください。
-                - 花粉情報は今の時期（冬〜春）なら検索し、なければ「なし」などにしてください。
-                - 「👕 やっほー、みんな！...」以降は、天気予報に基づいたアドバイスを、カエル口調（〜ケロ）で親しみやすく書いてください。
+            prompt = f"""
+            現在日時: {today}
 
-                【出力フォーマット例】
-                🐸 東京の天気 🐸
+            あなたは天気予報が得意なカエル「お天気ケロくん」です。
+            今朝の「東京」の天気をGoogle検索して、以下のフォーマットで教えてあげてください。
 
-                📅 {today} ({{曜日}})
-                🌤️ 天気: {{天気 (例: 晴れ)}}
-                🌡️ {{最低気温}} 〜 {{最高気温}}
-                ☔ 降水: {{降水確率}}
-                💨 最大風速: {{風速}}
-                🌸 花粉: {{花粉情報}}
+            【重要】
+            - 出力フォーマットを**厳密に**守ってください。
+            - 1行目の「📅」の横には、必ず「{today} (曜日)」の形式で日付を入れてください。（例: 1月7日 (水)）
+            - 気温や風速は検索した実際の値を入れてください。数値が不明な場合は「不明」としてください。
+            - 花粉情報は今の時期（冬〜春）なら検索し、なければ「なし」などにしてください。
+            - 「👕 やっほー、みんな！...」以降は、天気予報に基づいたアドバイスを、カエル口調（〜ケロ）で親しみやすく書いてください。
 
-                👕 やっほー、みんな！ケロくんだケロ🐸
-                {{ここから天気概況と服装アドバイスを3〜4行で記述。絵文字をたくさん使う。
-                気温に基づいた具体的な服装（コート、マフラーなど）を提案する。
-                最後は「暖かくして、素敵な一日を過ごすケロ！」などで締める。}}
-                """
-                response = search_model.generate_content(prompt)
-                weather_text = response.text
-            else:
-                weather_text = "今は天気が見られないケロ...💦 ごめんケロ🐸"
+            【出力フォーマット例】
+            🐸 東京の天気 🐸
 
-            # 全員に送信 (Broadcast)
-            with ApiClient(configuration_frog) as api_client:
-                line_bot_api = MessagingApi(api_client)
-                line_bot_api.broadcast(
-                    BroadcastRequest(messages=[TextMessage(text=weather_text)])
-                )
-            return {"status": "ok", "message": "天気配信完了ケロ！"}
+            📅 {today} ({{曜日}})
+            🌤️ 天気: {{天気 (例: 晴れ)}}
+            🌡️ {{最低気温}} 〜 {{最高気温}}
+            ☔ 降水: {{降水確率}}
+            💨 最大風速: {{風速}}
+            🌸 花粉: {{花粉情報}}
 
-        except Exception as e:
-            print(f"❌ 天気配信エラー: {e}")
-            return {"status": "error", "message": str(e)}
+            👕 やっほー、みんな！ケロくんだケロ🐸
+            {{ここから天気概況と服装アドバイスを3〜4行で記述。絵文字をたくさん使う。
+            気温に基づいた具体的な服装（コート、マフラーなど）を提案する。
+            最後は「暖かくして、素敵な一日を過ごすケロ！」などで締める。}}
+            """
+            response = search_model.generate_content(prompt)
+            weather_text = response.text
+        else:
+            weather_text = "今は天気が見られないケロ...💦 ごめんケロ🐸"
+
+        # 全員に送信 (Broadcast)
+        with ApiClient(configuration) as api_client:
+            line_bot_api = MessagingApi(api_client)
+            line_bot_api.broadcast(
+                BroadcastRequest(messages=[TextMessage(text=weather_text)])
+            )
+        return {"status": "ok", "message": "天気配信完了ケロ！"}
+
+    except Exception as e:
+        print(f"❌ 天気配信エラー: {e}")
+        return {"status": "error", "message": str(e)}
 
 
 def handle_text_message(user_message: str, search_model, text_model) -> str:
@@ -383,8 +410,6 @@ def get_location_name_from_coords(latitude: float, longitude: float) -> str:
     Returns:
         地名
     """
-    import requests
-
     GMAPS_API_KEY = os.getenv("GMAPS_API_KEY")
 
     if not GMAPS_API_KEY:
@@ -506,8 +531,6 @@ def get_place_details_with_api(location: str) -> dict:
     Returns:
         場所の詳細情報（住所、座標、営業時間など）
     """
-    import requests
-
     GMAPS_API_KEY = os.getenv("GMAPS_API_KEY")
 
     if not GMAPS_API_KEY:

@@ -23,17 +23,6 @@ from pydantic import BaseModel
 # Firestore Collection Name
 COLLECTION_NAME = "tv_watch_lists"
 
-def register_bat_handler(app, handler, configuration, search_model, db):
-    """
-    コウモリボット登録
-    Parameters:
-        db: Firestore Client
-    """
-    global _db, _search_model
-    _db = db
-    _search_model = search_model
-
-
 def process_bat_command(text: str, user_id: str, db, search_model) -> str:
     """
     コウモリのコマンド処理ロジック（テスト可能）
@@ -79,6 +68,17 @@ def process_bat_command(text: str, user_id: str, db, search_model) -> str:
 
     return reply_text
 
+
+def register_bat_handler(app, handler, configuration, search_model, db):
+    """
+    コウモリボット登録
+    Parameters:
+        db: Firestore Client
+    """
+    global _db, _search_model
+    _db = db
+    _search_model = search_model
+
     # ==========================================
     # 🦇 Webhook エンドポイント
     # ==========================================
@@ -106,8 +106,8 @@ def process_bat_command(text: str, user_id: str, db, search_model) -> str:
 
         user_id = event.source.user_id
 
-        reply_text = process_bat_command(text, user_id, _db, _search_model)
-
+        # グローバル変数または引数を使用
+        reply_text = process_bat_command(text, user_id, db, search_model)
 
         # 返信送信
         try:
@@ -121,7 +121,6 @@ def process_bat_command(text: str, user_id: str, db, search_model) -> str:
                 )
         except Exception as e:
             print(f"🦇❌ Reply Error: {e}")
-
 
     # ==========================================
     # 🕒 Cron用チェック機能 (動的リスト対応)
@@ -143,7 +142,6 @@ def process_bat_command(text: str, user_id: str, db, search_model) -> str:
 
         # 2. キーワードごとに検索
         for keyword in all_keywords:
-            # クエリ作成
             # クエリ作成（「今日」に限定）
             today_str = datetime.date.today().strftime("%Y年%m月%d日")
             query = f"今日は{today_str}です。今日、地上波テレビで「{keyword}」の放送予定はある？"
@@ -159,10 +157,6 @@ def process_bat_command(text: str, user_id: str, db, search_model) -> str:
             return {"status": "ok", "message": "No shows found"}
 
         # 3. 通知（簡易実装：全員にブロードキャスト）
-        # ※本来は「そのキーワードを登録している人」だけに送るべきだが、
-        #   個人の趣味開発レベルなら全員に教えてあげても共有になって楽しいので
-        #   あえてBroadcastで実装します。
-
         push_text = "🦇 キキキ...監視中の番組が見つかったモリ！📺\n\n" + "\n\n".join(found_shows)
 
         try:
