@@ -50,24 +50,31 @@ def register_penguin_handler(app, handler_penguin, configuration_penguin, text_m
             print(traceback.format_exc())
         return {"status": "ok"}
 
-    @handler_penguin.add(MessageEvent, message=TextMessageContent)
-    def handle_penguin_message(event):
-        user_id = event.source.user_id
-        user_message = event.message.text
 
-        try:
-            if user_message.startswith("メール："):
-                handle_email_request(
-                    event, user_message, user_id, configuration_penguin, text_model
-                )
+    # 手動登録
+    handler_penguin.add(MessageEvent, message=TextMessageContent)(handle_penguin_message)
+    handler_penguin.add(PostbackEvent)(handle_penguin_postback)
 
-            elif user_message.startswith(("お店：", "接待：", "手土産：")):
-                handle_concierge_request(
-                    event, user_message, configuration_penguin, text_model
-                )
+# ==========================================
+# 🐧 イベントハンドラー (Top Level)
+# ==========================================
+def handle_penguin_message(event):
+    user_id = event.source.user_id
+    user_message = event.message.text
 
-            else:
-                reply_text = """🐧 スーパー秘書ペンギンだペン！
+    try:
+        if user_message.startswith("メール："):
+            handle_email_request(
+                event, user_message, user_id, _configuration_penguin, _text_model
+            )
+
+        elif user_message.startswith(("お店：", "接待：", "手土産：")):
+            handle_concierge_request(
+                event, user_message, _configuration_penguin, _text_model
+            )
+
+        else:
+            reply_text = """🐧 スーパー秘書ペンギンだペン！
 
 【メール作成】
 「メール：宛先」で始めてペン！
@@ -76,55 +83,54 @@ def register_penguin_handler(app, handler_penguin, configuration_penguin, text_m
 「お店：新宿で焼肉デート」
 「接待：大阪で静かな和食」
 みたいに話しかけてペン！カードで提案するペン！✨"""
-                reply_simple_message(
-                    event.reply_token, reply_text, configuration_penguin
-                )
-
-        except Exception as e:
-            print(f"❌ エラー: {e}")
-            import traceback
-
-            print(traceback.format_exc())
             reply_simple_message(
-                event.reply_token, "エラーが起きたペン...💦", configuration_penguin
+                event.reply_token, reply_text, _configuration_penguin
             )
 
-    @handler_penguin.add(PostbackEvent)
-    def handle_penguin_postback(event):
-        user_id = event.source.user_id
-        data = event.postback.data
+    except Exception as e:
+        print(f"❌ エラー: {e}")
+        import traceback
 
-        if data == "action=cancel":
-            if user_id in pending_emails:
-                del pending_emails[user_id]
+        print(traceback.format_exc())
+        reply_simple_message(
+            event.reply_token, "エラーが起きたペン...💦", _configuration_penguin
+        )
+
+def handle_penguin_postback(event):
+    user_id = event.source.user_id
+    data = event.postback.data
+
+    if data == "action=cancel":
+        if user_id in pending_emails:
+            del pending_emails[user_id]
+        reply_simple_message(
+            event.reply_token, "送信を中止したペン！🗑️", _configuration_penguin
+        )
+
+    elif data == "action=send":
+        email_data = pending_emails.get(user_id)
+        if not email_data:
             reply_simple_message(
-                event.reply_token, "送信を中止したペン！🗑️", configuration_penguin
+                event.reply_token,
+                "タイムアウトしちゃったペン💦",
+                _configuration_penguin,
             )
+            return
 
-        elif data == "action=send":
-            email_data = pending_emails.get(user_id)
-            if not email_data:
-                reply_simple_message(
-                    event.reply_token,
-                    "タイムアウトしちゃったペン💦",
-                    configuration_penguin,
-                )
-                return
-
-            success, msg = send_email_via_gas(
-                email_data["to"], email_data["subject"], email_data["body"]
+        success, msg = send_email_via_gas(
+            email_data["to"], email_data["subject"], email_data["body"]
+        )
+        if success:
+            del pending_emails[user_id]
+            reply_simple_message(
+                event.reply_token, "✅ 送信完了だペン！🐧✨", _configuration_penguin
             )
-            if success:
-                del pending_emails[user_id]
-                reply_simple_message(
-                    event.reply_token, "✅ 送信完了だペン！🐧✨", configuration_penguin
-                )
-            else:
-                reply_simple_message(
-                    event.reply_token,
-                    f"❌ 送信失敗だペン...💦\n{msg}",
-                    configuration_penguin,
-                )
+        else:
+            reply_simple_message(
+                event.reply_token,
+                f"❌ 送信失敗だペン...💦\n{msg}",
+                _configuration_penguin,
+            )
 
 
 # ---------------------------------------------------------

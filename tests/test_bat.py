@@ -64,6 +64,68 @@ class TestBat(unittest.TestCase):
         mock_search.assert_called_once()
 
 # ==========================================
+# Firestore Helper Tests
+# ==========================================
+    def test_firestore_add(self):
+        """_add_to_watch_list のテスト"""
+        # モックドキュメントの設定
+        mock_doc_ref = MagicMock()
+        mock_doc_snapshot = MagicMock()
+        mock_doc_snapshot.exists = True
+        mock_doc_snapshot.to_dict.return_value = {"keywords": ["既存"]}
+
+        mock_doc_ref.get.return_value = mock_doc_snapshot
+        self.mock_db.collection.return_value.document.return_value = mock_doc_ref
+
+        # 実行
+        from animals.bat import _add_to_watch_list
+        _add_to_watch_list(self.mock_db, "user_123", "新規番組")
+
+        # 検証: setが呼ばれたか (既存 + 新規)
+        mock_doc_ref.set.assert_called_once_with(
+            {"keywords": ["既存", "新規番組"]},
+            merge=True
+        )
+
+    def test_firestore_remove(self):
+        """_remove_from_watch_list のテスト"""
+        mock_doc_ref = MagicMock()
+        mock_doc_snapshot = MagicMock()
+        mock_doc_snapshot.exists = True
+        mock_doc_snapshot.to_dict.return_value = {"keywords": ["ポケモン", "ドラえもん"]}
+
+        mock_doc_ref.get.return_value = mock_doc_snapshot
+        self.mock_db.collection.return_value.document.return_value = mock_doc_ref
+
+        from animals.bat import _remove_from_watch_list
+        result = _remove_from_watch_list(self.mock_db, "user_123", "ポケモン")
+
+        assert result is True
+        # ポケモンが消えてドラえもんだけになるはず
+        mock_doc_ref.set.assert_called_once_with(
+            {"keywords": ["ドラえもん"]},
+            merge=True
+        )
+
+    def test_firestore_get_all_unique(self):
+        """_get_all_unique_keywords のテスト"""
+        # 複数のユーザードキュメントをモック
+        doc1 = MagicMock()
+        doc1.to_dict.return_value = {"keywords": ["A", "B"]}
+        doc2 = MagicMock()
+        doc2.to_dict.return_value = {"keywords": ["B", "C"]}
+
+        self.mock_db.collection.return_value.stream.return_value = [doc1, doc2]
+
+        from animals.bat import _get_all_unique_keywords
+        keywords = _get_all_unique_keywords(self.mock_db)
+
+        # デフォルト("ジブリ", "ホーム・アローン") + A, B, C
+        expected = {"A", "B", "C", "ジブリ", "ホーム・アローン"}
+        assert set(keywords) == expected
+
+
+# ==========================================
 # Integration Tests
 # ==========================================
 
@@ -111,3 +173,42 @@ def test_cron_bat_check_endpoint():
 
         response = client.get("/cron/bat_check")
         assert response.status_code == 200
+
+def test_cron_bat_check_with_results():
+    """Cronで番組が見つかった場合のブロードキャストテスト"""
+    app = FastAPI()
+    handler = MagicMock()
+    config = MagicMock()
+    search_model = MagicMock()
+    db = MagicMock()
+
+    register_bat_handler(app, handler, config, search_model, db)
+    client = TestClient(app)
+
+    # 依存関係のモック
+    with patch('animals.bat._get_all_unique_keywords') as mock_kws, \
+         patch('animals.bat._check_schedule_strict') as mock_check, \
+         patch('animals.bat.ApiClient') as mock_api_client_cls, \
+         patch('animals.bat.MessagingApi') as mock_messaging_api_cls:
+
+        # 1. キーワードが見つかる
+        mock_kws.return_value = ["TestShow"]
+
+        # 2. 番組が見つかる
+        mock_check.return_value = "📺 TestShow is on air!"
+
+        # 3. 実行
+        response = client.get("/cron/bat_check")
+
+        # 4. 検証
+        assert response.status_code == 200
+        assert response.json()["message"].startswith("Sent notifications")
+
+        # 5. Broadcastが呼ばれたか確認
+        mock_messaging_api = mock_messaging_api_cls.return_value
+        mock_messaging_api.broadcast.assert_called_once()
+
+        # 引数確認
+        args = mock_messaging_api.broadcast.call_args[0]
+        sent_text = args[0].messages[0].text
+        assert "TestShow is on air!" in sent_text
