@@ -266,7 +266,7 @@ def startup_event():
             # register_owl_handler(app, None)
 
             # 8. Voidoll (ボイドール)
-            register_voidoll_handler(app, handler_voidoll, text_model)
+            register_voidoll_handler(app, handler_voidoll, configuration_voidoll, text_model)
             print(" Voidoll Registered!", flush=True)
 
             # 6. Capybara (5 args: app, handler, config, search_model, text_model)
