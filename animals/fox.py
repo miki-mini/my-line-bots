@@ -139,6 +139,10 @@ def summarize_youtube_with_search(video_id: str, search_model, text_model) -> st
         video_data = response.json()
 
         if not video_data.get("items"):
+            print(f"🦊 YouTube API Error/Empty: {video_data}")
+            if "error" in video_data:
+                err_msg = video_data["error"]["message"]
+                return f"🦊 YouTube APIエラーだコン...💦\n{err_msg}"
             return "🦊 動画が見つからないコン..."
 
         item = video_data["items"][0]
