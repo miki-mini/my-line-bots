@@ -111,7 +111,7 @@ class SearchModelWrapper:
             if "max_output_tokens" in generation_config:
                 config_dict["max_output_tokens"] = generation_config["max_output_tokens"]
 
-        config = types.GenerateContentConfig(**config_dict)
+        config = self.types.GenerateContentConfig(**config_dict)
 
         response = self.client.models.generate_content(
             model=self.model_name,
