@@ -641,8 +641,41 @@
             initAudio();
         }
 
+        // ==========================================
+        // Interaction Helper
+        // ==========================================
+        function checkScreenOverlap(mesh, cx, cy) {
+            if (!mesh) return false;
+            // Project 3D position to 2D screen space
+            const vector = mesh.position.clone();
+            vector.project(camera);
+
+            const x = (vector.x * .5 + .5) * width;
+            const y = (1 - (vector.y * .5 + .5)) * height;
+
+            const dx = x - cx;
+            const dy = y - cy;
+            const d = Math.sqrt(dx * dx + dy * dy);
+
+            return d < 80; // 80px radius interaction
+        }
+
         function animate() {
             requestAnimationFrame(animate);
+
+            // Hand Position in Pixels
+            let handPixelPos = null;
+            if (isHandPresent && handLandmarks.length > 0) {
+                // MediaPipe x is 0..1 (Left..Right of image)
+                let lx = handLandmarks[0][8].x;
+                let ly = handLandmarks[0][8].y;
+
+                // If we flip the video visually with css scaleX(-1),
+                // we must flip the coordinate to match visual screen position.
+                let sx = (1 - lx) * width;
+                let sy = ly * height;
+                handPixelPos = { x: sx, y: sy };
+            }
 
             // Fish
             for (let fish of fishes) {
@@ -672,7 +705,23 @@
                 playSound('rare');
             }
             for (let i = rareAnimals.length - 1; i >= 0; i--) {
-                let done = rareAnimals[i].update();
+                let animal = rareAnimals[i];
+                let done = animal.update();
+
+                // Interaction
+                if (!done && handPixelPos) {
+                    if (checkScreenOverlap(animal.mesh, handPixelPos.x, handPixelPos.y)) {
+                        if (animal instanceof Turtle3D && !animal.sparkling) {
+                            animal.sparkling = true;
+                            playSound('magic');
+                            // Simple sparkle effect visual omitted, could add later
+                        } else if (animal instanceof Octopus3D && !animal.inked) {
+                            animal.inked = true;
+                            playSound('pop');
+                        }
+                    }
+                }
+
                 if (done) {
                     scene.remove(rareAnimals[i].mesh);
                     rareAnimals.splice(i, 1);
@@ -687,15 +736,8 @@
                 let done = bubbles[i].update();
 
                 // Interaction Check with Hand
-                if (!done && isHandPresent && handLandmarks.length > 0) {
-                    // Simple distance check in 3D (assuming hand is at z=100)
-                    let hx = -(handLandmarks[0][8].x - 0.5) * WORLD_WIDTH;
-                    let hy = -(handLandmarks[0][8].y - 0.5) * WORLD_HEIGHT;
-                    let hz = 100;
-                    let handPos = new Vector3D(hx, hy, hz);
-
-                    let dist = Vector3D.dist(handPos, bubbles[i].pos);
-                    if (dist < bubbles[i].radius + 50) { // +50 tolerance
+                if (!done && handPixelPos) {
+                    if (checkScreenOverlap(bubbles[i].mesh, handPixelPos.x, handPixelPos.y)) {
                         bubbles[i].pop();
                         done = true;
                     }
