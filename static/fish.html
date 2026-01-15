@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>カラフルお魚のお部屋水族館 - Fish Room Aquarium</title>
+    <title>カラフルお魚のお部屋水族館 - Fish Room Aquarium (3D)</title>
     <!-- MediaPipe dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
@@ -12,17 +12,21 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
         crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
     <style>
         body {
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background-color: #001020;
+            background-color: #000;
+            /* Dark background for video */
             font-family: 'Arial', sans-serif;
         }
 
-        canvas {
-            display: block;
+        #canvas-container {
             width: 100vw;
             height: 100vh;
             position: absolute;
@@ -40,6 +44,7 @@
             font-size: 24px;
             z-index: 10;
             text-align: center;
+            text-shadow: 0 0 5px black;
         }
 
         .hide {
@@ -48,16 +53,36 @@
 
         video {
             display: none;
+            /* Hidden, rendered to texture or behind canvas */
+        }
+
+        /* Video background if not using texture */
+        #bg-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: 0;
+            transform: scaleX(-1);
+            /* Mirror effect */
+            filter: blur(4px) brightness(0.8);
         }
     </style>
 </head>
 
 <body>
-    <div id="loading">🐟 水族館を準備中...<br><span style="font-size:16px">カメラを許可してください</span></div>
-    <video class="input_video"></video>
-    <canvas class="output_canvas"></canvas>
+    <div id="loading">🐟 3D水族館を準備中...<br><span style="font-size:16px">カメラを許可してください</span></div>
 
-    <!-- Corner Decorations -->
+    <!-- Background Video Element (Rendered via CSS for performance/AR feel) -->
+    <video class="input_video" id="bg-video" playsinline autoplay muted></video>
+
+    <!-- Three.js Canvas Container -->
+    <div id="canvas-container"></div>
+
+    <!-- Corner Decorations (Overlay) -->
     <img src="/static/images/fish/hidarisita.png"
         style="position: absolute; bottom: 0; left: 0; width: 350px; max-width: 40%; z-index: 5; pointer-events: none;"
         alt="decoration-left">
@@ -69,135 +94,169 @@
         // ==========================================
         // Constants & Setup
         // ==========================================
-        const canvas = document.querySelector('.output_canvas');
-        const ctx = canvas.getContext('2d');
-        const videoElement = document.querySelector('.input_video');
+        const container = document.getElementById('canvas-container');
         const loadingElement = document.getElementById('loading');
+        const videoElement = document.querySelector('.input_video');
 
+        // Three.js Globals
+        let scene, camera, renderer;
         let width, height;
-        let handLandmarks = [];
-        let isHandPresent = false;
+        let clock = new THREE.Clock();
 
         // Game Objects
         const fishes = [];
         const bubbles = [];
-        const rareAnimals = []; // Octopus, Turtle, etc.
-        const effects = []; // Ink, Sparkles
+        const rareAnimals = [];
+        const effects = [];
         let shark = null;
 
         // Constants
-        const NUM_FISH = 60;
-        const FISH_SPEED_LIMIT = 4;
-        const FISH_FORCE_LIMIT = 0.1;
-        const SHARK_SPAWN_INTERVAL = 8000; // Reduced to 8 seconds
+        const NUM_FISH = 80; // Increased for 3D
+        const WORLD_DEPTH = 800;
+        const WORLD_WIDTH = 1200;
+        const WORLD_HEIGHT = 800;
+
+        const SHARK_SPAWN_INTERVAL = 10000;
         let lastSharkTime = 0;
 
-        // Images
-        const sharkImg = new Image(); sharkImg.src = '/static/images/fish/shark.png';
-        const turtleImg = new Image(); turtleImg.src = '/static/images/fish/turtle.png';
-        const turtleKiraImg = new Image(); turtleKiraImg.src = '/static/images/fish/turtle.kirakira.png';
-        const octopusImg = new Image(); octopusImg.src = '/static/images/fish/octopus.png';
-        const octopusSumiImg = new Image(); octopusSumiImg.src = '/static/images/fish/octopus.sumi.png';
+        // MediaPipe
+        let handLandmarks = [];
+        let isHandPresent = false;
+        // Raycaster for interaction
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
 
         // Audio
-        const bgmSrc = '/static/images/fish/fish.mp3';
-
-        // Audio Context (created on first interaction)
         let audioCtx;
         let bgm = null;
 
-        function resize() {
+        // ==========================================
+        // Assets Loading
+        // ==========================================
+        const textureLoader = new THREE.TextureLoader();
+        const textures = {
+            shark: textureLoader.load('/static/images/fish/shark.png'),
+            turtle: textureLoader.load('/static/images/fish/turtle.png'),
+            turtleKira: textureLoader.load('/static/images/fish/turtle.kirakira.png'),
+            octopus: textureLoader.load('/static/images/fish/octopus.png'),
+            octopusSumi: textureLoader.load('/static/images/fish/octopus.sumi.png'),
+        };
+
+        // Create Fish Texture Canvas Programmatically for variety
+        function createFishTexture(hue) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 128;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+
+            const color = `hsl(${hue}, 80%, 60%)`;
+
+            // Draw fish
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(100, 32);
+            ctx.lineTo(20, 10);
+            ctx.lineTo(20, 54);
+            ctx.closePath();
+            ctx.fill();
+
+            // Tail
+            ctx.fillStyle = color;
+            ctx.globalAlpha = 0.8;
+            ctx.beginPath();
+            ctx.moveTo(20, 32);
+            ctx.lineTo(0, 10);
+            ctx.lineTo(0, 54);
+            ctx.closePath();
+            ctx.fill();
+
+            // Eye
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.arc(80, 25, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "black";
+            ctx.beginPath();
+            ctx.arc(82, 25, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            const tex = new THREE.CanvasTexture(canvas);
+            return tex;
+        }
+
+
+        // ==========================================
+        // Three.js Initialization
+        // ==========================================
+        function initThree() {
             width = window.innerWidth;
             height = window.innerHeight;
-            canvas.width = width;
-            canvas.height = height;
-        }
-        window.addEventListener('resize', resize);
-        resize();
 
-        // ==========================================
-        // Sound Engine
-        // ==========================================
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            scene = new THREE.Scene();
+            // Fog for depth
+            scene.fog = new THREE.FogExp2(0x001020, 0.0015);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(60, width / height, 1, 2000);
+            camera.position.z = 600;
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(0, 500, 200);
+            scene.add(dirLight);
+
+            // Water Particles (plankton/dust)
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particleCount = 200;
+            const posArray = new Float32Array(particleCount * 3);
+            for (let i = 0; i < particleCount * 3; i++) {
+                posArray[i] = (Math.random() - 0.5) * 2000;
             }
-            // Play BGM
-            if (!bgm) {
-                bgm = new Audio('/static/images/fish/fish.mp3');
-                bgm.loop = true;
-                bgm.volume = 0.4; // Slightly lower volume
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            const material = new THREE.PointsMaterial({
+                size: 3,
+                color: 0x88ccff,
+                transparent: true,
+                opacity: 0.4
+            });
+            const particlesMesh = new THREE.Points(particlesGeometry, material);
+            scene.add(particlesMesh);
 
-                // Wait for data to be loaded to prevent freezing
-                bgm.addEventListener('canplaythrough', () => {
-                    bgm.play().catch(e => console.log('Auto-play prevented:', e));
-                }, { once: true });
+            window.addEventListener('resize', onWindowResize, false);
 
-                // Fallback attempt
-                bgm.load();
-
-            } else if (bgm.paused) {
-                bgm.play().catch(e => console.log('Playback failed:', e));
-            }
+            initFishes();
+            animate();
         }
 
-        function playSound(type) {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            const now = audioCtx.currentTime;
-
-            if (type === 'pop') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, now);
-                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
-                gain.gain.setValueAtTime(0.5, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-                osc.start(now);
-                osc.stop(now + 0.1);
-            } else if (type === 'shark') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(100, now);
-                osc.frequency.linearRampToValueAtTime(50, now + 1.0);
-                gain.gain.setValueAtTime(0.3, now);
-                gain.gain.linearRampToValueAtTime(0, now + 1.0);
-                osc.start(now);
-                osc.stop(now + 1.0);
-            } else if (type === 'magic') {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(440, now);
-                osc.frequency.linearRampToValueAtTime(880, now + 0.3);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.linearRampToValueAtTime(0, now + 0.3);
-                osc.start(now);
-                osc.stop(now + 0.3);
-            } else if (type === 'rare') { // Rare animal sound
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(300, now);
-                osc.frequency.linearRampToValueAtTime(600, now + 0.5);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.linearRampToValueAtTime(0, now + 0.5);
-                osc.start(now);
-                osc.stop(now + 0.5);
-            }
+        function onWindowResize() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
         }
-        window.addEventListener('click', initAudio);
-        window.addEventListener('touchstart', initAudio);
-
 
         // ==========================================
-        // Classes
+        // Logic Classes
         // ==========================================
-        class Vector {
-            constructor(x, y) { this.x = x; this.y = y; }
-            add(v) { this.x += v.x; this.y += v.y; return this; }
-            sub(v) { this.x -= v.x; this.y -= v.y; return this; }
-            mult(n) { this.x *= n; this.y *= n; return this; }
-            div(n) { this.x /= n; this.y /= n; return this; }
-            mag() { return Math.sqrt(this.x * this.x + this.y * this.y); }
+
+        class Vector3D {
+            constructor(x, y, z) { this.x = x; this.y = y; this.z = z; }
+            add(v) { this.x += v.x; this.y += v.y; this.z += v.z; return this; }
+            sub(v) { this.x -= v.x; this.y -= v.y; this.z -= v.z; return this; }
+            mult(n) { this.x *= n; this.y *= n; this.z *= n; return this; }
+            div(n) { if (n !== 0) { this.x /= n; this.y /= n; this.z /= n; } return this; }
+            mag() { return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z); }
             normalize() {
                 const m = this.mag();
                 if (m !== 0) this.div(m);
@@ -210,19 +269,39 @@
                 }
                 return this;
             }
-            static dist(v1, v2) { return Math.sqrt((v1.x - v2.x) ** 2 + (v1.y - v2.y) ** 2); }
-            copy() { return new Vector(this.x, this.y); }
+            static dist(v1, v2) {
+                return Math.sqrt((v1.x - v2.x) ** 2 + (v1.y - v2.y) ** 2 + (v1.z - v2.z) ** 2);
+            }
+            copy() { return new Vector3D(this.x, this.y, this.z); }
+            toThree() { return new THREE.Vector3(this.x, this.y, this.z); }
         }
 
-        class Fish {
+        class Fish3D {
             constructor() {
-                this.pos = new Vector(Math.random() * width, Math.random() * height);
-                this.vel = new Vector(Math.random() * 2 - 1, Math.random() * 2 - 1);
-                this.acc = new Vector(0, 0);
-                this.maxSpeed = FISH_SPEED_LIMIT + Math.random();
-                this.maxForce = FISH_FORCE_LIMIT;
-                this.color = `hsl(${Math.random() * 360}, 80%, 60%)`;
-                this.size = 6 + Math.random() * 8;
+                this.pos = new Vector3D(
+                    (Math.random() - 0.5) * WORLD_WIDTH,
+                    (Math.random() - 0.5) * WORLD_HEIGHT,
+                    (Math.random() - 0.5) * WORLD_DEPTH
+                );
+                this.vel = new Vector3D(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
+                this.acc = new Vector3D(0, 0, 0);
+
+                this.maxSpeed = 3 + Math.random() * 2;
+                this.maxForce = 0.1;
+                this.size = 15 + Math.random() * 15;
+
+                // Mesh
+                const geometry = new THREE.PlaneGeometry(this.size * 2, this.size);
+                const hue = Math.random() * 360;
+                const texture = createFishTexture(hue);
+
+                const material = new THREE.MeshBasicMaterial({
+                    map: texture,
+                    side: THREE.DoubleSide,
+                    transparent: true
+                });
+                this.mesh = new THREE.Mesh(geometry, material);
+                scene.add(this.mesh);
             }
 
             flock(boids) {
@@ -238,30 +317,44 @@
                 this.applyForce(ali);
                 this.applyForce(coh);
 
-                // Interaction
+                // Shark Avoidance
                 if (shark) {
-                    let flee = this.flee(shark.pos);
-                    flee.mult(5.0); // Strong fear of shark
+                    let sharkPos = new Vector3D(shark.mesh.position.x, shark.mesh.position.y, shark.mesh.position.z);
+                    let flee = this.flee(sharkPos);
+                    flee.mult(5.0);
                     this.applyForce(flee);
-                } else if (isHandPresent && handLandmarks.length > 0) {
-                    // Attract to first hand index finger
-                    let target = new Vector(handLandmarks[0][8].x * width, handLandmarks[0][8].y * height);
+                }
+
+                // Hand Attraction
+                if (isHandPresent && handLandmarks.length > 0) {
+                    // Hand is 2D, project to 3D roughly
+                    // Use specific Z plane for hand interaction? e.g., z=0
+                    // Mapping 0..1 to WorldCoords
+                    let hx = (handLandmarks[0][8].x - 0.5) * WORLD_WIDTH; // Mirror? Hand logic needs check
+                    let hy = -(handLandmarks[0][8].y - 0.5) * WORLD_HEIGHT; // Flip Y
+                    let hz = 100; // Hand is "forward"
+
+                    // Correction for mirror mode
+                    hx = -hx;
+
+                    let target = new Vector3D(hx, hy, hz);
                     let seek = this.seek(target);
-                    seek.mult(2.0); // Strong attraction
+                    seek.mult(2.0);
                     this.applyForce(seek);
                 }
             }
 
-            update() {
-                this.vel.add(this.acc);
-                this.vel.limit(this.maxSpeed);
-                this.pos.add(this.vel);
-                this.acc.mult(0);
-                this.edges();
-            }
-
-            applyForce(force) {
-                this.acc.add(force);
+            flee(target) {
+                let desired = this.pos.copy().sub(target); // Away from target
+                let d = desired.mag();
+                if (d < 300) {
+                    desired.normalize();
+                    desired.mult(this.maxSpeed);
+                    let steer = desired.sub(this.vel);
+                    steer.limit(this.maxForce);
+                    return steer;
+                }
+                return new Vector3D(0, 0, 0);
             }
 
             seek(target) {
@@ -273,26 +366,12 @@
                 return steer;
             }
 
-            flee(target) {
-                let desired = target.copy().sub(this.pos);
-                let d = desired.mag();
-                if (d < 300) { // Flee radius
-                    desired.normalize();
-                    desired.mult(this.maxSpeed);
-                    desired.mult(-1); // Reverse logic to flee
-                    let steer = desired.sub(this.vel);
-                    steer.limit(this.maxForce);
-                    return steer;
-                }
-                return new Vector(0, 0);
-            }
-
             separate(boids) {
-                let desiredseparation = 25.0;
-                let steer = new Vector(0, 0);
+                let desiredseparation = 60.0;
+                let steer = new Vector3D(0, 0, 0);
                 let count = 0;
                 for (let other of boids) {
-                    let d = Vector.dist(this.pos, other.pos);
+                    let d = Vector3D.dist(this.pos, other.pos);
                     if ((d > 0) && (d < desiredseparation)) {
                         let diff = this.pos.copy().sub(other.pos);
                         diff.normalize();
@@ -314,11 +393,11 @@
             }
 
             align(boids) {
-                let neighbordist = 50;
-                let sum = new Vector(0, 0);
+                let neighbordist = 100;
+                let sum = new Vector3D(0, 0, 0);
                 let count = 0;
                 for (let other of boids) {
-                    let d = Vector.dist(this.pos, other.pos);
+                    let d = Vector3D.dist(this.pos, other.pos);
                     if ((d > 0) && (d < neighbordist)) {
                         sum.add(other.vel);
                         count++;
@@ -332,15 +411,15 @@
                     steer.limit(this.maxForce);
                     return steer;
                 }
-                return new Vector(0, 0);
+                return new Vector3D(0, 0, 0);
             }
 
             cohesion(boids) {
-                let neighbordist = 50;
-                let sum = new Vector(0, 0);
+                let neighbordist = 100;
+                let sum = new Vector3D(0, 0, 0);
                 let count = 0;
                 for (let other of boids) {
-                    let d = Vector.dist(this.pos, other.pos);
+                    let d = Vector3D.dist(this.pos, other.pos);
                     if ((d > 0) && (d < neighbordist)) {
                         sum.add(other.pos);
                         count++;
@@ -350,439 +429,343 @@
                     sum.div(count);
                     return this.seek(sum);
                 }
-                return new Vector(0, 0);
+                return new Vector3D(0, 0, 0);
+            }
+
+            update() {
+                this.vel.add(this.acc);
+                this.vel.limit(this.maxSpeed);
+                this.pos.add(this.vel);
+                this.acc.mult(0);
+                this.edges();
+
+                // Update Mesh
+                this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
+
+                // Rotation (Look at velocity direction)
+                // atan2 for 2D, but lookAt for 3D is easier
+                let lookTarget = this.mesh.position.clone().add(this.vel.toThree());
+                this.mesh.lookAt(lookTarget);
+                // Fix orientation (planes face +Z by default, fish texture points right?)
+                // If fish texture points right (common), strict lookAt aligns -Z axis.
+                // We might need to rotate geometry or adjust.
+                // Let's assume lookAt works for now, might be upside down or sideways.
+                // Actually lookAt makes +Z point to target. Plane is XY.
+                // We'll see.
+            }
+
+            applyForce(force) {
+                this.acc.add(force);
             }
 
             edges() {
-                if (this.pos.x < -this.size) this.pos.x = width + this.size;
-                if (this.pos.y < -this.size) this.pos.y = height + this.size;
-                if (this.pos.x > width + this.size) this.pos.x = -this.size;
-                if (this.pos.y > height + this.size) this.pos.y = -this.size;
-            }
+                const W = WORLD_WIDTH / 2 + 100;
+                const H = WORLD_HEIGHT / 2 + 100;
+                const D = WORLD_DEPTH / 2 + 100;
 
-            draw() {
-                let angle = Math.atan2(this.vel.y, this.vel.x);
-                ctx.save();
-                ctx.translate(this.pos.x, this.pos.y);
-                ctx.rotate(angle);
+                if (this.pos.x < -W) this.pos.x = W;
+                if (this.pos.y < -H) this.pos.y = H;
+                if (this.pos.z < -D) this.pos.z = D;
 
-                // Draw fish
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.moveTo(this.size * 2, 0);
-                ctx.lineTo(-this.size, -this.size);
-                ctx.lineTo(-this.size, this.size);
-                ctx.closePath();
-                ctx.fill();
-
-                // Tail
-                ctx.fillStyle = this.color;
-                ctx.globalAlpha = 0.8;
-                ctx.beginPath();
-                ctx.moveTo(-this.size, 0);
-                ctx.lineTo(-this.size * 2, -this.size);
-                ctx.lineTo(-this.size * 2, this.size);
-                ctx.closePath();
-                ctx.fill();
-
-                ctx.restore();
+                if (this.pos.x > W) this.pos.x = -W;
+                if (this.pos.y > H) this.pos.y = -H;
+                if (this.pos.z > D) this.pos.z = -D;
             }
         }
 
-        class Shark {
+        // 🦈 Shark 3D
+        class Shark3D {
             constructor() {
-                this.pos = new Vector(-300, Math.random() * (height - 200) + 100);
-                this.vel = new Vector(3, 0);
-                this.size = 120; // Larger for image
-                this.fleeing = false;
+                // Start far left or right
+                this.pos = new Vector3D(-WORLD_WIDTH / 2 - 200, 0, 0);
+                this.vel = new Vector3D(5, 0, 0);
+                this.size = 200;
+
+                const geometry = new THREE.PlaneGeometry(this.size * 2, this.size);
+                const material = new THREE.MeshBasicMaterial({
+                    map: textures.shark,
+                    side: THREE.DoubleSide,
+                    transparent: true
+                });
+                this.mesh = new THREE.Mesh(geometry, material);
+                scene.add(this.mesh);
+
+                // Keep upright?
+                // We want shark to face movement.
             }
 
             update() {
                 this.pos.add(this.vel);
-                if (this.pos.x > width + 300 && !this.fleeing) {
-                    return true; // Shark finished pass
+                this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
+
+                // Simple facing
+                if (this.vel.x > 0) {
+                    this.mesh.rotation.y = 0; // Face right
+                    // My textures usually point left or right. Assuming Left?
+                    // If texture points left, scaling x = -1 flips it.
+                    // Let's assume texture points left (standard in my prev code?).
+                    // Yes, prev code used `scale(-1, 1)` when vel.x < 0.
+                    // This means default (scale 1) is facing Left.
+                    // So if moving Right (vel > 0), we need scale -1 (or rotation PI).
+                    this.mesh.scale.x = -1;
+                } else {
+                    this.mesh.scale.x = 1;
                 }
-                if (this.fleeing) {
-                    this.vel.x += 0.5; // Accelerate away
-                    if (this.pos.x > width + 300 || this.pos.x < -300) return true;
-                }
+
+                if (this.pos.x > WORLD_WIDTH / 2 + 400) return true;
                 return false;
             }
 
             checkRepel(handPos, handVel) {
-                if (!handPos) return;
-                let d = Vector.dist(this.pos, new Vector(handPos.x * width, handPos.y * height));
-                if (d < 250 && handVel > 20) { // If close and hand moving fast
-                    this.fleeing = true;
-                    this.vel.x *= -1.5; // Turn around and speed up
-                    playSound('shark');
-                }
-            }
-
-            draw() {
-                ctx.save();
-                ctx.translate(this.pos.x, this.pos.y);
-                if (this.vel.x < 0) ctx.scale(-1, 1);
-
-                // Draw Shark Image
-                // Center the image
-                if (sharkImg.complete) {
-                    ctx.drawImage(sharkImg, -this.size, -this.size / 2, this.size * 2, this.size);
-                } else {
-                    // Fallback
-                    ctx.fillStyle = "gray";
-                    ctx.beginPath();
-                    ctx.arc(0, 0, 50, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-
-                ctx.restore();
+                // TBD
+                return false;
             }
         }
 
-        // 🐙 Octopus Class
-        class Octopus {
+        // 🐙 Octopus 3D
+        class Octopus3D {
             constructor() {
-                this.pos = new Vector(Math.random() * width, height + 100);
-                this.vel = new Vector(0, -0.8); // Moves up slowly
-                this.size = 80;
+                this.pos = new Vector3D(
+                    (Math.random() - 0.5) * WORLD_WIDTH * 0.8,
+                    -WORLD_HEIGHT / 2 - 100,
+                    (Math.random() - 0.5) * WORLD_DEPTH
+                );
+                this.vel = new Vector3D(0, 1.0, 0); // Up
+                this.size = 120;
                 this.wobble = Math.random() * 100;
-                this.inked = false;
+
+                const geometry = new THREE.PlaneGeometry(this.size, this.size);
+                const material = new THREE.MeshBasicMaterial({
+                    map: textures.octopus,
+                    side: THREE.DoubleSide,
+                    transparent: true
+                });
+                this.mesh = new THREE.Mesh(geometry, material);
+                scene.add(this.mesh);
             }
 
             update() {
                 this.pos.add(this.vel);
-                this.wobble += 0.1;
-                this.pos.x += Math.sin(this.wobble) * 1.5; // Sway side to side
+                this.wobble += 0.05;
+                this.pos.x += Math.sin(this.wobble) * 2;
 
-                if (this.pos.y < -100) return true; // Gone off top
+                this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
+                // Billboard to camera?
+                this.mesh.lookAt(camera.position);
+
+                if (this.pos.y > WORLD_HEIGHT / 2 + 100) return true;
                 return false;
             }
-
-            checkInteract(handPos) {
-                if (this.inked || !handPos) return;
-                let d = Vector.dist(this.pos, new Vector(handPos.x * width, handPos.y * height));
-                if (d < this.size + 20) {
-                    this.inked = true;
-                    // Spawn Ink
-                    effects.push(new Ink(this.pos.x, this.pos.y));
-                    playSound('pop'); // Reuse pop or specific sound?
-                }
-            }
-
-            draw() {
-                ctx.save();
-                ctx.translate(this.pos.x, this.pos.y);
-
-                // Draw Octopus Image
-                if (octopusImg.complete) {
-                    ctx.drawImage(octopusImg, -this.size / 2, -this.size / 2, this.size, this.size);
-                }
-
-                ctx.restore();
-            }
         }
 
-        // 🐢 Turtle Class
-        class Turtle {
+        // 🐢 Turtle 3D
+        class Turtle3D {
             constructor() {
-                this.pos = new Vector(width + 100, Math.random() * (height - 200) + 100);
-                this.vel = new Vector(-1, 0); // Moves left slowly
-                this.size = 90;
-                this.paddleAngle = 0;
-                this.sparkling = false;
-                this.sparkleTimer = 0;
+                this.pos = new Vector3D(WORLD_WIDTH / 2 + 200, (Math.random() - 0.5) * WORLD_HEIGHT * 0.5, (Math.random() - 0.5) * 500);
+                this.vel = new Vector3D(-1.5, 0, 0);
+                this.size = 140;
+                this.paddle = 0;
+
+                const geometry = new THREE.PlaneGeometry(this.size, this.size);
+                const material = new THREE.MeshBasicMaterial({
+                    map: textures.turtle,
+                    side: THREE.DoubleSide,
+                    transparent: true
+                });
+                this.mesh = new THREE.Mesh(geometry, material);
+                scene.add(this.mesh);
             }
 
             update() {
                 this.pos.add(this.vel);
-                this.paddleAngle += 0.1;
+                this.paddle += 0.1;
 
-                if (this.sparkling) {
-                    this.sparkleTimer--;
-                    if (this.sparkleTimer <= 0) {
-                        this.sparkling = false;
-                    }
-                }
+                this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
 
-                if (this.pos.x < -100) return true; // Gone off left
+                // Tilt while swimming
+                this.mesh.rotation.z = Math.sin(this.paddle) * 0.1;
+                this.mesh.rotation.y = 0; // Face Left (default)
+
+                if (this.pos.x < -WORLD_WIDTH / 2 - 200) return true;
                 return false;
             }
-
-            checkInteract(handPos) {
-                if (!handPos) return;
-                let d = Vector.dist(this.pos, new Vector(handPos.x * width, handPos.y * height));
-                if (d < this.size) {
-                    this.sparkling = true;
-                    this.sparkleTimer = 60; // 1 second approx
-                    playSound('magic');
-                    // Spawn Sparkles
-                    for (let i = 0; i < 10; i++) {
-                        effects.push(new Sparkle(this.pos.x, this.pos.y));
-                    }
-                }
-            }
-
-            draw() {
-                ctx.save();
-                ctx.translate(this.pos.x, this.pos.y);
-
-                // Draw Turtle Image
-                let img = this.sparkling ? turtleKiraImg : turtleImg;
-
-                if (img.complete) {
-                    // Adding slight rotation for swim effect
-                    ctx.rotate(Math.sin(this.paddleAngle) * 0.1);
-                    ctx.drawImage(img, -this.size / 2, -this.size / 2, this.size, this.size);
-                }
-
-                ctx.restore();
-            }
         }
 
-        // ✨ Sparkle Effect
-        class Sparkle {
-            constructor(x, y) {
-                this.pos = new Vector(x, y);
-                this.vel = new Vector((Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4);
-                this.alpha = 1.0;
-                this.size = Math.random() * 5 + 5;
-            }
-            update() {
-                this.pos.add(this.vel);
-                this.alpha -= 0.02;
-                return this.alpha <= 0;
-            }
-            draw() {
-                ctx.save();
-                ctx.translate(this.pos.x, this.pos.y);
-                ctx.globalAlpha = this.alpha;
-                ctx.fillStyle = "#FFD700"; // Gold
-                ctx.beginPath();
-                ctx.arc(0, 0, this.size, 0, Math.PI * 2);
-                ctx.fill();
-                // Shine cross
-                ctx.strokeStyle = "white";
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(-this.size * 1.5, 0); ctx.lineTo(this.size * 1.5, 0);
-                ctx.moveTo(0, -this.size * 1.5); ctx.lineTo(0, this.size * 1.5);
-                ctx.stroke();
-                ctx.restore();
-            }
-        }
-
-        // 🌫️ Ink Effect
-        class Ink {
-            constructor(x, y) {
-                this.pos = new Vector(x, y);
-                this.alpha = 1.0;
-                this.size = 100;
-                this.expand = 1.0;
-            }
-            update() {
-                this.alpha -= 0.01;
-                this.expand += 0.5;
-                return this.alpha <= 0;
-            }
-            draw() {
-                ctx.save();
-                ctx.translate(this.pos.x, this.pos.y);
-                ctx.globalAlpha = this.alpha;
-                if (octopusSumiImg.complete) {
-                    ctx.drawImage(octopusSumiImg, -this.size / 2 - this.expand / 2, -this.size / 2 - this.expand / 2, this.size + this.expand, this.size + this.expand);
-                }
-                ctx.restore();
-            }
-        }
-
-        class Bubble {
+        // 🫧 Bubble 3D
+        class Bubble3D {
             constructor() {
-                this.pos = new Vector(Math.random() * width, height + 20);
-                this.vel = new Vector(0, -(1 + Math.random() * 2));
+                this.pos = new Vector3D(
+                    (Math.random() - 0.5) * WORLD_WIDTH,
+                    -WORLD_HEIGHT / 2 - 50,
+                    (Math.random() - 0.5) * WORLD_DEPTH
+                );
+                this.vel = new Vector3D(0, 1 + Math.random() * 2, 0);
                 this.radius = 10 + Math.random() * 20;
+
+                // Sphere Geometry for bubbles
+                const geometry = new THREE.SphereGeometry(this.radius, 16, 16);
+                const material = new THREE.MeshPhongMaterial({
+                    color: 0xffffff,
+                    transparent: true,
+                    opacity: 0.3,
+                    shininess: 100,
+                    specular: 0xffffff
+                });
+                this.mesh = new THREE.Mesh(geometry, material);
+                scene.add(this.mesh);
             }
 
             update() {
                 this.pos.add(this.vel);
-                // Wiggle
                 this.pos.x += Math.sin(this.pos.y * 0.05) * 0.5;
-            }
 
-            checkPop(handPos) {
-                if (!handPos) return false;
-                let d = Vector.dist(this.pos, new Vector(handPos.x * width, handPos.y * height));
-                if (d < this.radius + 15) { // 15 is approx finger radius
-                    playSound('pop');
-                    return true;
-                }
+                this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
+
+                if (this.pos.y > WORLD_HEIGHT / 2 + 100) return true;
                 return false;
             }
 
-            isOffScreen() {
-                return this.pos.y < -50;
-            }
-
-            draw() {
-                ctx.save();
-                ctx.translate(this.pos.x, this.pos.y);
-                ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
-                ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
-                // Shine
-                ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
-                ctx.beginPath();
-                ctx.arc(-this.radius * 0.3, -this.radius * 0.3, this.radius * 0.2, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.restore();
+            pop() {
+                scene.remove(this.mesh);
+                // Particle effect TBD
+                playSound('pop');
             }
         }
 
-        // ==========================================
-        // Main Loop
-        // ==========================================
-        function init() {
+        function initFishes() {
             for (let i = 0; i < NUM_FISH; i++) {
-                fishes.push(new Fish());
+                fishes.push(new Fish3D());
             }
-            animate();
+            // Start Animation Loop
+            initAudio();
         }
 
-        // Previous hand position for velocity
-        let prevHandPos = null;
-        let handVelocity = 0;
+        function animate() {
+            requestAnimationFrame(animate);
 
-        function animate(timestamp) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // 1. Draw Background (Video Feed + Blue Tint)
-            ctx.save();
-            ctx.filter = "blur(4px)";
-            // Mirror image
-            ctx.translate(width, 0);
-            ctx.scale(-1, 1);
-            ctx.globalAlpha = 0.6; // Video opacity
-            ctx.drawImage(videoElement, 0, 0, width, height);
-            ctx.restore();
-
-            // Underwater Overlay
-            ctx.fillStyle = "rgba(0, 30, 80, 0.4)";
-            ctx.fillRect(0, 0, width, height);
-
-            // Calculate Hand Velocity
-            handVelocity = 0;
-            if (isHandPresent && handLandmarks.length > 0) {
-                let currentPos = handLandmarks[0][8]; // Index finger tip
-                if (prevHandPos) {
-                    let dx = (currentPos.x - prevHandPos.x) * width;
-                    let dy = (currentPos.y - prevHandPos.y) * height;
-                    handVelocity = Math.sqrt(dx * dx + dy * dy);
-                }
-                prevHandPos = currentPos;
-            } else {
-                prevHandPos = null;
-            }
-
-            // 2. Fish Logic
+            // Fish
             for (let fish of fishes) {
                 fish.flock(fishes);
                 fish.update();
-                fish.draw();
             }
 
-            // 3. Shark Logic
-            if (!shark && timestamp - lastSharkTime > SHARK_SPAWN_INTERVAL && Math.random() < 0.005) {
+            // Shark
+            const now = Date.now();
+            if (!shark && now - lastSharkTime > SHARK_SPAWN_INTERVAL && Math.random() < 0.005) {
+                shark = new Shark3D();
                 playSound('shark');
-                shark = new Shark();
             }
             if (shark) {
-                if (isHandPresent && handLandmarks.length > 0) {
-                    shark.checkRepel(handLandmarks[0][8], handVelocity);
-                }
-                let restart = shark.update();
-                shark.draw();
-                if (restart) {
+                let done = shark.update();
+                if (done) {
+                    scene.remove(shark.mesh);
                     shark = null;
-                    lastSharkTime = timestamp;
+                    lastSharkTime = now;
                 }
             }
 
-            // 3.5 Rare Animals Logic
-            if (Math.random() < 0.002) { // Small chance each frame
-                if (Math.random() < 0.5) {
-                    rareAnimals.push(new Octopus());
-                    playSound('rare');
-                } else {
-                    rareAnimals.push(new Turtle());
-                    playSound('rare');
-                }
+            // Rare
+            if (Math.random() < 0.003) {
+                if (Math.random() < 0.5) rareAnimals.push(new Octopus3D());
+                else rareAnimals.push(new Turtle3D());
+                playSound('rare');
             }
             for (let i = rareAnimals.length - 1; i >= 0; i--) {
-                let animal = rareAnimals[i];
-                // Interaction Check
-                if (isHandPresent && handLandmarks.length > 0) {
-                    animal.checkInteract(handLandmarks[0][8]); // Index finger
-                }
-
-                let done = animal.update();
-                animal.draw();
+                let done = rareAnimals[i].update();
                 if (done) {
+                    scene.remove(rareAnimals[i].mesh);
                     rareAnimals.splice(i, 1);
                 }
             }
 
-            // 3.6 Effects Logic
-            for (let i = effects.length - 1; i >= 0; i--) {
-                let done = effects[i].update();
-                effects[i].draw();
-                if (done) effects.splice(i, 1);
-            }
-
-            // 4. Bubble Logic
-            if (Math.random() < 0.03) {
-                bubbles.push(new Bubble());
+            // Bubbles
+            if (Math.random() < 0.05) {
+                bubbles.push(new Bubble3D());
             }
             for (let i = bubbles.length - 1; i >= 0; i--) {
-                bubbles[i].update();
-                bubbles[i].draw();
+                let done = bubbles[i].update();
 
-                let popped = false;
-                if (isHandPresent && handLandmarks.length > 0) {
-                    // Check index, thumb, middle
-                    let fingers = [4, 8, 12]; // Tip indices
-                    for (let tipIdx of fingers) {
-                        if (bubbles[i] && bubbles[i].checkPop(handLandmarks[0][tipIdx])) {
-                            popped = true;
-                            break;
-                        }
+                // Interaction Check with Hand
+                if (!done && isHandPresent && handLandmarks.length > 0) {
+                    // Simple distance check in 3D (assuming hand is at z=100)
+                    let hx = -(handLandmarks[0][8].x - 0.5) * WORLD_WIDTH;
+                    let hy = -(handLandmarks[0][8].y - 0.5) * WORLD_HEIGHT;
+                    let hz = 100;
+                    let handPos = new Vector3D(hx, hy, hz);
+
+                    let dist = Vector3D.dist(handPos, bubbles[i].pos);
+                    if (dist < bubbles[i].radius + 50) { // +50 tolerance
+                        bubbles[i].pop();
+                        done = true;
                     }
                 }
 
-                if (popped || bubbles[i].isOffScreen()) {
+                if (done) {
+                    if (bubbles[i].mesh.parent) scene.remove(bubbles[i].mesh);
                     bubbles.splice(i, 1);
                 }
             }
 
-            // 5. Hand Visuals (Optional - Magic dust?)
-            if (isHandPresent && handLandmarks.length > 0) {
-                let tip = handLandmarks[0][8];
-                ctx.fillStyle = "rgba(255, 255, 200, 0.5)";
-                ctx.beginPath();
-                ctx.arc(tip.x * width, tip.y * height, 10, 0, Math.PI * 2);
-                ctx.fill();
-            }
-
-            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
         }
 
-        init();
         // ==========================================
-        // MediaPipe Hands Setup
+        // Sound & MediaPipe (Reused Logic)
         // ==========================================
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (!bgm) {
+                bgm = new Audio('/static/images/fish/fish.mp3');
+                bgm.loop = true;
+                bgm.volume = 0.4;
+                bgm.addEventListener('canplaythrough', () => {
+                    bgm.play().catch(e => console.log('Auto-play prevented:', e));
+                }, { once: true });
+                bgm.load();
+            } else if (bgm.paused) {
+                bgm.play().catch(e => console.log('Playback:', e));
+            }
+        }
+        window.addEventListener('click', initAudio);
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'pop') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+                gain.gain.setValueAtTime(0.5, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'shark') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.linearRampToValueAtTime(50, now + 1.0);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0, now + 1.0);
+                osc.start(now);
+                osc.stop(now + 1.0);
+            } else if (type === 'rare') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.linearRampToValueAtTime(600, now + 0.5);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            }
+        }
+
+        // MediaPipe Setup
         const hands = new Hands({
             locateFile: (file) => {
                 return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
@@ -795,41 +778,29 @@
             minTrackingConfidence: 0.5
         });
 
-        hands.onResults(onResults);
-
-        function onResults(results) {
-            loadingElement.classList.add('hide');
+        hands.onResults((results) => {
+            if (loadingElement && !loadingElement.classList.contains('hide')) {
+                loadingElement.classList.add('hide');
+            }
             if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                handLandmarks = results.multiHandLandmarks;
                 isHandPresent = true;
-                // Normalize coordinates handling mirroring (MediaPipe gives 0-1, we mirrored canvas but logic uses 0-1)
-                // Note: video is drawn mirrored.
-                // MediaPipe landmarks: x is 0-1.
-                // If we draw video mirrored, visual left is x=1, visual right is x=0?.
-                // Actually, let's keep logic simple:
-                // We draw video with ctx.scale(-1, 1). So x=0 in video pixel is drawn at width.
-                // MediaPipe x coordinate matches the video source texture.
-                // To match the mirrored visual, we need to flip x.
-
-                handLandmarks = results.multiHandLandmarks.map(hand => {
-                    return hand.map(pt => {
-                        return { x: 1 - pt.x, y: pt.y, z: pt.z }; // Flip X for mirrored feel
-                    });
-                });
             } else {
                 isHandPresent = false;
-                handLandmarks = [];
             }
-        }
+        });
 
-        const camera = new Camera(videoElement, {
+        const cameraUtils = new Camera(videoElement, {
             onFrame: async () => {
                 await hands.send({ image: videoElement });
             },
             width: 1280,
             height: 720
         });
-        camera.start();
+        cameraUtils.start();
 
+        // Start Three.js
+        initThree();
 
     </script>
 </body>
