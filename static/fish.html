@@ -523,6 +523,77 @@
             }
         }
 
+
+        // ==========================================
+        // Effects
+        // ==========================================
+        class ParticleSystem {
+            constructor(x, y, z, type) {
+                this.particles = [];
+                this.type = type;
+                const count = type === 'ink' ? 20 : 10;
+                const geometry = new THREE.BufferGeometry();
+                const positions = new Float32Array(count * 3);
+
+                for (let i = 0; i < count; i++) {
+                    this.particles.push({
+                        vel: new THREE.Vector3((Math.random() - 0.5) * 5, (Math.random() - 0.5) * 5, (Math.random() - 0.5) * 5),
+                        life: 1.0
+                    });
+                    positions[i * 3] = x;
+                    positions[i * 3 + 1] = y;
+                    positions[i * 3 + 2] = z;
+                }
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+                const color = type === 'ink' ? 0x000000 : 0xFFD700;
+                const size = type === 'ink' ? 80 : 20;
+
+                // Use texture for ink if available
+                let map = null;
+                if (type === 'ink') map = textures.octopusSumi;
+                // if(type === 'sparkle') map = ...;
+
+                const material = new THREE.PointsMaterial({
+                    color: color,
+                    size: size,
+                    transparent: true,
+                    opacity: 1.0,
+                    map: map,
+                    depthWrite: false
+                });
+
+                this.mesh = new THREE.Points(geometry, material);
+                scene.add(this.mesh);
+            }
+
+            update() {
+                const positions = this.mesh.geometry.attributes.position.array;
+                let alive = false;
+
+                for (let i = 0; i < this.particles.length; i++) {
+                    let p = this.particles[i];
+                    if (p.life > 0) {
+                        positions[i * 3] += p.vel.x;
+                        positions[i * 3 + 1] += p.vel.y;
+                        positions[i * 3 + 2] += p.vel.z;
+                        p.life -= 0.02;
+                        alive = true;
+                    }
+                }
+                this.mesh.geometry.attributes.position.needsUpdate = true;
+                this.mesh.material.opacity -= 0.01;
+
+                return !alive || this.mesh.material.opacity <= 0;
+            }
+
+            dispose() {
+                scene.remove(this.mesh);
+                this.mesh.geometry.dispose();
+                this.mesh.material.dispose();
+            }
+        }
+
         // 🐙 Octopus 3D
         class Octopus3D {
             constructor() {
@@ -534,6 +605,7 @@
                 this.vel = new Vector3D(0, 1.0, 0); // Up
                 this.size = 120;
                 this.wobble = Math.random() * 100;
+                this.inked = false;
 
                 const geometry = new THREE.PlaneGeometry(this.size, this.size);
                 const material = new THREE.MeshBasicMaterial({
@@ -551,11 +623,14 @@
                 this.pos.x += Math.sin(this.wobble) * 2;
 
                 this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
-                // Billboard to camera?
                 this.mesh.lookAt(camera.position);
 
                 if (this.pos.y > WORLD_HEIGHT / 2 + 100) return true;
                 return false;
+            }
+
+            spawnInk() {
+                effects.push(new ParticleSystem(this.pos.x, this.pos.y, this.pos.z, 'ink'));
             }
         }
 
@@ -566,6 +641,7 @@
                 this.vel = new Vector3D(-1.5, 0, 0);
                 this.size = 140;
                 this.paddle = 0;
+                this.sparkling = false;
 
                 const geometry = new THREE.PlaneGeometry(this.size, this.size);
                 const material = new THREE.MeshBasicMaterial({
@@ -583,12 +659,20 @@
 
                 this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
 
-                // Tilt while swimming
                 this.mesh.rotation.z = Math.sin(this.paddle) * 0.1;
-                this.mesh.rotation.y = 0; // Face Left (default)
+                this.mesh.rotation.y = 0;
+
+                // Texture Swap Logic
+                if (this.sparkling) {
+                    this.mesh.material.map = textures.turtleKira;
+                }
 
                 if (this.pos.x < -WORLD_WIDTH / 2 - 200) return true;
                 return false;
+            }
+
+            spawnSparkle() {
+                effects.push(new ParticleSystem(this.pos.x, this.pos.y, this.pos.z, 'sparkle'));
             }
         }
 
@@ -714,10 +798,11 @@
                         if (animal instanceof Turtle3D && !animal.sparkling) {
                             animal.sparkling = true;
                             playSound('magic');
-                            // Simple sparkle effect visual omitted, could add later
+                            animal.spawnSparkle();
                         } else if (animal instanceof Octopus3D && !animal.inked) {
                             animal.inked = true;
                             playSound('pop');
+                            animal.spawnInk();
                         }
                     }
                 }
@@ -725,6 +810,15 @@
                 if (done) {
                     scene.remove(rareAnimals[i].mesh);
                     rareAnimals.splice(i, 1);
+                }
+            }
+
+            // Effects
+            for (let i = effects.length - 1; i >= 0; i--) {
+                let done = effects[i].update();
+                if (done) {
+                    effects[i].dispose();
+                    effects.splice(i, 1);
                 }
             }
 
