@@ -127,6 +127,10 @@
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
 
+        // Hand Velocity Tracking
+        let prevHandPixelPos = null;
+        let handSpeed = 0;
+
 
         // Audio
         let audioCtx;
@@ -493,6 +497,7 @@
 
                 // Keep upright?
                 // We want shark to face movement.
+                this.fleeing = false;
             }
 
             update() {
@@ -513,13 +518,27 @@
                     this.mesh.scale.x = 1;
                 }
 
-                if (this.pos.x > WORLD_WIDTH / 2 + 400) return true;
+                if (this.pos.x > WORLD_WIDTH / 2 + 400 && !this.fleeing) return true;
+
+                if (this.fleeing) {
+                    this.vel.x += (this.vel.x > 0 ? 0.5 : -0.5); // Accelerate
+                    if (this.pos.x > WORLD_WIDTH / 2 + 500 || this.pos.x < -WORLD_WIDTH / 2 - 500) return true;
+                }
+
                 return false;
             }
 
-            checkRepel(handPos, handVel) {
-                // TBD
-                return false;
+            checkRepel(handPos, handSpeed) {
+                if (!handPos) return;
+
+                // Use screen space overlap for "touching" the shark
+                if (checkScreenOverlap(this.mesh, handPos.x, handPos.y)) {
+                    if (handSpeed > 20) { // Fast movement threshold
+                        this.fleeing = true;
+                        this.vel.x *= -1.5; // Turn/Accelerate
+                        playSound('shark');
+                    }
+                }
             }
         }
 
@@ -758,7 +777,17 @@
                 // we must flip the coordinate to match visual screen position.
                 let sx = (1 - lx) * width;
                 let sy = ly * height;
+
+                if (prevHandPixelPos) {
+                    const dx = sx - prevHandPixelPos.x;
+                    const dy = sy - prevHandPixelPos.y;
+                    handSpeed = Math.sqrt(dx * dx + dy * dy);
+                }
+                prevHandPixelPos = { x: sx, y: sy };
                 handPixelPos = { x: sx, y: sy };
+            } else {
+                prevHandPixelPos = null;
+                handSpeed = 0;
             }
 
             // Fish
@@ -774,6 +803,9 @@
                 playSound('shark');
             }
             if (shark) {
+                if (handPixelPos) {
+                    shark.checkRepel(handPixelPos, handSpeed);
+                }
                 let done = shark.update();
                 if (done) {
                     scene.remove(shark.mesh);
