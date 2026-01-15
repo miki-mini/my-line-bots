@@ -109,7 +109,11 @@
         const bubbles = [];
         const rareAnimals = [];
         const effects = [];
+        const foods = [];
+        const ripples = [];
+        const eggs = [];
         let shark = null;
+        let lastFoodTime = 0;
 
         // Constants
         const NUM_FISH = 80; // Increased for 3D
@@ -293,10 +297,13 @@
 
                 this.maxSpeed = 3 + Math.random() * 2;
                 this.maxForce = 0.1;
-                this.size = 15 + Math.random() * 15;
+                this.baseSize = 15 + Math.random() * 15;
+                this.currentSize = this.baseSize;
+                this.age = 1.0;
 
                 // Mesh
-                const geometry = new THREE.PlaneGeometry(this.size * 2, this.size);
+                // Normalized geometry, scaled by instance
+                const geometry = new THREE.PlaneGeometry(1, 0.5);
                 const hue = Math.random() * 360;
                 const texture = createFishTexture(hue);
 
@@ -306,7 +313,13 @@
                     transparent: true
                 });
                 this.mesh = new THREE.Mesh(geometry, material);
+                this.updateSize();
                 scene.add(this.mesh);
+            }
+
+            updateSize() {
+                // Aspect ratio 2:1
+                this.mesh.scale.set(this.currentSize * 2, this.currentSize, 1);
             }
 
             flock(boids) {
@@ -321,6 +334,10 @@
                 this.applyForce(sep);
                 this.applyForce(ali);
                 this.applyForce(coh);
+
+                // Food Attraction
+                let foodForce = this.seekFood(foods);
+                this.applyForce(foodForce);
 
                 // Shark Avoidance
                 if (shark) {
@@ -437,6 +454,37 @@
                 return new Vector3D(0, 0, 0);
             }
 
+            seekFood(foods) {
+                let closest = null;
+                let minDist = 300; // Perception radius for food
+
+                for (let food of foods) {
+                    let d = Vector3D.dist(this.pos, food.pos);
+                    if (d < minDist) {
+                        minDist = d;
+                        closest = food;
+                    }
+                }
+
+                if (closest) {
+                    // Check if close enough to eat
+                    if (minDist < 20) {
+                        closest.eaten = true;
+                        // Grow
+                        this.currentSize += 2.0;
+                        if (this.currentSize > this.baseSize * 2.5) this.currentSize = this.baseSize * 2.5;
+                        this.updateSize();
+                        playSound('pop');
+                        return new Vector3D(0, 0, 0);
+                    }
+
+                    let seekForce = this.seek(closest.pos);
+                    seekForce.mult(2.0); // Strong attraction
+                    return seekForce;
+                }
+                return new Vector3D(0, 0, 0);
+            }
+
             update() {
                 this.vel.add(this.acc);
                 this.vel.limit(this.maxSpeed);
@@ -475,6 +523,33 @@
                 if (this.pos.x > W) this.pos.x = -W;
                 if (this.pos.y > H) this.pos.y = -H;
                 if (this.pos.z > D) this.pos.z = -D;
+            }
+
+            seekFood(foods) {
+                let closest = null;
+                let minDist = 300; // Perception radius for food
+
+                for (let food of foods) {
+                    let d = Vector3D.dist(this.pos, food.pos);
+                    if (d < minDist) {
+                        minDist = d;
+                        closest = food;
+                    }
+                }
+
+                if (closest) {
+                    // Check if close enough to eat
+                    if (minDist < 20) {
+                        closest.eaten = true;
+                        // Grow? (Next phase)
+                        return new Vector3D(0, 0, 0);
+                    }
+
+                    let seekForce = this.seek(closest.pos);
+                    seekForce.mult(2.0); // Strong attraction
+                    return seekForce;
+                }
+                return new Vector3D(0, 0, 0);
             }
         }
 
@@ -736,6 +811,128 @@
             }
         }
 
+        // 🍞 Food 3D
+        class Food3D {
+            constructor(x, y, z) {
+                this.pos = new Vector3D(x, y, z);
+                this.vel = new Vector3D(0, -2, 0); // Falls down
+                this.eaten = false;
+
+                const geometry = new THREE.SphereGeometry(5, 8, 8);
+                const material = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
+                this.mesh = new THREE.Mesh(geometry, material);
+                scene.add(this.mesh);
+            }
+
+            update() {
+                this.pos.add(this.vel);
+                this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
+
+                if (this.pos.y < -WORLD_HEIGHT / 2 - 50) return true; // Removed if out of bounds
+                return this.eaten;
+            }
+        }
+
+        // 💧 Ripple Effect (Simple Ring)
+        class Ripple {
+            constructor(x, y, z) {
+                this.pos = new Vector3D(x, y, z);
+                this.life = 1.0;
+
+                const geometry = new THREE.RingGeometry(1, 2, 32);
+                const material = new THREE.MeshBasicMaterial({
+                    color: 0xffffff,
+                    transparent: true,
+                    opacity: 0.5,
+                    side: THREE.DoubleSide
+                });
+                this.mesh = new THREE.Mesh(geometry, material);
+                this.mesh.position.set(x, y, z);
+                this.mesh.rotation.x = 0; // Face camera? Or Flat?
+                // If we want it to look like "water surface" it should be somewhat vertical or following screen?
+                // Since it's an AR feel, flat against screen (XY plane) is best.
+                scene.add(this.mesh);
+            }
+
+            update() {
+                this.life -= 0.02;
+                const scale = 1.0 + (1.0 - this.life) * 50; // Expand
+                this.mesh.scale.set(scale, scale, 1);
+                this.mesh.material.opacity = this.life * 0.5;
+
+                if (this.life <= 0) return true;
+                return false;
+            }
+
+            dispose() {
+                scene.remove(this.mesh);
+                this.mesh.geometry.dispose();
+                this.mesh.material.dispose();
+            }
+        }
+
+        // ... Existing initFishes ...
+        // 🥚 Egg 3D
+        class Egg3D {
+            constructor() {
+                this.pos = new Vector3D(
+                    (Math.random() - 0.5) * WORLD_WIDTH * 0.8,
+                    WORLD_HEIGHT / 2 + 50, // Start above
+                    0
+                );
+                this.vel = new Vector3D(0, -0.5, 0); // Sink slowly
+                this.incubation = 0;
+                this.hatched = false;
+
+                const geometry = new THREE.SphereGeometry(8, 16, 16);
+                const material = new THREE.MeshBasicMaterial({ color: 0xffffee });
+                this.mesh = new THREE.Mesh(geometry, material);
+                scene.add(this.mesh);
+            }
+
+            update() {
+                this.pos.add(this.vel);
+                // Wobbly fall
+                this.pos.x += Math.sin(this.pos.y * 0.02) * 0.5;
+
+                this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
+
+                // Bottom check? Or just float forever until hatched/despawn
+                if (this.pos.y < -WORLD_HEIGHT / 2 - 100) return true;
+                return this.hatched;
+            }
+
+            checkWarmth(handPos) {
+                if (!handPos) return;
+                // Check screen distance
+                if (checkScreenOverlap(this.mesh, handPos.x, handPos.y)) {
+                    this.incubation += 1;
+                    this.mesh.material.color.setHex(0xffaaaa); // Warm color
+                    if (this.incubation > 60) { // ~1 sec
+                        this.hatch();
+                    }
+                } else {
+                    this.mesh.material.color.setHex(0xffffee);
+                }
+            }
+
+            hatch() {
+                this.hatched = true;
+                scene.remove(this.mesh);
+                // Spawn Baby Fish
+                let baby = new Fish3D();
+                baby.pos = this.pos.copy();
+                baby.baseSize = 10;
+                baby.currentSize = 5; // Tiny
+                baby.updateSize();
+                fishes.push(baby);
+
+                // Effect
+                playSound('magic');
+                effects.push(new ParticleSystem(this.pos.x, this.pos.y, this.pos.z, 'sparkle'));
+            }
+        }
+
         function initFishes() {
             for (let i = 0; i < NUM_FISH; i++) {
                 fishes.push(new Fish3D());
@@ -790,10 +987,104 @@
                 handSpeed = 0;
             }
 
+            // Ripple Trigger
+            if (handPixelPos && handSpeed > 15) { // Threshold for ripple
+                if (Math.random() < 0.3) {
+                    let rx = (handPixelPos.x / width - 0.5) * WORLD_WIDTH;
+                    let ry = -(handPixelPos.y / height - 0.5) * WORLD_HEIGHT;
+                    effects.push(new Ripple(rx, ry, 0));
+                }
+            } else if (handPixelPos) {
+                // Magic Hand Particles (Sparkles when moving slowly)
+                if (Math.random() < 0.2) {
+                    let hx = (handPixelPos.x / width - 0.5) * WORLD_WIDTH;
+                    let hy = -(handPixelPos.y / height - 0.5) * WORLD_HEIGHT;
+                    // Add random offset
+                    hx += (Math.random() - 0.5) * 20;
+                    hy += (Math.random() - 0.5) * 20;
+                    effects.push(new ParticleSystem(hx, hy, 0, 'sparkle'));
+                }
+            }
+
             // Fish
             for (let fish of fishes) {
-                fish.flock(fishes);
+                fish.flock(fishes); // Includes seekFood logic now
                 fish.update();
+            }
+
+            // Food Logic
+            // Pinch Detection (Thumb 4 and Index 8)
+            if (isHandPresent && handLandmarks.length > 0) {
+                let p1 = handLandmarks[0][4]; // Thumb
+                let p2 = handLandmarks[0][8]; // Index
+
+                // Calculate distance (approx in screen space relative units)
+                let dx = p1.x - p2.x;
+                let dy = p1.y - p2.y;
+                let dist = Math.sqrt(dx * dx + dy * dy);
+
+                // DEBUG: console.log(dist); // Approx 0.05 is close
+                if (dist < 0.05) {
+                    const now = Date.now();
+                    if (now - lastFoodTime > 200) { // Cooldown
+                        // Spawn food at index finger position
+                        // Map standard 0..1 to World
+                        let hx = (1 - p2.x) * width; // Screen pixels
+                        let hy = p2.y * height;
+
+                        // We need World Coords for the food.
+                        // Simple mapping since our camera is fixed
+                        // Or use unproject if accurate, but linear mapping is fine here.
+                        // Center (width/2, height/2) -> (0,0)
+
+                        let wx = (hx - width / 2); // Very rough, but camera is perspective.
+                        // Actually our World W/H is approx 1200/800.
+                        // Let's use the same mapping as hand PixelPos logic but centered.
+
+                        // let lx = p2.x; (0..1)
+                        // worldX = (0.5 - lx) * WORLD_WIDTH (if no mirror)
+                        // With mirror scaleX(-1) on video...
+                        // Let's use the visual position we calculated for handPixelPos
+
+                        if (handPixelPos) {
+                            // handPixelPos is Screen Coords (0..width, 0..height)
+                            // Map Screen to World
+                            // Screen Center is (width/2, height/2) -> World (0,0)
+                            // Scale factor?
+                            // At z=0, visible height is bounded by FOV using trig, but let's approximate.
+
+                            let logicX = (handPixelPos.x / width - 0.5) * WORLD_WIDTH;
+                            let logicY = -(handPixelPos.y / height - 0.5) * WORLD_HEIGHT;
+
+                            foods.push(new Food3D(logicX, logicY, 0));
+                            lastFoodTime = now;
+                        }
+                    }
+                }
+            }
+
+            for (let i = foods.length - 1; i >= 0; i--) {
+                let done = foods[i].update();
+                if (done) {
+                    scene.remove(foods[i].mesh);
+                    foods.splice(i, 1);
+                }
+            }
+
+
+            // Eggs (Random Spawn)
+            if (Math.random() < 0.001) { // Rare
+                eggs.push(new Egg3D());
+            }
+            for (let i = eggs.length - 1; i >= 0; i--) {
+                if (handPixelPos) eggs[i].checkWarmth(handPixelPos);
+                let done = eggs[i].update();
+                if (done && !eggs[i].hatched) {
+                    scene.remove(eggs[i].mesh);
+                    eggs.splice(i, 1);
+                } else if (done && eggs[i].hatched) {
+                    eggs.splice(i, 1); // Already removed mesh in hatch()
+                }
             }
 
             // Shark
