@@ -618,6 +618,34 @@
         }
 
 
+        // Generate Sparkle Texture
+        function createSparkleTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+
+            // Glow
+            const cx = 32, cy = 32;
+            const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, 32);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            gradient.addColorStop(0.4, 'rgba(255, 220, 100, 0.5)');
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 64, 64);
+
+            // Star shape
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.moveTo(32, 0); ctx.lineTo(36, 28); ctx.lineTo(64, 32); ctx.lineTo(36, 36);
+            ctx.lineTo(32, 64); ctx.lineTo(28, 36); ctx.lineTo(0, 32); ctx.lineTo(28, 28);
+            ctx.closePath();
+            ctx.fill();
+
+            return new THREE.CanvasTexture(canvas);
+        }
+        const sparkleTexture = createSparkleTexture();
+
         // ==========================================
         // Effects
         // ==========================================
@@ -625,7 +653,7 @@
             constructor(x, y, z, type) {
                 this.particles = [];
                 this.type = type;
-                const count = type === 'ink' ? 20 : 10;
+                const count = type === 'ink' ? 20 : 20; // More sparkles
                 const geometry = new THREE.BufferGeometry();
                 const positions = new Float32Array(count * 3);
 
@@ -640,13 +668,21 @@
                 }
                 geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
-                const color = type === 'ink' ? 0x000000 : 0xFFD700;
-                const size = type === 'ink' ? 80 : 20;
+                const color = type === 'ink' ? 0x000000 : 0xFFFFFF; // White tint for texture
+                const size = type === 'ink' ? 80 : 40; // Larger for texture
 
                 // Use texture for ink if available
                 let map = null;
-                if (type === 'ink') map = textures.octopusSumi;
-                // if(type === 'sparkle') map = ...;
+                let blending = THREE.NormalBlending;
+                let depthWrite = true;
+
+                if (type === 'ink') {
+                    map = textures.octopusSumi;
+                } else if (type === 'sparkle') {
+                    map = sparkleTexture;
+                    blending = THREE.AdditiveBlending;
+                    depthWrite = false;
+                }
 
                 const material = new THREE.PointsMaterial({
                     color: color,
@@ -654,7 +690,10 @@
                     transparent: true,
                     opacity: 1.0,
                     map: map,
-                    depthWrite: false
+                    blending: blending,
+                    depthWrite: depthWrite,
+                    sizeAttenuation: true,
+                    alphaTest: 0.01
                 });
 
                 this.mesh = new THREE.Points(geometry, material);
