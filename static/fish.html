@@ -646,6 +646,57 @@
         }
         const sparkleTexture = createSparkleTexture();
 
+        // Heart Texture
+        function createHeartTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#FF69B4'; // HotPink
+            ctx.beginPath();
+            ctx.moveTo(32, 20);
+            ctx.bezierCurveTo(32, 18, 30, 10, 20, 10);
+            ctx.bezierCurveTo(5, 10, 5, 25, 5, 25);
+            ctx.bezierCurveTo(5, 40, 20, 52, 32, 60);
+            ctx.bezierCurveTo(44, 52, 59, 40, 59, 25);
+            ctx.bezierCurveTo(59, 25, 59, 10, 44, 10);
+            ctx.bezierCurveTo(34, 10, 32, 18, 32, 20);
+            ctx.fill();
+
+            return new THREE.CanvasTexture(canvas);
+        }
+        const heartTexture = createHeartTexture();
+
+        // Egg Texture
+        function createEggTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 128;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+
+            // Background
+            ctx.fillStyle = '#FFFDD0'; // Cream
+            ctx.fillRect(0, 0, 128, 128);
+
+            // Spots
+            ctx.fillStyle = '#FFB6C1'; // LightPink
+            for (let i = 0; i < 6; i++) {
+                ctx.beginPath();
+                ctx.arc(Math.random() * 128, Math.random() * 128, 10 + Math.random() * 10, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.fillStyle = '#87CEFA'; // LightSkyBlue
+            for (let i = 0; i < 6; i++) {
+                ctx.beginPath();
+                ctx.arc(Math.random() * 128, Math.random() * 128, 8 + Math.random() * 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            return new THREE.CanvasTexture(canvas);
+        }
+        const eggTexture = createEggTexture();
+
         // ==========================================
         // Effects
         // ==========================================
@@ -681,6 +732,10 @@
                 } else if (type === 'sparkle') {
                     map = sparkleTexture;
                     blending = THREE.AdditiveBlending;
+                    depthWrite = false;
+                } else if (type === 'heart') {
+                    map = heartTexture;
+                    blending = THREE.NormalBlending;
                     depthWrite = false;
                 }
 
@@ -922,17 +977,32 @@
                 this.vel = new Vector3D(0, -0.5, 0); // Sink slowly
                 this.incubation = 0;
                 this.hatched = false;
+                this.shake = 0;
 
-                const geometry = new THREE.SphereGeometry(8, 16, 16);
-                const material = new THREE.MeshBasicMaterial({ color: 0xffffee });
+                const geometry = new THREE.SphereGeometry(12, 24, 24); // Bigger
+                // Use Texture
+                const material = new THREE.MeshStandardMaterial({
+                    map: eggTexture,
+                    roughness: 0.8,
+                    metalness: 0.1
+                });
                 this.mesh = new THREE.Mesh(geometry, material);
                 scene.add(this.mesh);
             }
 
             update() {
                 this.pos.add(this.vel);
-                // Wobbly fall
-                this.pos.x += Math.sin(this.pos.y * 0.02) * 0.5;
+
+                // Shake if incubating
+                let shakeX = 0;
+                if (this.incubation > 0 && this.incubation < 60) {
+                    this.shake += 1;
+                    shakeX = Math.sin(this.shake * 0.5) * (this.incubation / 10);
+                } else {
+                    // Gentle wobble fall
+                    shakeX = Math.sin(this.pos.y * 0.02) * 0.5;
+                }
+                this.pos.x += shakeX;
 
                 this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
 
@@ -946,12 +1016,20 @@
                 // Check screen distance
                 if (checkScreenOverlap(this.mesh, handPos.x, handPos.y)) {
                     this.incubation += 1;
-                    this.mesh.material.color.setHex(0xffaaaa); // Warm color
+                    this.mesh.material.emissive = new THREE.Color(0xFF69B4); // Glow Pink
+                    this.mesh.material.emissiveIntensity = Math.min(1.0, this.incubation / 60);
+
+                    if (this.incubation % 10 === 0) {
+                        // Heart Particles
+                        effects.push(new ParticleSystem(this.pos.x, this.pos.y, this.pos.z, 'heart'));
+                    }
+
                     if (this.incubation > 60) { // ~1 sec
                         this.hatch();
                     }
                 } else {
-                    this.mesh.material.color.setHex(0xffffee);
+                    this.incubation = Math.max(0, this.incubation - 0.5); // Cool down slowly
+                    this.mesh.material.emissive = new THREE.Color(0x000000);
                 }
             }
 
