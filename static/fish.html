@@ -697,6 +697,55 @@
         }
         const eggTexture = createEggTexture();
 
+        // Jellyfish Texture
+        function createJellyfishTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 128;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+
+            // Dome
+            ctx.fillStyle = 'rgba(200, 200, 255, 0.4)'; // Blue-ish transparent
+            ctx.beginPath();
+            ctx.arc(64, 50, 40, Math.PI, 0);
+            ctx.bezierCurveTo(104, 70, 24, 70, 24, 50);
+            ctx.fill();
+
+            // Tentacles
+            ctx.strokeStyle = 'rgba(200, 200, 255, 0.6)';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 5; i++) {
+                ctx.beginPath();
+                ctx.moveTo(40 + i * 12, 60);
+                ctx.bezierCurveTo(40 + i * 12 - 5, 80, 40 + i * 12 + 5, 100, 40 + i * 12, 120);
+                ctx.stroke();
+            }
+            return new THREE.CanvasTexture(canvas);
+        }
+        const jellyfishTexture = createJellyfishTexture();
+
+        // Lightning Texture
+        function createLightningTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+
+            ctx.strokeStyle = '#FFFF00';
+            ctx.lineWidth = 4;
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(32, 5);
+            ctx.lineTo(15, 25);
+            ctx.lineTo(40, 30);
+            ctx.lineTo(20, 50);
+            ctx.lineTo(32, 60);
+            ctx.stroke();
+
+            return new THREE.CanvasTexture(canvas);
+        }
+        const lightningTexture = createLightningTexture();
+
         // ==========================================
         // Effects
         // ==========================================
@@ -736,6 +785,10 @@
                 } else if (type === 'heart') {
                     map = heartTexture;
                     blending = THREE.NormalBlending;
+                    depthWrite = false;
+                } else if (type === 'shock') {
+                    map = lightningTexture;
+                    blending = THREE.AdditiveBlending;
                     depthWrite = false;
                 }
 
@@ -1050,6 +1103,59 @@
             }
         }
 
+        // 🎐 Jellyfish 3D
+        class Jellyfish3D {
+            constructor() {
+                this.pos = new Vector3D(
+                    (Math.random() - 0.5) * WORLD_WIDTH,
+                    -WORLD_HEIGHT / 2 - 50, // Start below
+                    (Math.random() - 0.5) * WORLD_DEPTH
+                );
+                this.vel = new Vector3D(0, 0.5 + Math.random(), 0);
+                this.floatOffset = Math.random() * 100;
+
+                const geometry = new THREE.PlaneGeometry(60, 60);
+                const material = new THREE.MeshBasicMaterial({
+                    map: jellyfishTexture,
+                    transparent: true,
+                    opacity: 0.8,
+                    side: THREE.DoubleSide,
+                    blending: THREE.AdditiveBlending
+                });
+                this.mesh = new THREE.Mesh(geometry, material);
+                scene.add(this.mesh);
+            }
+
+            update() {
+                this.pos.add(this.vel);
+                // Floating sinus motion
+                this.pos.x += Math.sin(this.pos.y * 0.02 + this.floatOffset) * 0.5;
+
+                this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
+
+                // Remove if too high
+                if (this.pos.y > WORLD_HEIGHT / 2 + 100) return true;
+                return false;
+            }
+
+            checkShock(handPos) {
+                if (!handPos) return;
+                if (checkScreenOverlap(this.mesh, handPos.x, handPos.y)) {
+                    // Shock effect
+                    playSound('shock');
+                    // Spawn particles
+                    for (let i = 0; i < 3; i++) {
+                        effects.push(new ParticleSystem(
+                            this.pos.x + (Math.random() - 0.5) * 40,
+                            this.pos.y + (Math.random() - 0.5) * 40,
+                            this.pos.z,
+                            'shock'
+                        ));
+                    }
+                }
+            }
+        }
+
         function initFishes() {
             for (let i = 0; i < NUM_FISH; i++) {
                 fishes.push(new Fish3D());
@@ -1223,10 +1329,13 @@
             }
 
             // Rare
-            if (Math.random() < 0.003) {
-                if (Math.random() < 0.5) rareAnimals.push(new Octopus3D());
-                else rareAnimals.push(new Turtle3D());
-                playSound('rare');
+            if (Math.random() < 0.004) {
+                let r = Math.random();
+                if (r < 0.4) rareAnimals.push(new Octopus3D());
+                else if (r < 0.8) rareAnimals.push(new Turtle3D());
+                else rareAnimals.push(new Jellyfish3D());
+
+                // playSound('rare');
             }
             for (let i = rareAnimals.length - 1; i >= 0; i--) {
                 let animal = rareAnimals[i];
@@ -1243,6 +1352,9 @@
                             animal.inked = true;
                             playSound('pop');
                             animal.spawnInk();
+                        } else if (animal instanceof Jellyfish3D) {
+                            // Shock interaction
+                            if (Math.random() < 0.3) animal.checkShock(handPixelPos);
                         }
                     }
                 }
@@ -1321,6 +1433,17 @@
                 osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
                 gain.gain.setValueAtTime(0.5, now);
                 gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'shock') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(1200, now); // High pitch
+                osc.frequency.linearRampToValueAtTime(800, now + 0.1); // Quick drop
+                // Zzzzt feel
+                gain.gain.setValueAtTime(0.5, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+
+                // Modulate?
                 osc.start(now);
                 osc.stop(now + 0.1);
             } else if (type === 'shark') {
