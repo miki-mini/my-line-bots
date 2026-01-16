@@ -1,5 +1,7 @@
 # 🤖 My LINE Bots Collection (Animal Agents)
 
+![CI/CD](https://img.shields.io/github/actions/workflow/status/miki-mini/my-line-bots/ci.yml?label=CI%2FCD&logo=github)
+![Coverage](https://img.shields.io/badge/Coverage-80%25%2B-green?logo=pytest&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.109%2B-009688?logo=fastapi&logoColor=white)
 ![Google Cloud Run](https://img.shields.io/badge/Google_Cloud-Run-4285F4?logo=google-cloud&logoColor=white)
@@ -8,7 +10,7 @@
 
 > [!NOTE]
 > ✨ <a href="https://usagi-oekaki-service-1032484155743.asia-northeast1.run.app" target="_blank"><strong>Live Demo Portal / **デモサイトはこちら** </strong></a> ✨
-><br>
+> <br>
 > BOTたちが集まるポータルサイトを公開しました！(PC / Mobile 対応)
 
 ## API Documentation
@@ -22,6 +24,13 @@
 このリポジトリは、Google Gemini 2.5 (Flash/Pro) と Google Cloud (Cloud Run, Firestore, Vertex AI) をフル活用した、実用的なLINEボットの集合体です。
 リマインダー、画像生成、天気予報、メール代行など、**それぞれの動物が「得意分野」を持ったマイクロモジュール**として実装されています。
 
+### 🚀 DevOps Highlights (Implemented Jan 2026)
+本プロジェクトは、Google Cloud が推奨する **「エンタープライズグレードのDevOpsベストプラクティス」** を個人開発に適用しています。
+
+*   **Secure CI/CD**: GitHub Actions × Workload Identity Federation (Keyless Auth)
+*   **Infrastructure**: Artifact Registry, Secret Manager
+*   **Test Strategy**: Core Logic Coverage 80%+, Hermetic Testing with Mocking
+
 ---
 
 ## 🧩 Design Philosophy (デザイン哲学)
@@ -31,19 +40,6 @@
     *   AIの回答は時に固くなりがちですが、フクロウ教授や星くじらのような「キャラクター」を通すことで、親しみやすく、感情移入しやすいインターフェースを目指しました。
 *   **なぜ「LINE」なのか？**
     *   新しいアプリをインストールする必要がなく、誰もが使い慣れたチャット画面で最先端のAI機能にアクセスできる「Accessibility（アクセシビリティ）」を最優先しました。
-
-## 💡 UX Considerations (ユーザー体験へのこだわり)
-*   **Mobile First & Immersive UI**:
-    *   Webビューでは `100dvh` (Dynamic Viewport Height) を採用し、スマホのアドレスバーによる表示崩れを徹底的に排除。iPhoneのホームバーにも配慮したセーフエリア設計を行っています。
-*   **Natural Interaction**:
-    *   ボットの返信に「入力中...」のアニメーションを入れることで、機械的な待ち時間を「会話の間」に変える工夫を凝らしました。
-
-## 🔧 Technical Challenges (技術的な挑戦)
-*   **NASA API & Hotlink Protection**:
-    *   「星くじら」の開発中、NASAやWikimediaの画像を外部表示する際に403エラーが多発。
-    *   解決策として、画像をサーバーサイドで安全にダウンロードし、自前の静的ファイルとして配信する「Self-Hosted Proxy」構成を実装し、信頼性100%の表示を実現しました。
-*   **Micro-Module Architecture**:
-    *   当初のモノリシックな `main.py` (1500行超) を、動物ごとに独立したモジュールとルーターに分割。機能追加が他のボットに影響しない堅牢な設計へリファクタリングしました。
 
 ---
 
@@ -73,66 +69,54 @@
 
 ---
 
-## 🏗 アーキテクチャ (Architecture)
+## 🏗 アーキテクチャ & DevOps
 
-**「管理人室 (main.py)」** がLINEからの全リクエストを受け取り、適切な **「動物の部屋 (Modules)」** に振り分けるディスパッチャーパターンを採用しています。これにより、機能追加や修正が他のボットに影響を与えません。
+本プロジェクトは、機能の独立性と開発の堅牢性を両立させるモダンなアーキテクチャを採用しています。
 
 ```mermaid
 graph TD
-    %% ユーザー
-    User(("User 👤"))
-
-    %% LINE Platform
-    subgraph LINE ["LINE Platform"]
-        MessagingAPI["Messaging API<br/>(Webhook)"]
+    %% GitHub
+    subgraph CI_CD ["CI/CD Pipeline"]
+        Actions["GitHub Actions<br/>(Testing & Build)"]
+        WIF["Workload Identity<br/>Federation"]
     end
 
     %% Google Cloud
     subgraph GCP ["Google Cloud Platform"]
-        direction TB
+
+        %% Infrastructure
+        subgraph Infra ["Infrastructure"]
+            AR["Artifact Registry"]
+            SM["Secret Manager"]
+            IAM["IAM (Least Privilege)"]
+        end
 
         %% Server
         subgraph CloudRun ["Cloud Run (Server)"]
             Main["🏢 main.py<br/>(Dispatcher)"]
-
-            subgraph Modules ["Animals Modules"]
-                Beaver["🦫 Beaver"]
-                Fox["🦊 Fox"]
-                Owl["🦉 Owl"]
-                Others["..."]
-            end
+            Modules["Animals Modules<br/>(Beaver, Fox, Owl...)"]
         end
 
         %% Data & AI
-        Firestore[("Firestore<br/>Data Store")]
-        VertexAI["Vertex AI<br/>Gemini 2.5"]
-        Imagen["Imagen 3<br/>Image Gen"]
-        Search["Google Search<br/>Grounding"]
+        Firestore[("Firestore")]
+        VertexAI["Vertex AI / Gemini"]
     end
 
     %% Flow
-    User -->|Message/Image| MessagingAPI
-    MessagingAPI -->|"POST /callback"| Main
+    Actions -->|Keyless Auth| WIF
+    WIF -->|Push Image| AR
+    AR -->|Deploy| CloudRun
+    CloudRun -->|Fetch Secrets| SM
 
-    Main -->|Routing| Beaver
-    Main -->|Routing| Fox
-    Main -->|Routing| Owl
-    Main -->|Routing| Others
-
-    Beaver <-->|"Read/Write"| Firestore
-    Beaver -->|OCR| VertexAI
-    Fox -->|Search| Search
-    Owl -->|Generate| Imagen
-
-    Modules -->|Response| Main
-    Main -->|Reply| MessagingAPI
-    MessagingAPI -->|Notification| User
+    Main --> Modules
+    Modules --> Firestore
+    Modules --> VertexAI
 ```
 
 ### 工夫した点
 *   **モジュール分割**: 当初は1つのファイル(`main.py`)でしたが、コードが1500行を超えて保守不能になったため、動物ごとにファイルを分割しました。（[詳細記事: Zenn](https://zenn.dev/miki_mini/articles/30264063ad4b7d)）
-*   **Search Grounding**: Vertex AIのGrounding機能を使用し、最新情報に基づいた回答を実現しています（キツネ、カピバラ）。
-*   **Vision & OCR**: Geminiの画像認識能力を使い、非構造データ（チラシ）を構造データ（カレンダー予定）に変換しています（ビーバー）。
+*   **Security First**: 機密情報は `Secret Manager` で管理し、GitHub Actions は `Workload Identity Federation` で認証。Gitリポジトリに認証キーを含めない「キーレス運用」を実現。
+*   **Automated Quality**: `pytest` による自動テストを導入。特にAI生成ロジックやDB操作はモック化し、外部依存を排除したテストを行っています（カバレッジ目標 80%+）。
 
 ---
 
@@ -157,17 +141,11 @@ pip install -r requirements.txt
 ```
 
 ### 環境変数 (.env)
-ルートディレクトリに `.env` ファイルを作成し、以下のキーを設定してください。
+ローカル開発時はルートディレクトリに `.env` ファイルを作成します。本番環境では **Secret Manager** から自動注入されます。
 
 ```ini
 GCP_PROJECT_ID=your-project-id
-GCS_BUCKET_NAME=your-bucket-name
-GEMINI_API_KEY=your-api-key
-
-# 各ボットのLINE Token
-BEAVER_ACCESS_TOKEN=...
-BEAVER_CHANNEL_SECRET=...
-# (他ボットも同様)
+# ... (その他シークレットキー)
 ```
 
 ### ローカル起動
@@ -178,26 +156,19 @@ uvicorn main:app --reload
 
 ### テストの実行
 
-`pytest` コマンドでテストを実行できます。
-
 ```bash
-# 全てのテストを実行
-pytest
+# 全てのテストを実行（カバレッジレポート付き）
+pytest --cov=. --cov-report=term-missing
 
 # 特定のファイルのテストを実行
 pytest tests/test_bat.py
-
-# 詳細表示（-v）
-pytest -v
 ```
-
 
 ---
 
 ## 🔗 関連リンク
 
 *   **Zenn**: 開発の裏話や技術解説記事を投稿しています。[miki-miniのZenn記事一覧](https://zenn.dev/miki_mini)
-
 
 ---
 
