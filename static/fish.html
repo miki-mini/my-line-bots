@@ -859,6 +859,8 @@
                 this.size = 140;
                 this.paddle = 0;
                 this.sparkling = false;
+                this.spinning = false;
+                this.spinTime = 0;
 
                 const geometry = new THREE.PlaneGeometry(this.size, this.size);
                 const material = new THREE.MeshBasicMaterial({
@@ -876,12 +878,21 @@
 
                 this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
 
-                this.mesh.rotation.z = Math.sin(this.paddle) * 0.1;
-                this.mesh.rotation.y = 0;
-
                 // Texture Swap Logic
                 if (this.sparkling) {
                     this.mesh.material.map = textures.turtleKira;
+                }
+
+                if (this.spinning) {
+                    this.mesh.rotation.z += 0.4;
+                    this.spinTime--;
+                    if (this.spinTime <= 0) {
+                        this.spinning = false;
+                        this.mesh.rotation.z = 0;
+                    }
+                } else {
+                    this.mesh.rotation.z = Math.sin(this.paddle) * 0.1;
+                    this.mesh.rotation.y = 0;
                 }
 
                 if (this.pos.x < -WORLD_WIDTH / 2 - 200) return true;
@@ -1074,7 +1085,7 @@
                 fishes.push(baby);
 
                 // Effect
-                playSound('magic');
+                playSound('hatch');
                 effects.push(new ParticleSystem(this.pos.x, this.pos.y, this.pos.z, 'sparkle'));
             }
         }
@@ -1322,6 +1333,8 @@
                     if (checkScreenOverlap(animal.mesh, handPixelPos.x, handPixelPos.y)) {
                         if (animal instanceof Turtle3D && !animal.sparkling) {
                             animal.sparkling = true;
+                            animal.spinning = true;
+                            animal.spinTime = 30; // 0.5 sec at 60fps
                             playSound('magic');
                             animal.spawnSparkle();
                         } else if (animal instanceof Octopus3D && !animal.inked) {
@@ -1438,6 +1451,28 @@
                 gain.gain.linearRampToValueAtTime(0, now + 0.5);
                 osc.start(now);
                 osc.stop(now + 0.5);
+            } else if (type === 'hatch') {
+                // Fanfare-ish
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523, now); // C
+                osc.frequency.setValueAtTime(659, now + 0.1); // E
+                osc.frequency.setValueAtTime(784, now + 0.2); // G
+                osc.frequency.setValueAtTime(1046, now + 0.3); // High C
+
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+
+                osc.start(now);
+                osc.stop(now + 0.8);
+            } else if (type === 'magic') {
+                // Sparkle sound
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(1500, now + 0.2);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
             }
         }
 
