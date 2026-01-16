@@ -31,7 +31,14 @@ def process_bat_command(text: str, user_id: str, db, search_model) -> str:
     # --- コマンド処理 ---
     if text.startswith("追加:") or text.startswith("追加："):
         # キーワード追加
-        keyword = text.split(":", 1)[1].split("：", 1)[-1].strip()
+        # 安全に区切り文字を判定
+        if ":" in text:
+            keyword = text.split(":", 1)[1].strip()
+        elif "：" in text:
+            keyword = text.split("：", 1)[1].strip()
+        else:
+            keyword = ""
+
         if keyword:
             _add_to_watch_list(db, user_id, keyword)
             reply_text = f"🦇 「{keyword}」を監視リストに入れたモリ！\n放送が見つかったら教えるモリ〜📺"
@@ -40,7 +47,12 @@ def process_bat_command(text: str, user_id: str, db, search_model) -> str:
 
     elif text.startswith("削除:") or text.startswith("削除："):
         # キーワード削除
-        keyword = text.split(":", 1)[1].split("：", 1)[-1].strip()
+        if ":" in text:
+            keyword = text.split(":", 1)[1].strip()
+        elif "：" in text:
+            keyword = text.split("：", 1)[1].strip()
+        else:
+            keyword = ""
         if keyword:
             if _remove_from_watch_list(db, user_id, keyword):
                 reply_text = f"🦇 「{keyword}」をリストから消したモリ。"
