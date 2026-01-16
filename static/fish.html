@@ -150,6 +150,7 @@
             turtleKira: textureLoader.load('/static/images/fish/turtle.kirakira.png'),
             octopus: textureLoader.load('/static/images/fish/octopus.png'),
             octopusSumi: textureLoader.load('/static/images/fish/octopus.sumi.png'),
+            jellyfish: textureLoader.load('/static/images/fish/jellyfish.png'),
         };
 
         // Create Fish Texture Canvas Programmatically for variety
@@ -697,32 +698,7 @@
         }
         const eggTexture = createEggTexture();
 
-        // Jellyfish Texture
-        function createJellyfishTexture() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 128;
-            canvas.height = 128;
-            const ctx = canvas.getContext('2d');
 
-            // Dome
-            ctx.fillStyle = 'rgba(200, 200, 255, 0.4)'; // Blue-ish transparent
-            ctx.beginPath();
-            ctx.arc(64, 50, 40, Math.PI, 0);
-            ctx.bezierCurveTo(104, 70, 24, 70, 24, 50);
-            ctx.fill();
-
-            // Tentacles
-            ctx.strokeStyle = 'rgba(200, 200, 255, 0.6)';
-            ctx.lineWidth = 2;
-            for (let i = 0; i < 5; i++) {
-                ctx.beginPath();
-                ctx.moveTo(40 + i * 12, 60);
-                ctx.bezierCurveTo(40 + i * 12 - 5, 80, 40 + i * 12 + 5, 100, 40 + i * 12, 120);
-                ctx.stroke();
-            }
-            return new THREE.CanvasTexture(canvas);
-        }
-        const jellyfishTexture = createJellyfishTexture();
 
         // Lightning Texture
         function createLightningTexture() {
@@ -1116,7 +1092,7 @@
 
                 const geometry = new THREE.PlaneGeometry(60, 60);
                 const material = new THREE.MeshBasicMaterial({
-                    map: jellyfishTexture,
+                    map: textures.jellyfish,
                     transparent: true,
                     opacity: 0.8,
                     side: THREE.DoubleSide,
