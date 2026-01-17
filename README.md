@@ -7,6 +7,8 @@
 ![Google Cloud Run](https://img.shields.io/badge/Google_Cloud-Run-4285F4?logo=google-cloud&logoColor=white)
 ![Gemini](https://img.shields.io/badge/AI-Gemini_2.5_Flash-8E75B2?logo=google-gemini&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
+[![Demo Portal](https://img.shields.io/badge/🚀-Live_Demo-blue)](https://usagi-oekaki-service-1032484155743.asia-northeast1.run.app)
+[![API Docs](https://img.shields.io/badge/📖-Swagger_UI-green)](https://usagi-oekaki-service-1032484155743.asia-northeast1.run.app/docs)
 
 > [!NOTE]
 > ✨ <a href="https://usagi-oekaki-service-1032484155743.asia-northeast1.run.app" target="_blank"><strong>Live Demo Portal / **デモサイトはこちら** </strong></a> ✨
