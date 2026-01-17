@@ -49,18 +49,15 @@ graph TD
     end
 
     %% フロー線の定義
-    note_start[ ] -.->|**Keyless Auth Flow**| note_end[ ]
-
-    Actions -->|1. 自動生成| OIDCToken
-    OIDCToken -->|2. トークン交換を要求| WIF
-    WIF -->|3. 検証 & 権限付与 (Impersonate)| IAM
-    IAM -->|4. 安全なアクセス| Target
+    Actions -->|"1. 自動生成"| OIDCToken
+    OIDCToken -->|"2. トークン交換を要求"| WIF
+    WIF -->|"3. 検証 & 権限付与 (Impersonate)"| IAM
+    IAM -->|"4. 安全なアクセス"| Target
 
     %% スタイル調整 (見栄えを良くする)
     style OIDCToken fill:#fff3e0,stroke:#ffb74d,stroke-width:2px,color:black
     style WIF fill:#e8f5e9,stroke:#81c784,stroke-width:2px,color:black
     style IAM fill:#e3f2fd,stroke:#64b5f6,stroke-width:2px,color:black
-    linkStyle 0,1,2,3 stroke-width:2px,fill:none,stroke:black;
 ```
 
 ---
