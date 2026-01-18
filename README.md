@@ -201,4 +201,14 @@ pytest tests/test_bat.py
 
 ---
 
+English Summary
+
+Concept: A versatile collection of AI-powered LINE bots ("Animal Agents") designed to assist with daily tasks through a friendly interface.
+
+Technical Stack: Built with FastAPI, Google Gemini, and Google Cloud (Cloud Run/Firestore), implementing enterprise-grade DevOps practices like CI/CD with Workload Identity Federation.
+
+Key Features: Includes modular micro-services for OCR memo management, YouTube summarization, image generation (Imagen 3), and posture checking via MediaPipe.
+
+---
+
 Developed by **miki-mini**
