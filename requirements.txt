@@ -19,5 +19,6 @@ pillow
 omdb
 pytest
 pytest-cov
+pywebpush
 
 

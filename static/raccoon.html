@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アライグマのお片付け 🦝</title>
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&family=Outfit:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            /* Palette: Vibrant Orange & sleek darks */
+            --primary: #FF9F1C;
+            --primary-glow: rgba(255, 159, 28, 0.4);
+            --secondary: #2EC4B6;
+            --secondary-glow: rgba(46, 196, 182, 0.4);
+            --dark-bg: #121212;
+            --card-bg: #1E1E1E;
+            --text-main: #FDFFFC;
+            --text-sub: #A0A0A0;
+            --accent: #E71D36;
+            --success: #2EC4B6;
+        }
+
+        body {
+            font-family: 'M PLUS Rounded 1c', 'Outfit', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- Header --- */
+        header {
+            padding: 24px;
+            background: rgba(30, 30, 30, 0.8);
+            backdrop-filter: blur(10px);
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: var(--primary);
+        }
+
+        /* --- Navigation --- */
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            padding: 20px;
+            margin-bottom: 10px;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-sub);
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+
+        .nav-btn.active {
+            background: var(--primary);
+            color: var(--dark-bg);
+            border-color: var(--primary);
+            box-shadow: 0 4px 15px var(--primary-glow);
+            transform: translateY(-2px);
+            font-weight: 700;
+        }
+
+        /* --- Main Content --- */
+        main {
+            flex: 1;
+            padding: 0 20px 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .view {
+            display: none;
+            width: 100%;
+            max-width: 480px;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .view.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- Components --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 28px;
+            width: 100%;
+            box-sizing: border-box;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            background: linear-gradient(45deg, var(--text-main), #aaa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card p {
+            color: var(--text-sub);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .input-group {
+            position: relative;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        /* --- Buttons --- */
+        .btn-upload {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 30px;
+            width: 100%;
+            box-sizing: border-box;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-sub);
+        }
+
+        .btn-upload:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(255, 159, 28, 0.05);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--secondary), #00A896);
+            border: none;
+            color: white;
+            padding: 16px 32px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px var(--secondary-glow);
+            transition: transform 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-action:active {
+            transform: scale(0.96);
+        }
+
+        .btn-action:disabled {
+            filter: grayscale(1);
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* --- Results --- */
+        .result-box {
+            background: #252529;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: var(--text-sub);
+            font-size: 0.9rem;
+        }
+
+        .stat-val {
+            color: var(--text-main);
+            font-weight: bold;
+        }
+
+        /* Monster HP */
+        .hp-container {
+            width: 100%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 10px 0 20px;
+        }
+
+        .hp-bar {
+            height: 100%;
+            background: var(--accent);
+            width: 100%;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px rgba(231, 29, 54, 0.6);
+        }
+
+        /* Gacha Tasks */
+        .task-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+        }
+
+        .task-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .task-item.selected {
+            border: 1px solid var(--secondary);
+            background: rgba(46, 196, 182, 0.1);
+        }
+
+        .task-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Loader */
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Footer */
+        .notify-section {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .notify-btn {
+            background: transparent;
+            color: var(--text-sub);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        /* Status colors */
+        .score-good {
+            color: var(--secondary);
+        }
+
+        .score-bad {
+            color: var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>🦝 Raccoon Clean</h1>
+    </header>
+
+    <nav>
+        <button class="nav-btn active" onclick="app.switchMode('battle')">Battle</button>
+        <button class="nav-btn" onclick="app.switchMode('gacha')">Gacha</button>
+        <button class="nav-btn" onclick="app.switchMode('mania')">Mania</button>
+    </nav>
+
+    <main>
+        <!-- Child Mode: Battle -->
+        <div id="view-battle" class="view active">
+            <div class="card">
+                <h2>🗑️ お片付けバトル</h2>
+                <p>部屋の写真を撮ってモンスターを探そう！片付けて攻撃だ！</p>
+
+                <div id="battle-monstercard" style="display:none; margin-bottom: 20px;">
+                    <h3 id="monster-name" style="color:var(--accent);">Monster Name</h3>
+                    <div class="hp-container">
+                        <div id="monster-hp-bar" class="hp-bar"></div>
+                    </div>
+                    <div class="stat-row">
+                        <span>HP</span>
+                        <span id="monster-hp-text">100/100</span>
+                    </div>
+                    <p id="monster-desc" style="font-size:0.8rem;">Description</p>
+                </div>
+
+                <label class="btn-upload">
+                    <span id="battle-btn-text">📸 部屋をスキャンする</span>
+                    <input type="file" accept="image/*" capture="environment"
+                        onchange="app.handleImage(this, 'battle')">
+                </label>
+                <div class="loader" id="loader-battle"></div>
+
+                <div id="battle-result" class="result-box" style="display:none;">
+                    <p id="battle-msg" style="margin:0; font-weight:bold; color:var(--primary);"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Adult Mode: Gacha -->
+        <div id="view-gacha" class="view">
+            <div class="card">
+                <h2>⏳ 15分ガチャ</h2>
+                <p>何からやるか迷ったらガチャで決めよう。<br>運気を上げる小さなお片付け。</p>
+
+                <label class="btn-upload" id="gacha-upload">
+                    <span>📸 部屋を見せてガチャを回す</span>
+                    <input type="file" accept="image/*" capture="environment" onchange="app.handleImage(this, 'gacha')">
+                </label>
+                <div class="loader" id="loader-gacha"></div>
+
+                <div id="gacha-tasks" style="display:none; margin-top:20px;">
+                    <p style="text-align:left; font-weight:bold;">今日のミッション候補:</p>
+                    <ul class="task-list" id="task-list-ul">
+                        <!-- Tasks go here -->
+                    </ul>
+                    <button class="btn-action" onclick="app.completeTask()" id="btn-complete" disabled>完了報告する！</button>
+                </div>
+
+                <div id="gacha-praise" class="result-box" style="display:none;">
+                    <p id="praise-msg" style="margin:0; color:var(--secondary); font-weight:bold;"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mania Mode: Analysis -->
+        <div id="view-mania" class="view">
+            <div class="card">
+                <h2>📏 シンデレラフィット判定</h2>
+                <p>あなたの収納美学をAIが採点します。<br>目指せコンプリート率100%。</p>
+
+                <label class="btn-upload">
+                    <span>📸 棚をスキャン</span>
+                    <input type="file" accept="image/*" capture="environment" onchange="app.handleImage(this, 'mania')">
+                </label>
+                <div class="loader" id="loader-mania"></div>
+
+                <div id="mania-result" class="result-box" style="display:none;">
+                    <div style="font-size:2rem; font-weight:bold; margin-bottom:10px;">
+                        Score: <span id="fit-score">0</span><span style="font-size:1rem;">%</span>
+                    </div>
+                    <p id="fit-advice" style="margin:0; font-size:0.9rem; line-height:1.5;"></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="notify-section">
+            <button class="notify-btn" onclick="app.enableNotifications()">🔔 通知を受け取る</button>
+        </div>
+
+    </main>
+
+    <script>
+        const app = {
+            state: {
+                monster: null, // {maxHp, currentHp, name...}
+                currentTasks: [],
+                selectedTask: null,
+                mode: 'battle' // battle, gacha, mania
+            },
+
+            init: () => {
+                // Load state if persistent (optional)
+                app.registerSW();
+            },
+
+            switchMode: (mode) => {
+                app.state.mode = mode;
+                document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+                document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+
+                document.getElementById(`view-${mode}`).classList.add('active');
+                // Find button (hacky but works for small app)
+                const btn = Array.from(document.querySelectorAll('.nav-btn')).find(b => b.textContent.toLowerCase().includes(mode));
+                if (btn) btn.classList.add('active');
+            },
+
+            handleImage: async (input, mode) => {
+                if (!input.files || !input.files[0]) return;
+                const file = input.files[0];
+                const reader = new FileReader();
+
+                // UI Loading state
+                const loader = document.getElementById(`loader-${mode}`);
+                loader.style.display = 'block';
+
+                reader.onload = async function (e) {
+                    const base64Image = e.target.result;
+
+                    try {
+                        let endpoint = "";
+                        let body = { image: base64Image };
+
+                        if (mode === 'battle') {
+                            if (!app.state.monster || app.state.monster.current_hp <= 0) {
+                                // New Battle
+                                endpoint = "/api/raccoon/battle/start";
+                            } else {
+                                // Attack
+                                endpoint = "/api/raccoon/battle/attack";
+                                // For attack, we send as 'after_image', and assume frontend state has 'before' or just session
+                                // Simply sending current image as 'after'. 'before' is optional in our API.
+                                body = {
+                                    after_image: base64Image,
+                                    current_hp: app.state.monster.current_hp
+                                };
+                                // If we had a before image in state, add it. (Simplified: skipping before image for now)
+                            }
+                        } else if (mode === 'gacha') {
+                            endpoint = "/api/raccoon/adult/gacha";
+                        } else {
+                            endpoint = "/api/raccoon/mania/analyze";
+                        }
+
+                        const res = await fetch(endpoint, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(body)
+                        });
+
+                        if (!res.ok) throw new Error("API Error");
+                        const data = await res.json();
+
+                        app.updateUI(mode, data);
+
+                    } catch (err) {
+                        console.error(err);
+                        alert("エラーが発生しました: " + err.message);
+                    } finally {
+                        loader.style.display = 'none';
+                        input.value = ''; // Reset input
+                    }
+                };
+                reader.readAsDataURL(file);
+            },
+
+            updateUI: (mode, data) => {
+                if (mode === 'battle') {
+                    const card = document.getElementById('battle-monstercard');
+                    const btnText = document.getElementById('battle-btn-text');
+                    const result = document.getElementById('battle-result');
+                    const msg = document.getElementById('battle-msg');
+
+                    if (data.monster_name) {
+                        // Start Battle Result
+                        app.state.monster = {
+                            ...data,
+                            current_hp: data.monster_hp
+                        };
+                        card.style.display = 'block';
+                        document.getElementById('monster-name').innerText = data.monster_name;
+                        document.getElementById('monster-desc').innerText = data.description;
+                        app.renderHP();
+                        btnText.innerText = "⚔️ 片付けて攻撃する！";
+                        result.style.display = 'none';
+                    } else if (data.damage !== undefined) {
+                        // Attack Result
+                        if (app.state.monster) {
+                            app.state.monster.current_hp = data.remaining_hp;
+                        }
+                        app.renderHP();
+
+                        result.style.display = 'block';
+                        msg.innerHTML = `${data.message}<br>💥 Damage: ${data.damage}`;
+
+                        if (data.is_defeated || data.remaining_hp <= 0) {
+                            setTimeout(() => {
+                                alert("🎉 Monster Defeated!");
+                                app.state.monster = null;
+                                card.style.display = 'none';
+                                btnText.innerText = "📸 部屋をスキャンする";
+                                result.style.display = 'none';
+                            }, 2000);
+                        }
+                    }
+                } else if (mode === 'gacha') {
+                    const list = document.getElementById('task-list-ul');
+                    const container = document.getElementById('gacha-tasks');
+                    list.innerHTML = '';
+
+                    data.tasks.forEach((task, idx) => {
+                        const li = document.createElement('li');
+                        li.className = 'task-item';
+                        li.innerText = task;
+                        li.onclick = () => {
+                            document.querySelectorAll('.task-item').forEach(i => i.classList.remove('selected'));
+                            li.classList.add('selected');
+                            app.state.selectedTask = idx;
+                            document.getElementById('btn-complete').disabled = false;
+                        };
+                        list.appendChild(li);
+                    });
+
+                    container.style.display = 'block';
+                    document.getElementById('gacha-upload').style.display = 'none';
+                    document.getElementById('gacha-praise').style.display = 'none';
+                } else if (mode === 'mania') {
+                    const result = document.getElementById('mania-result');
+                    const score = document.getElementById('fit-score');
+                    const advice = document.getElementById('fit-advice');
+
+                    result.style.display = 'block';
+                    score.innerText = data.fit_score;
+                    advice.innerText = data.advice;
+
+                    score.className = data.fit_score >= 80 ? 'score-good' : 'score-bad';
+                }
+            },
+
+            renderHP: () => {
+                if (!app.state.monster) return;
+                const pct = (app.state.monster.current_hp / app.state.monster.monster_max_hp) * 100;
+                document.getElementById('monster-hp-bar').style.width = `${Math.max(0, pct)}%`;
+                document.getElementById('monster-hp-text').innerText = `${Math.max(0, app.state.monster.current_hp)} / ${app.state.monster.monster_max_hp}`;
+            },
+
+            completeTask: async () => {
+                // Call complete API
+                try {
+                    const loader = document.getElementById('loader-gacha');
+                    loader.style.display = 'block';
+
+                    const res = await fetch('/api/raccoon/adult/complete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ task_id: app.state.selectedTask })
+                    });
+                    const data = await res.json();
+
+                    document.getElementById('gacha-tasks').style.display = 'none';
+                    document.getElementById('gacha-praise').style.display = 'block';
+                    document.getElementById('praise-msg').innerText = data.message;
+
+                    // Reset after 5s
+                    setTimeout(() => {
+                        document.getElementById('gacha-upload').style.display = 'inline-flex';
+                        document.getElementById('gacha-praise').style.display = 'none';
+                    }, 5000);
+
+                } catch (e) { console.error(e); }
+                finally { document.getElementById('loader-gacha').style.display = 'none'; }
+            },
+
+            // --- Notifications ---
+            registerSW: () => {
+                if ('serviceWorker' in navigator && 'PushManager' in window) {
+                    navigator.serviceWorker.register('/static/raccoon_sw.js')
+                        .then(swReg => {
+                            console.log('SW Registered', swReg);
+                            app.swRegistration = swReg;
+                        })
+                        .catch(error => {
+                            console.error('SW Error', error);
+                        });
+                }
+            },
+
+            enableNotifications: async () => {
+                if (!app.swRegistration) return;
+                try {
+                    const subscription = await app.swRegistration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        // Use a public key if VAPID is set up properly.
+                        // applicationServerKey: urlB64ToUint8Array('<Public Key>')
+                        applicationServerKey: urlB64ToUint8Array('BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U')
+                    });
+
+                    // Send to backend
+                    await fetch('/api/raccoon/push/subscribe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(subscription)
+                    });
+
+                    alert("通知設定が完了しました！");
+                } catch (e) {
+                    console.error("Push Error", e);
+                    alert("通知の許可に失敗しました。");
+                }
+            }
+        };
+
+        // Helper for VAPID key (placeholder key, needs to match backend if validating)
+        function urlB64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding)
+                .replace(/\-/g, '+')
+                .replace(/_/g, '/');
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
+
+        // Init
+        app.init();
+    </script>
+
+</body>
+
+</html>
