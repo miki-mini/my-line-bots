@@ -5,8 +5,7 @@ import os
 import json
 import base64
 from vertexai.generative_models import GenerativeModel, Part, SafetySetting, HarmCategory, HarmBlockThreshold
-import firebase_admin
-from firebase_admin import credentials, firestore
+from google.cloud import firestore
 
 router = APIRouter()
 
