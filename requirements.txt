@@ -3,7 +3,7 @@ uvicorn
 gunicorn
 line-bot-sdk>=3.0.0
 google-cloud-firestore
-google-cloud-storage>=3.1.1
+google-cloud-storage
 cryptography<44
 google-genai
 google-cloud-aiplatform==1.71.0
