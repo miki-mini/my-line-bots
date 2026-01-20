@@ -15,7 +15,7 @@
 
     <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://mrdoob.github.io/stats.js/build/stats.min.js"></script>
+    <!-- <script src="https://mrdoob.github.io/stats.js/build/stats.min.js"></script> -->
 
     <style>
         body {
@@ -219,9 +219,12 @@
             container.appendChild(renderer.domElement);
 
             // Stats
+            // Stats
+            /*
             stats = new Stats();
             stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
             document.body.appendChild(stats.dom);
+            */
 
             // Lights
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
@@ -1178,7 +1181,8 @@
 
         function animate() {
             requestAnimationFrame(animate);
-            if (stats) stats.update();
+            // if (stats) stats.update();
+            // if (stats) stats.update();
 
             // Hand Position in Pixels
             let handPixelPos = null;
