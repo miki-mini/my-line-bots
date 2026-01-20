@@ -425,26 +425,7 @@
                         Score: <span id="fit-score">0</span><span style="font-size:1rem;">%</span>
                     </div>
                     <!-- Raccoon Memo Section -->
-                    <div
-                        style="margin-top:40px; padding:20px; background:rgba(255,255,255,0.05); border-radius:12px; border:1px dashed var(--accent);">
-                        <h3 style="margin-top:0; font-size:1rem; color:var(--accent);">🦝 アライさんメモ</h3>
-                        <p id="memo-title" style="font-weight:bold; margin-bottom:5px; font-size:0.9rem;"></p>
-                        <p id="memo-content"
-                            style="font-size:0.85rem; line-height:1.6; color:rgba(255,255,255,0.8); margin-bottom:0;">
-                        </p>
-                    </div>
 
-                    <footer style="margin-top:40px; text-align:center; padding-bottom:20px;">
-                        <button onclick="app.registerServiceWorker()"
-                            style="background:none; border:none; color:rgba(255,255,255,0.5); font-size:0.9rem;">
-                            🔔 通知を受け取る設定にする
-                        </button>
-                        <br><br>
-                        <button onclick="app.sendTestPush()"
-                            style="background:none; border:1px solid rgba(255,255,255,0.3); color:rgba(255,255,255,0.5); font-size:0.8rem; padding:5px 10px; border-radius:5px;">
-                            📩 テスト通知を送る
-                        </button>
-                    </footer>
                     <p id="fit-advice" style="margin:0; font-size:0.9rem; line-height:1.5;"></p>
                 </div>
             </div>
@@ -455,6 +436,30 @@
         </div>
 
     </main>
+
+    <!-- Global Footer with Memo and Notifications -->
+    <div style="max-width:600px; margin:0 auto; padding:20px;">
+        <!-- Raccoon Memo Section -->
+        <div
+            style="margin-top:20px; padding:20px; background:rgba(255,255,255,0.05); border-radius:12px; border:1px dashed var(--accent);">
+            <h3 style="margin-top:0; font-size:1rem; color:var(--accent);">🦝 アライさんメモ</h3>
+            <p id="memo-title" style="font-weight:bold; margin-bottom:5px; font-size:0.9rem;"></p>
+            <p id="memo-content"
+                style="font-size:0.85rem; line-height:1.6; color:rgba(255,255,255,0.8); margin-bottom:0;"></p>
+        </div>
+
+        <footer style="margin-top:40px; text-align:center; padding-bottom:40px;">
+            <button onclick="app.registerServiceWorker()"
+                style="background:none; border:none; color:rgba(255,255,255,0.5); font-size:0.9rem; cursor:pointer;">
+                🔔 通知を受け取る設定にする
+            </button>
+            <br><br>
+            <button onclick="app.sendTestPush()"
+                style="background:none; border:1px solid rgba(255,255,255,0.3); color:rgba(255,255,255,0.5); font-size:0.8rem; padding:5px 10px; border-radius:5px; cursor:pointer;">
+                📩 テスト通知を送る
+            </button>
+        </footer>
+    </div>
 
     <script>
         const app = {
