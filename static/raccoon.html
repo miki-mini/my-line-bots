@@ -468,7 +468,9 @@
             },
 
             init: () => {
-                // Load state if persistent (optional)
+                // Initialize Memo
+                app.displayRandomMemo();
+                // Register Service Worker
                 app.registerSW();
             },
 
