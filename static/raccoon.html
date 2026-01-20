@@ -424,6 +424,16 @@
                     <div style="font-size:2rem; font-weight:bold; margin-bottom:10px;">
                         Score: <span id="fit-score">0</span><span style="font-size:1rem;">%</span>
                     </div>
+                    <!-- Raccoon Memo Section -->
+                    <div
+                        style="margin-top:40px; padding:20px; background:rgba(255,255,255,0.05); border-radius:12px; border:1px dashed var(--accent);">
+                        <h3 style="margin-top:0; font-size:1rem; color:var(--accent);">🦝 アライさんメモ</h3>
+                        <p id="memo-title" style="font-weight:bold; margin-bottom:5px; font-size:0.9rem;"></p>
+                        <p id="memo-content"
+                            style="font-size:0.85rem; line-height:1.6; color:rgba(255,255,255,0.8); margin-bottom:0;">
+                        </p>
+                    </div>
+
                     <footer style="margin-top:40px; text-align:center; padding-bottom:20px;">
                         <button onclick="app.registerServiceWorker()"
                             style="background:none; border:none; color:rgba(255,255,255,0.5); font-size:0.9rem;">
@@ -641,6 +651,48 @@
 
                 } catch (e) { console.error(e); }
                 finally { document.getElementById('loader-gacha').style.display = 'none'; }
+            },
+
+            // Raccoon Memos (Random Display)
+            displayRandomMemo: () => {
+                const memos = [
+                    {
+                        title: "【片付けのプロ】整えのアライさん",
+                        content: "「あなたの『要らない』は、私の『お宝』（かもしれない）。」<br>森の奥からやってきた、異色の片付けコンサルタント。トレードマークは、目元の黒いマスク模様と、常に清潔な白い手袋（自前）。"
+                    },
+                    {
+                        title: "アライ流・野生収納術 1：洗う儀式",
+                        content: "「とりあえず洗う」儀式（The Washing Ritual）。<br>彼らは、あなたが「捨てるかどうか迷っている物」を、とりあえず全部洗面器でジャブジャブ洗います。<br>※注意：スマホやリモコンも洗おうとするので、事前の制止が必要です。"
+                    },
+                    {
+                        title: "アライ流・野生収納術 2：隙間探知",
+                        content: "「ここ、クルミならあと5個入るな…」という感覚で、ソファの下、棚の裏、天井裏のわずかな隙間に、驚くほど器用な手先を使って収納ボックスをフィットさせます。<br>部屋の収納力が物理的に120%アップします。"
+                    },
+                    {
+                        title: "アライ流・野生収納術 3：分別",
+                        content: "ゴミ分別スペシャリスト。<br>燃えるゴミ、プラスチック、資源ごみ、そして「まだ食べられるもの」を、目にも止まらぬ速さで仕分けます。<br>※注意：賞味期限切れのビスケットを「保存食」の棚に戻そうとするので監視が必要です。"
+                    },
+                    {
+                        title: "アライ流・野生収納術 4：夜間シフト",
+                        content: "彼らの本領発揮は深夜です。<br>クライアントが寝静まった後、暗視能力を活かして音もなく作業を開始します。朝起きると、まるで童話の小人の靴屋のように部屋が劇的に綺麗になっています。"
+                    },
+                    {
+                        title: "依頼者の声（30代・会社員女性）",
+                        content: "「朝起きたら、キッチンが奇跡のように輝いていました」<br>シンクはピカピカ、調味料は完璧に整列。ただ、冷蔵庫に入れていたブドウが全部洗われて、一粒ずつ丁寧に並べられていたのには笑ってしまいました。"
+                    },
+                    {
+                        title: "依頼者の声（50代・主婦）",
+                        content: "「断捨離の背中を押してくれました（物理的に）」<br>私が迷っている服をじっとつぶらな瞳で見つめ、小さな手で「クイクイッ」とゴミ袋の方を指差すんです。その可愛さと無言の圧力に負けて、思い切って捨てられました。"
+                    },
+                    {
+                        title: "依頼者の声（20代・学生男性）",
+                        content: "「ちょっと困ったことも…」<br>部屋はすごく綺麗になったんですけど、報酬として用意したドッグフードをお皿に入れようとしたら、私の手を洗おうとしてくるのがちょっとくすぐったいです。"
+                    }
+                ];
+
+                const randomMemo = memos[Math.floor(Math.random() * memos.length)];
+                document.getElementById('memo-title').innerText = randomMemo.title;
+                document.getElementById('memo-content').innerHTML = randomMemo.content;
             },
 
             // --- Notifications ---
