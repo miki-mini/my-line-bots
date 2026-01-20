@@ -24,6 +24,7 @@ Webカメラとブラウザだけで遊べる、**3D空間のインタラクテ�
 - ✨ **魔法の手**: ゆっくり動かすとキラキラパーティクル
 - ⚡ **クラゲ**: 触ると電気ショックエフェクト
 
+<img src="https://storage.googleapis.com/zenn-user-upload/5222137794ec-20260120.gif" width="400">
 ### 継続機能
 
 - 🐟 **リアルな魚の群れ**: Boidsアルゴリズムで3D空間を自然に泳ぐ（80匹）
@@ -130,6 +131,9 @@ npm run build
 | インタラクション | タッチのみ | ジェスチャー認識 |
 | 育成要素 | なし | たまご孵化・成長 |
 | エフェクト | シンプル | リッチ（パーティクル） |
+
+<img src="https://storage.googleapis.com/zenn-user-upload/69d55fe74382-20260120.gif" width="400">
+
 
 ## 🏗️ Architecture
 
@@ -301,11 +305,37 @@ class ParticleSystem {
 - **Object Disposal**: 不要なメッシュは即座に削除
 - **Distance-based Updates**: 近傍探索の最適化
 
+#### 📐 3D ⇄ 2D Coordinate Logics
+
+```mermaid
+flowchart TD
+    subgraph S1 ["Collision Detection (Heavy ❌)"]
+        direction TB
+        F3["Fish 3D Pos (x,y,z)"] -- Vector3.project() --> F2["Screen Pos (x,y)"]
+        H2["Hand 2D Pos (x,y)"] --> CMP{"Distance < Threshold?"}
+        F2 --> CMP
+        CMP -- Yes --> HIT["Interact (Repel/Touch)"]
+
+        style F2 fill:#ffecb3
+        style H2 fill:#ffecb3
+    end
+
+    subgraph S2 ["Seek Steering (Mapping 🗺️)"]
+        direction TB
+        H2B["Hand 2D Pos"] -- Map 2D -> 3D Plane --> T3["Target 3D (x, y, z=100)"]
+        F3B["Fish 3D Pos"] -- Seek Force --> T3
+
+        style T3 fill:#b2ebf2
+    end
+
+    S1 -.- S2
+```
+
+
 ### Performance Metrics
 
 | 項目 | 2D版 | 3D版 |
 |------|------|------|
-| FPS | 55-60 | 50-60 |
 | 魚の数 | 60匹 | 80匹 |
 | エフェクト | シンプル | リッチ |
 | メモリ使用量 | ~150MB | ~250MB |
@@ -374,7 +404,7 @@ wave_sound.mp3
 詳しい技術解説は以下の記事をご覧ください：
 
 - [2D版の解説記事](https://zenn.dev/miki_mini/articles/214983f7aedad5) - Boidsアルゴリズムやパフォーマンス最適化
-- [3D版の解説記事](#) - Three.js実装、ジェスチャー認識、育成システム
+- [3D版の解説記事](https://zenn.dev/miki_mini/articles/6e547618fec22d) - Three.js実装、ジェスチャー認識、育成システム
 
 ## 🤝 Contributing
 
