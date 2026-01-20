@@ -424,6 +424,17 @@
                     <div style="font-size:2rem; font-weight:bold; margin-bottom:10px;">
                         Score: <span id="fit-score">0</span><span style="font-size:1rem;">%</span>
                     </div>
+                    <footer style="margin-top:40px; text-align:center; padding-bottom:20px;">
+                        <button onclick="app.registerServiceWorker()"
+                            style="background:none; border:none; color:rgba(255,255,255,0.5); font-size:0.9rem;">
+                            🔔 通知を受け取る設定にする
+                        </button>
+                        <br><br>
+                        <button onclick="app.sendTestPush()"
+                            style="background:none; border:1px solid rgba(255,255,255,0.3); color:rgba(255,255,255,0.5); font-size:0.8rem; padding:5px 10px; border-radius:5px;">
+                            📩 テスト通知を送る
+                        </button>
+                    </footer>
                     <p id="fit-advice" style="margin:0; font-size:0.9rem; line-height:1.5;"></p>
                 </div>
             </div>
@@ -643,6 +654,21 @@
                         .catch(error => {
                             console.error('SW Error', error);
                         });
+                }
+            },
+
+            // Test Push Notification
+            async sendTestPush() {
+                try {
+                    const res = await fetch('/api/raccoon/push/send', { method: 'POST' });
+                    const data = await res.json();
+                    if (data.status === 'success') {
+                        alert(`通知を送信しました！ (送信数: ${data.sent_count})`);
+                    } else {
+                        alert("送信失敗: " + (data.message || JSON.stringify(data)));
+                    }
+                } catch (err) {
+                    alert("エラー: " + err.message);
                 }
             },
 
