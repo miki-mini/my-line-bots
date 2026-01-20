@@ -530,7 +530,7 @@
                         document.getElementById('monster-name').innerText = data.monster_name;
                         document.getElementById('monster-desc').innerText = data.description;
                         app.renderHP();
-                        btnText.innerText = "⚔️ 片付けて攻撃する！";
+                        btnText.innerText = "📸 きれいになったしゃしんをとる！";
                         result.style.display = 'none';
                     } else if (data.damage !== undefined) {
                         // Attack Result
@@ -540,7 +540,14 @@
                         app.renderHP();
 
                         result.style.display = 'block';
-                        msg.innerHTML = `${data.message}<br>💥 Damage: ${data.damage}`;
+                        let content = `<div style="font-size:1.2rem; font-weight:bold; margin-bottom:10px;">💥 Total Damage: ${data.damage}</div>`;
+                        content += `<p>${data.message}</p>`;
+                        if (data.advice) {
+                            content += `<hr style="border:0; border-top:1px dashed rgba(255,255,255,0.2); margin:10px 0;">`;
+                            content += `<p style="color:var(--secondary); font-weight:bold;">💡 つぎのアドバイス:</p>`;
+                            content += `<p>${data.advice}</p>`;
+                        }
+                        msg.innerHTML = content;
 
                         if (data.is_defeated || data.remaining_hp <= 0) {
                             setTimeout(() => {
@@ -548,7 +555,6 @@
                                 app.state.monster = null;
                                 card.style.display = 'none';
                                 btnText.innerText = "📸 部屋をスキャンする";
-                                result.style.display = 'none';
                             }, 2000);
                         }
                     }

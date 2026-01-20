@@ -46,6 +46,7 @@ class BattleAttackResponse(BaseModel):
     damage: int
     remaining_hp: int
     message: str
+    advice: str
     is_defeated: bool
 
 class GachaResponse(BaseModel):
@@ -139,10 +140,12 @@ async def attack_monster(req: BattleAttackRequest):
             "damage": 50,
             "remaining_hp": 0,
             "message": "すごい！床が見えてきた！50ダメージ！アタック成功！",
+            "advice": "まだ机の上に本が散らばっているよ。次は本を本棚に戻そう！",
             "is_defeated": false
         }
 
         ※ remaining_hp は current_hp から damage を引いた値にしてください。0以下なら is_defeated=true。
+        ※ advice には、まだ散らかっている部分や、次に何を片付ければいいかを具体的に「子供にもわかる言葉」で書いてください。これ以上片付ける場所がない場合は空文字でOK。
         """]
 
         inputs.append(f"現在のモンスターHP: {req.current_hp}")
