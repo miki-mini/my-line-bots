@@ -335,19 +335,23 @@
     </header>
 
     <nav>
-        <button class="nav-btn active" onclick="app.switchMode('battle')">Battle</button>
-        <button class="nav-btn" onclick="app.switchMode('gacha')">Gacha</button>
-        <button class="nav-btn" onclick="app.switchMode('mania')">Mania</button>
+        <button class="nav-btn active" onclick="app.switchMode('battle')">こども用バトル</button>
+        <button class="nav-btn" onclick="app.switchMode('gacha')">おとな用ガチャ</button>
+        <button class="nav-btn" onclick="app.switchMode('mania')">マニア用</button>
     </nav>
 
     <main>
         <!-- Child Mode: Battle -->
         <div id="view-battle" class="view active">
             <div class="card">
-                <h2>🗑️ お片付けバトル</h2>
-                <p>部屋の写真を撮ってモンスターを探そう！片付けて攻撃だ！</p>
+                <h2>🗑️ こども用バトル</h2>
+                <p>へやのしゃしんをとって、モンスターをさがそう！<br>かたづけて、こうげきだ！</p>
 
                 <div id="battle-monstercard" style="display:none; margin-bottom: 20px;">
+                    <!-- User provided image -->
+                    <img src="/static/raccoon_battle.jpg"
+                        style="width:100%; border-radius:12px; margin-bottom:10px; border:2px solid var(--accent);">
+
                     <h3 id="monster-name" style="color:var(--accent);">Monster Name</h3>
                     <div class="hp-container">
                         <div id="monster-hp-bar" class="hp-bar"></div>
@@ -360,7 +364,7 @@
                 </div>
 
                 <label class="btn-upload">
-                    <span id="battle-btn-text">📸 部屋をスキャンする</span>
+                    <span id="battle-btn-text">📸 へやをスキャンする</span>
                     <input type="file" accept="image/*" capture="environment"
                         onchange="app.handleImage(this, 'battle')">
                 </label>
@@ -375,7 +379,7 @@
         <!-- Adult Mode: Gacha -->
         <div id="view-gacha" class="view">
             <div class="card">
-                <h2>⏳ 15分ガチャ</h2>
+                <h2>⏳ おとな用ガチャ</h2>
                 <p>何からやるか迷ったらガチャで決めよう。<br>運気を上げる小さなお片付け。</p>
 
                 <label class="btn-upload" id="gacha-upload">
@@ -401,7 +405,7 @@
         <!-- Mania Mode: Analysis -->
         <div id="view-mania" class="view">
             <div class="card">
-                <h2>📏 シンデレラフィット判定</h2>
+                <h2>📏 マニア用</h2>
                 <p>あなたの収納美学をAIが採点します。<br>目指せコンプリート率100%。</p>
 
                 <label class="btn-upload">
