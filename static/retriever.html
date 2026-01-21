@@ -428,22 +428,6 @@
                 <h2>📷 記念フォト</h2>
                 <p style="font-size: 0.9rem; margin-bottom: 15px;">写真をアップロードすると、年齢に合わせたスタンプを表示します。</p>
                 <div class="overlay-container">
-                    <!-- Decorate Controls -->
-                    <div style="margin-bottom: 10px; text-align: center;">
-                        <label style="font-weight: bold; color: var(--text-color);">デコレーション:</label>
-                        <select id="decoration-select" onchange="drawCanvas()"
-                            style="padding: 5px; border-radius: 5px; border: 1px solid #ddd;">
-                            <option value="none">なし</option>
-                            <option value="sash">㊗️ 成人タスキ</option>
-                            <option value="kanreki">🟥 還暦セット</option>
-                            <option value="crown">👑 王冠</option>
-                        </select>
-                    </div>
-
-                    <label for="photo-input" class="file-upload-btn">写真を選択</label>
-                    <input type="file" id="photo-input" accept="image/*" onchange="handleImageUpload(event)">
-                    <canvas id="photo-canvas"></canvas>
-
                     <!-- Share Actions -->
                     <div id="share-actions" style="display:none; margin-top: 15px; gap: 10px; justify-content: center;">
                         <button onclick="downloadImage()" class="btn-primary"
@@ -661,54 +645,6 @@
                 // Fix for "undefined" display
                 const displayAge = (age !== null && age !== undefined) ? age + "歳" : "??歳";
                 ctx.fillText(displayAge, badgeX + badgeW / 2, badgeY + badgeH / 2 + 30);
-
-                // --- Draw Decorations ---
-                // Auto-Pacifier for babies (< 1 year old human age)
-                // Note: Logic specifies human age < 1.
-                if (age < 1) {
-                    const pacifierImg = new Image();
-                    pacifierImg.src = "/static/images/overlay_pacifier.png";
-                    pacifierImg.onload = () => {
-                        // Draw pacifier near the "mouth" (Center bottom area usually)
-                        // Since we don't have face detection, let's put it in the center or bottom center.
-                        const size = Math.min(canvas.width, canvas.height) * 0.25;
-                        ctx.drawImage(pacifierImg, (canvas.width - size) / 2, (canvas.height / 2), size, size);
-                    };
-                    // Force synchronous-like behavior or just fire it
-                    if (pacifierImg.complete) pacifierImg.onload();
-                }
-
-                const decoration = document.getElementById('decoration-select').value;
-                if (decoration !== 'none') {
-                    const decoImg = new Image();
-                    decoImg.src = `/static/images/overlay_${decoration}.png`;
-                    decoImg.onload = () => {
-                        // Position logic
-                        if (decoration === 'sash') {
-                            // Draw Sash diagonally from top-left area to bottom-right?
-                            // Or just across bottom corner. Let's start with full cover or specific.
-                            // Assuming image is a diagonal sash transparent png.
-                            // Draw it large.
-                            ctx.drawImage(decoImg, 0, 0, canvas.width, canvas.height);
-                        } else if (decoration === 'kanreki') {
-                            // Draw Hat/Vest. Maybe bottom centered or full.
-                            // Assuming it's an icon set, let's place it at bottom right or corners.
-                            // Let's draw it as a "Badge" style if it's icon.
-                            // Or full overlay if it's a frame.
-                            // Since it's generated as "Illustration/Icon", best to place it in corner or top.
-                            // Let's place it Top-Right for "Hat" concept? Or Bottom-Right.
-                            // Let's try drawing it scaled in the bottom right corner (above the badge).
-                            const size = Math.min(canvas.width, canvas.height) * 0.4;
-                            ctx.drawImage(decoImg, canvas.width - size - 10, 10, size, size);
-                        } else if (decoration === 'crown') {
-                            // Place crown on top center (Head assumption)
-                            const size = Math.min(canvas.width, canvas.height) * 0.4;
-                            ctx.drawImage(decoImg, (canvas.width - size) / 2, 0, size, size);
-                        }
-                    };
-                    // Handle cached images for immediate redraw if already loaded
-                    if (decoImg.complete) decoImg.onload();
-                }
             }
 
             // Show share buttons if image exists
