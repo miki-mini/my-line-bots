@@ -260,6 +260,16 @@
                 font-size: 2.5rem;
             }
         }
+
+        @keyframes bounce {
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(-20px);
+            }
+        }
     </style>
 </head>
 
@@ -268,6 +278,14 @@
     <header>
         <h1>🐕 Watchdog Retriever</h1>
     </header>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 1000; justify-content: center; align-items: center; flex-direction: column;">
+        <div style="font-size: 3rem; animation: bounce 1s infinite alternate;">🐕</div>
+        <div style="font-size: 1.2rem; color: var(--primary-color); margin-top: 15px; font-weight: bold;">匂いを嗅いで調査中...
+        </div>
+    </div>
 
     <main>
         <div class="card">
@@ -289,6 +307,24 @@
                         <option value="gecko">ヤモリ・トカゲ (小型)</option>
                         <option value="elephant">ゾウ</option>
                         <option value="giraffe">キリン</option>
+                    </optgroup>
+                    <optgroup label="プロジェクト・オールスターズ">
+                        <option value="raccoon">アライグマ 🦝</option>
+                        <option value="whale">クジラ 🐋</option>
+                        <option value="frog">カエル 🐸</option>
+                        <option value="owl">フクロウ 🦉</option>
+                        <option value="capybara">カピバラ 🛀</option>
+                        <option value="mole">モグラ 🕳️</option>
+                        <option value="penguin">ペンギン 🐧</option>
+                        <option value="fox">キツネ 🦊</option>
+                        <option value="beaver">ビーバー 🦫</option>
+                        <option value="bat">コウモリ 🦇</option>
+                        <option value="alpaca">アルパカ 🦙</option>
+                        <option value="flamingo">フラミンゴ 🦩</option>
+                        <option value="butterfly">蝶々 🦋</option>
+                        <option value="squirrel">リス 🐿️</option>
+                        <option value="meerkat">ミーアキャット 🧍</option>
+                        <option value="robot">ロボット 🤖</option>
                     </optgroup>
                 </select>
             </div>
@@ -321,6 +357,16 @@
                     <div class="chart-marker" style="left: 60%">還暦</div>
                 </div>
 
+                <!-- Fluffiness Section -->
+                <div
+                    style="background: #FFF3E0; padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: center;">
+                    <div style="font-size: 0.9rem; color: var(--text-sub);" id="fluff-label">モフモフ度</div>
+                    <div style="font-size: 2rem; font-weight: bold; color: var(--accent-color);">
+                        <span id="fluff-score">--</span>%
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text-sub);" id="fluff-comment">...</div>
+                </div>
+
                 <div class="advice-box">
                     <span class="advice-title" id="advice-title">アドバイス</span>
                     <p id="advice-text">...</p>
@@ -336,6 +382,15 @@
                     <label for="photo-input" class="file-upload-btn">写真を選択</label>
                     <input type="file" id="photo-input" accept="image/*" onchange="handleImageUpload(event)">
                     <canvas id="photo-canvas"></canvas>
+
+                    <!-- Share Actions -->
+                    <div id="share-actions" style="display:none; margin-top: 15px; gap: 10px; justify-content: center;">
+                        <button onclick="downloadImage()" class="btn-primary"
+                            style="background:var(--secondary-color); color:var(--text-main); font-size:0.9rem; padding: 10px;">💾
+                            画像を保存</button>
+                        <button onclick="shareTwitter()" class="btn-primary"
+                            style="background:#1DA1F2; font-size:0.9rem; padding: 10px;">🐦 シェアする</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -361,7 +416,13 @@
                 return;
             }
 
+            // Show Loading
+            document.getElementById('loading-overlay').style.display = 'flex';
+
             try {
+                // Simulate a slight delay for "Investigation" effect (optional, but adds to the feel)
+                await new Promise(r => setTimeout(r, 1500));
+
                 const response = await fetch('/api/retriever/calculate', {
                     method: 'POST',
                     headers: {
@@ -384,6 +445,9 @@
             } catch (error) {
                 console.error(error);
                 alert("エラーが発生しました。");
+            } finally {
+                // Hide Loading
+                document.getElementById('loading-overlay').style.display = 'none';
             }
         }
 
@@ -401,6 +465,11 @@
             document.getElementById('advice-title').textContent = data.advice.title;
             document.getElementById('advice-text').textContent = data.advice.care;
             document.getElementById('checkup-text').textContent = data.advice.checkup;
+
+            // Fluffiness
+            document.getElementById('fluff-label').textContent = data.fluffiness.label;
+            animateValue("fluff-score", 0, data.fluffiness.score, 1000);
+            document.getElementById('fluff-comment').textContent = data.fluffiness.comment;
 
             // Chart
             // Assume 100 is max sensible human age for bar
@@ -492,6 +561,25 @@
                 ctx.fillStyle = "#FF7043";
                 ctx.fillText(age + "歳", badgeX + badgeW / 2, badgeY + badgeH / 2 + 30);
             }
+
+            // Show share buttons if image exists
+            if (uploadedImage) {
+                document.getElementById('share-actions').style.display = 'flex';
+            }
+        }
+
+        function downloadImage() {
+            if (!uploadedImage) return;
+            const link = document.createElement('a');
+            link.download = 'watchdog_retriever.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        function shareTwitter() {
+            const text = encodeURIComponent(`うちの子は人間でいうと...${currentHumanAge}歳でした！🐕\n#WatchdogRetriever #見守りレトリバー`);
+            // Note: Can't directly Attach image to Twitter intent, so just share text.
+            window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
         }
     </script>
 
