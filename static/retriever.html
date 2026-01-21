@@ -280,11 +280,21 @@
                     <option value="dog_large">大型犬 (25kg〜)</option>
                     <option value="cat">猫</option>
                     <option value="rabbit">うさぎ</option>
+                    <option value="hamster">ハムスター・小動物</option>
+                    <option value="bird_small">小鳥 (インコ等)</option>
+                    <option value="bird_medium">中型鳥 (オカメ等)</option>
+                    <option value="bird_large">大型鳥 (オウム等)</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label>年齢 (歳)</label>
-                <input type="number" id="animal-age" min="0" max="30" value="1">
+            <div class="form-group" style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label>年齢 (歳)</label>
+                    <input type="number" id="animal-age-years" min="0" max="100" value="1">
+                </div>
+                <div style="flex: 1;">
+                    <label>ヶ月</label>
+                    <input type="number" id="animal-age-months" min="0" max="11" value="0">
+                </div>
             </div>
             <button class="btn-primary" onclick="calculateAge()">診断する</button>
         </div>
@@ -322,15 +332,25 @@
                 </div>
             </div>
         </div>
+
+        <div class="card" style="text-align: center; overflow: hidden; padding: 0;">
+            <img src="../animals/images/retriever_chart.jpg" alt="Life Stage Chart"
+                style="width: 100%; height: auto; display: block;">
+            <div style="padding: 20px;">
+                <h3 style="margin-top: 0; color: var(--primary-color);">成長の背比べ</h3>
+                <p style="font-size: 0.9rem; color: var(--text-sub);">動物たちとの時間は、あっという間に過ぎていきます。<br>今この瞬間を大切に。</p>
+            </div>
+        </div>
     </main>
 
     <script>
         async function calculateAge() {
             const type = document.getElementById('animal-type').value;
-            const age = parseInt(document.getElementById('animal-age').value);
+            const years = parseInt(document.getElementById('animal-age-years').value) || 0;
+            const months = parseInt(document.getElementById('animal-age-months').value) || 0;
 
-            if (isNaN(age)) {
-                alert("年齢を正しく入力してください");
+            if (years === 0 && months === 0) {
+                alert("年齢を入力してください");
                 return;
             }
 
@@ -342,7 +362,8 @@
                     },
                     body: JSON.stringify({
                         animal_type: type,
-                        age_years: age
+                        age_years: years,
+                        age_months: months
                     })
                 });
 
