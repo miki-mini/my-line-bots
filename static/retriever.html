@@ -657,7 +657,10 @@
 
                 ctx.font = "bold 40px 'Outfit'";
                 ctx.fillStyle = "#FF7043";
-                ctx.fillText(age + "歳", badgeX + badgeW / 2, badgeY + badgeH / 2 + 30);
+
+                // Fix for "undefined" display
+                const displayAge = (age !== null && age !== undefined) ? age + "歳" : "??歳";
+                ctx.fillText(displayAge, badgeX + badgeW / 2, badgeY + badgeH / 2 + 30);
 
                 // --- Draw Decorations ---
                 // Auto-Pacifier for babies (< 1 year old human age)
