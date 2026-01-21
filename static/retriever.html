@@ -469,8 +469,8 @@
     <script>
         async function calculateAge() {
             const type = document.getElementById('animal-type').value;
-            const years = parseInt(document.getElementById('animal-age-years').value) || 0;
-            const months = parseInt(document.getElementById('animal-age-months').value) || 0;
+            const years = parseInt(document.getElementById('age-years').value) || 0;
+            const months = parseInt(document.getElementById('age-months').value) || 0;
 
             if (years === 0 && months === 0) {
                 alert("年齢を入力してください");
@@ -660,6 +660,21 @@
                 ctx.fillText(age + "歳", badgeX + badgeW / 2, badgeY + badgeH / 2 + 30);
 
                 // --- Draw Decorations ---
+                // Auto-Pacifier for babies (< 1 year old human age)
+                // Note: Logic specifies human age < 1.
+                if (age < 1) {
+                    const pacifierImg = new Image();
+                    pacifierImg.src = "/static/images/overlay_pacifier.png";
+                    pacifierImg.onload = () => {
+                        // Draw pacifier near the "mouth" (Center bottom area usually)
+                        // Since we don't have face detection, let's put it in the center or bottom center.
+                        const size = Math.min(canvas.width, canvas.height) * 0.25;
+                        ctx.drawImage(pacifierImg, (canvas.width - size) / 2, (canvas.height / 2), size, size);
+                    };
+                    // Force synchronous-like behavior or just fire it
+                    if (pacifierImg.complete) pacifierImg.onload();
+                }
+
                 const decoration = document.getElementById('decoration-select').value;
                 if (decoration !== 'none') {
                     const decoImg = new Image();
