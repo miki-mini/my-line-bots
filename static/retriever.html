@@ -308,6 +308,7 @@
         <div id="result-section">
             <div class="card">
                 <div class="age-display">
+                    <div id="result-emoji" style="font-size: 4rem; margin-bottom: 10px;">🐕</div>
                     <span class="stage-badge" id="result-stage">Adult</span>
                     <div class="human-age-label">人間年齢に換算すると...</div>
                     <div class="human-age-value"><span id="human-age-num">--</span> 歳</div>
@@ -391,6 +392,10 @@
 
             // Counter Animation
             animateValue("human-age-num", 0, data.human_age, 1000);
+
+            // Display Emoji
+            const emojiElem = document.getElementById('result-emoji');
+            if (emojiElem) emojiElem.textContent = data.emoji;
 
             document.getElementById('result-stage').textContent = data.stage;
             document.getElementById('advice-title').textContent = data.advice.title;
