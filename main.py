@@ -38,7 +38,7 @@ from animals.bat import register_bat_handler
 from animals.owl import register_owl_handler
 
 from routers import web_apps
-from animals import beaver, fox, bat, mole, frog, capybara, penguin, owl, raccoon
+from animals import beaver, fox, bat, mole, frog, capybara, penguin, owl, raccoon, retriever
 
 # Google Cloud Imports
 from google.cloud import storage
@@ -63,6 +63,7 @@ app.include_router(capybara.router)
 app.include_router(penguin.router)
 app.include_router(owl.router)
 app.include_router(raccoon.router)
+app.include_router(retriever.router)
 db = None
 storage_client = None
 text_model = None
