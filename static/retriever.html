@@ -330,12 +330,27 @@
             </div>
             <div class="form-group" style="display: flex; gap: 10px;">
                 <div style="flex: 1;">
-                    <label>年齢 (歳)</label>
-                    <input type="number" id="animal-age-years" min="0" max="100" value="1">
+                    <label for="age-years">何歳？</label>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <input type="number" id="age-years" value="0" min="0" style="flex: 1;">
+                        <span>歳</span>
+                    </div>
                 </div>
                 <div style="flex: 1;">
-                    <label>ヶ月</label>
-                    <input type="number" id="animal-age-months" min="0" max="11" value="0">
+                    <label for="age-months">何ヶ月？</label>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <input type="number" id="age-months" value="0" min="0" max="11" style="flex: 1;">
+                        <span>ヶ月</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Owner Age Input for Comparison -->
+            <div class="form-group">
+                <label for="owner-age">あなたの年齢 (任意・比較用)</label>
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <input type="number" id="owner-age" placeholder="比較したい年齢を入力" min="0" style="flex: 1;">
+                    <span>歳</span>
                 </div>
             </div>
             <button class="btn-primary" onclick="calculateAge()">診断する</button>
@@ -365,6 +380,40 @@
                         <span id="fluff-score">--</span>%
                     </div>
                     <div style="font-size: 0.9rem; color: var(--text-sub);" id="fluff-comment">...</div>
+                </div>
+
+                <!-- Comparison Section -->
+                <div id="comparison-section"
+                    style="display: none; background: #E3F2FD; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                    <div style="font-size: 0.9rem; color: var(--text-sub); text-align: center; margin-bottom: 10px;">
+                        年齢・背比べ</div>
+
+                    <!-- Chart Lines -->
+                    <div
+                        style="display: flex; align-items: flex-end; justify-content: space-around; height: 150px; border-bottom: 2px solid #ccc; padding-bottom: 5px;">
+                        <!-- User Bar -->
+                        <div style="display: flex; flex-direction: column; align-items: center; width: 40%;">
+                            <div style="font-weight: bold; margin-bottom: 5px;" id="comp-user-age">--歳</div>
+                            <div id="comp-user-bar"
+                                style="width: 40px; background: #90CAF9; border-radius: 5px 5px 0 0; transition: height 1s;">
+                            </div>
+                            <div style="margin-top: 5px; font-size: 0.8rem;">あなた</div>
+                        </div>
+
+                        <!-- Pet Bar -->
+                        <div style="display: flex; flex-direction: column; align-items: center; width: 40%;">
+                            <div style="font-weight: bold; margin-bottom: 5px; color: var(--accent-color);"
+                                id="comp-pet-age">--歳</div>
+                            <div id="comp-pet-bar"
+                                style="width: 40px; background: var(--secondary-color); border-radius: 5px 5px 0 0; transition: height 1s;">
+                            </div>
+                            <div style="margin-top: 5px; font-size: 0.8rem;">ペット</div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 10px; font-weight: bold; color: var(--primary-color);"
+                        id="comp-result-text">
+                        ...
+                    </div>
                 </div>
 
                 <div class="advice-box">
@@ -486,7 +535,44 @@
             // Chart
             // Assume 100 is max sensible human age for bar
             const percentage = Math.min(data.human_age, 100);
-            document.getElementById('life-bar').style.width = percentage + "%";
+            setTimeout(() => {
+                document.getElementById('life-bar').style.width = percentage + "%";
+            }, 100);
+
+            // --- Comparison Logic ---
+            const ownerAgeInput = document.getElementById('owner-age').value;
+            const compSection = document.getElementById('comparison-section');
+            if (ownerAgeInput && !isNaN(ownerAgeInput)) {
+                const ownerAge = parseInt(ownerAgeInput);
+                const petAge = data.human_age;
+
+                compSection.style.display = 'block';
+                document.getElementById('comp-user-age').textContent = ownerAge + "歳";
+                document.getElementById('comp-pet-age').textContent = petAge + "歳";
+
+                // Height calculation (Max 120px)
+                const maxAge = Math.max(ownerAge, petAge, 10); // Minimum scale 10
+                const userH = (ownerAge / maxAge) * 120;
+                const petH = (petAge / maxAge) * 120;
+
+                setTimeout(() => {
+                    document.getElementById('comp-user-bar').style.height = userH + "px";
+                    document.getElementById('comp-pet-bar').style.height = petH + "px";
+                }, 100);
+
+                const resultTextElem = document.getElementById('comp-result-text');
+                if (petAge > ownerAge) {
+                    const diff = petAge - ownerAge;
+                    resultTextElem.textContent = `ペットの方が ${diff}歳 先輩です！🙇‍♂️`;
+                } else if (petAge < ownerAge) {
+                    const diff = ownerAge - petAge;
+                    resultTextElem.textContent = `あなたの方が ${diff}歳 お兄さん/お姉さんです！👶`;
+                } else {
+                    resultTextElem.textContent = `まさかの同い年（タメ）です！🤝`;
+                }
+            } else {
+                compSection.style.display = 'none';
+            }
 
             // Scroll to result
             document.getElementById('result-section').scrollIntoView({ behavior: 'smooth' });
