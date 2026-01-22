@@ -229,18 +229,29 @@
         }
 
         input[type="file"] {
-            display: none;
+            /* display: none; <-- potentially buggy on some mobile */
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+            width: 1px;
+            height: 1px;
         }
 
         .file-upload-btn {
             display: inline-block;
-            padding: 10px 20px;
+            padding: 15px 30px;
             background: var(--secondary-color);
             color: var(--text-main);
             border-radius: 8px;
             cursor: pointer;
-            margin-bottom: 15px;
-            font-weight: 500;
+            margin-bottom: 20px;
+            font-weight: 600;
+            width: 100%;
+            /* Make it full width on mobile */
+            text-align: center;
+            box-sizing: border-box;
+            border: 2px dashed #BCAAA4;
+            /* Add visual clue */
         }
 
         @keyframes fadeIn {
