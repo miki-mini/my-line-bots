@@ -428,6 +428,10 @@
                 <h2>📷 記念フォト</h2>
                 <p style="font-size: 0.9rem; margin-bottom: 15px;">写真をアップロードすると、年齢に合わせたスタンプを表示します。</p>
                 <div class="overlay-container">
+                    <label for="photo-input" class="file-upload-btn">写真を選択</label>
+                    <input type="file" id="photo-input" accept="image/*" onchange="handleImageUpload(event)">
+                    <canvas id="photo-canvas"></canvas>
+
                     <!-- Share Actions -->
                     <div id="share-actions" style="display:none; margin-top: 15px; gap: 10px; justify-content: center;">
                         <button onclick="downloadImage()" class="btn-primary"
