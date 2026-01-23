@@ -35,6 +35,7 @@ class AnimalType(Enum):
     BUTTERFLY = "butterfly"     # 蝶々
     SQUIRREL = "squirrel"       # リス
     MEERKAT = "meerkat"         # ミーアキャット
+    SNAKE = "snake"             # ヘビ
     ROBOT = "robot"             # ロボット (Voidoll)
 
 class AgeConverter:
@@ -70,6 +71,7 @@ class AgeConverter:
             AnimalType.BUTTERFLY.value: "🦋",
             AnimalType.SQUIRREL.value: "🐿️",
             AnimalType.MEERKAT.value: "🧍", # Standing mammal
+            AnimalType.SNAKE.value: "🐍",
             AnimalType.ROBOT.value: "🤖"
         }
         return mapping.get(animal_type, "🐾")
@@ -127,6 +129,7 @@ class AgeConverter:
         if animal_type == AnimalType.GECKO.value: return int(total_years * 5.3)
         if animal_type == AnimalType.ELEPHANT.value: return int(total_years * 1.15)
         if animal_type == AnimalType.GIRAFFE.value: return int(total_years * 3.2)
+        if animal_type == AnimalType.SNAKE.value: return int(total_years * 4.5) # 寿命20年程度
         if animal_type == AnimalType.WHALE.value: return int(total_years * 1.0) # Human equiv
 
         # --- Robot ---
@@ -217,6 +220,9 @@ class AgeConverter:
         elif animal_type == AnimalType.TORTOISE.value:
             advice["title"] = "のんびり亀時間"
             advice["care"] = "非常に寿命が長いです。日光浴で甲羅の形成に必要なカルシウム代謝を促しましょう。"
+        elif animal_type == AnimalType.SNAKE.value:
+            advice["title"] = "静かなる芸術家"
+            advice["care"] = "温度と湿度の管理が生命線です。脱皮前は目が白くなります、そっとしておいてあげましょう。"
 
         # PT (理学療法士) 視点のアドバイス定型文 (Shared)
         pt_baby = "【PT視点】骨格形成の大事な時期。滑りやすいフローリングは関節形成不全のリスクになります。カーペットなどで足元を安定させましょう。"
@@ -294,6 +300,9 @@ class AgeConverter:
         elif animal_type in [AnimalType.TORTOISE.value, AnimalType.GECKO.value]:
             label = "つるつる・硬度"
             score, comment = 100, "この質感こそ至高。"
+        elif animal_type == AnimalType.SNAKE.value:
+            label = "鱗の美しさ"
+            score, comment = 100, "宝石のような鱗の輝きと、ひんやりした抱き心地。"
 
         return {"label": label, "score": score, "comment": comment}
 
