@@ -1,0 +1,292 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.7, pytest-8.0.0, pluggy-1.6.0 -- C:\Users\mikir\anaconda3\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\mikir\OneDrive\デスクトップ\my-line-bots-new
+plugins: anyio-4.11.0, cov-7.0.0, mock-3.15.1
+collecting ... collected 67 items / 1 error
+
+<Dir my-line-bots-new>
+  <Dir tests>
+    <Module test_bat.py>
+      <UnitTestCase TestBat>
+        A class whose instances are single test cases.
+        
+        By default, the test code itself should be placed in a method named
+        'runTest'.
+        
+        If the fixture may be used for many test cases, create as
+        many test methods as are needed. When instantiating such a TestCase
+        subclass, specify in the constructor arguments the name of the test method
+        that the instance is to execute.
+        
+        Test authors should subclass TestCase for their own tests. Construction
+        and deconstruction of the test's environment ('fixture') can be
+        implemented by overriding the 'setUp' and 'tearDown' methods respectively.
+        
+        If it is necessary to override the __init__ method, the base class
+        __init__ method must always be called. It is important that subclasses
+        should not change the signature of their __init__ method, since instances
+        of the classes are instantiated automatically by parts of the framework
+        in order to be run.
+        
+        When subclassing TestCase, you can set these attributes:
+        * failureException: determines which exception will be raised when
+            the instance's assertion methods fail; test methods raising this
+            exception will be deemed to have 'failed' rather than 'errored'.
+        * longMessage: determines whether long messages (including repr of
+            objects used in assert methods) will be printed on failure in *addition*
+            to any explicit message passed.
+        * maxDiff: sets the maximum length of a diff in failure messages
+            by assert methods using difflib. It is looked up as an instance
+            attribute so can be configured by individual tests if required.
+        <TestCaseFunction test_add_command>
+          「追加:」コマンドが正しく動くか
+        <TestCaseFunction test_add_command_empty>
+          「追加:」だけで中身がない場合
+        <TestCaseFunction test_firestore_add>
+          _add_to_watch_list のテスト
+        <TestCaseFunction test_firestore_get_all_unique>
+          _get_all_unique_keywords のテスト
+        <TestCaseFunction test_firestore_remove>
+          _remove_from_watch_list のテスト
+        <TestCaseFunction test_list_command>
+          「リスト」コマンドのテスト
+        <TestCaseFunction test_normal_search>
+          普通の会話はGemini検索に回されるか
+      <Function test_bat_endpoint_registration>
+        /callback_bat エンドポイントが登録されるか確認
+      <Function test_cron_bat_check_endpoint>
+        /cron/bat_check エンドポイントが登録されるか確認
+      <Function test_cron_bat_check_with_results>
+        Cronで番組が見つかった場合のブロードキャストテスト
+    <Module test_bat_coverage.py>
+      <UnitTestCase TestBatCoverage>
+        A class whose instances are single test cases.
+        
+        By default, the test code itself should be placed in a method named
+        'runTest'.
+        
+        If the fixture may be used for many test cases, create as
+        many test methods as are needed. When instantiating such a TestCase
+        subclass, specify in the constructor arguments the name of the test method
+        that the instance is to execute.
+        
+        Test authors should subclass TestCase for their own tests. Construction
+        and deconstruction of the test's environment ('fixture') can be
+        implemented by overriding the 'setUp' and 'tearDown' methods respectively.
+        
+        If it is necessary to override the __init__ method, the base class
+        __init__ method must always be called. It is important that subclasses
+        should not change the signature of their __init__ method, since instances
+        of the classes are instantiated automatically by parts of the framework
+        in order to be run.
+        
+        When subclassing TestCase, you can set these attributes:
+        * failureException: determines which exception will be raised when
+            the instance's assertion methods fail; test methods raising this
+            exception will be deemed to have 'failed' rather than 'errored'.
+        * longMessage: determines whether long messages (including repr of
+            objects used in assert methods) will be printed on failure in *addition*
+            to any explicit message passed.
+        * maxDiff: sets the maximum length of a diff in failure messages
+            by assert methods using difflib. It is looked up as an instance
+            attribute so can be configured by individual tests if required.
+        <TestCaseFunction test_check_schedule_strict_error>
+          Line 335-337: Exception handling
+        <TestCaseFunction test_check_schedule_strict_false>
+          Line 329-330: False response
+        <TestCaseFunction test_process_bat_command_add_empty>
+          Line 38-39: Empty keyword after '追加:' 
+        <TestCaseFunction test_process_bat_command_list_empty>
+          Line 58-59: Empty list
+        <TestCaseFunction test_process_bat_command_remove_empty>
+          Line 49-50: Empty keyword after '削除:'
+        <TestCaseFunction test_process_bat_command_remove_not_found>
+          Line 47-48: Removing non-existent keyword
+        <TestCaseFunction test_search_tv_schedule_with_gemini_error>
+          Line 300-301: Exception handling
+    <Module test_beaver.py>
+      <Function test_parse_single_index>
+        1つの番号指定
+      <Function test_parse_multiple_indices>
+        複数の番号指定 (スペース区切り, カンマ区切り)
+      <Function test_parse_invalid_input>
+        無効な入力
+      <Function test_parse_mixed_input>
+        余計な文字が入っている場合
+    <Module test_capybara.py>
+      <Function test_onsen_mode_positive>
+        温泉モードになるキーワードのテスト
+      <Function test_onsen_mode_negative>
+        通常のニュース検索になるケース
+    <Module test_fox.py>
+      <Function test_extract_normal_url>
+        通常のYouTube URL
+      <Function test_extract_short_url>
+        短縮URL
+      <Function test_extract_url_in_text>
+        文章中のURL
+      <Function test_extract_no_url>
+        URLなし
+      <Function test_extract_invalid_input>
+        無効な入力
+    <Module test_frog.py>
+      <Function test_extract_location>
+        メッセージから場所名を抽出するテスト
+      <Function test_create_google_maps_link_simple>
+        APIなしの簡易リンク生成
+      <Function test_create_google_maps_link_with_api>
+        APIを使用したリンク生成（モック）
+      <Function test_register_frog_handler>
+        ハンドラー登録のテスト
+      <Function test_handle_text_message_flow>
+        テキストメッセージ受信時のフローテスト
+      <Function test_handle_location_logic>
+        位置情報ロジックのテスト
+      <Function test_broadcast_morning_weather>
+        朝の天気配信のテスト（抽出した関数を使用）
+      <Function test_get_place_details_real>
+        Google Places API呼び出しの実際のロジックをテスト
+      <Function test_get_location_name_from_coords_real>
+        Reverse Geocoding呼び出しの実際のロジックをテスト
+      <Function test_callback_frog_integration>
+        FastAPI TestClientを使った統合テスト
+      <Function test_handle_frog_message_event>
+        テキストイベントハンドラーの直接テスト
+      <Function test_handle_frog_location_event>
+        位置情報イベントハンドラーの直接テスト
+    <Module test_mole.py>
+      <Function test_filter_upcoming>
+        未来の電車だけフィルタリングしてソートするか
+      <Function test_filter_no_upcoming>
+        未来の電車がない場合
+      <Function test_filter_exact_match>
+        時刻が同時刻の場合（仕様によるが、 > なので含まれないはず）
+    <Module test_owl.py>
+      <Function test_extract_clean_json>
+        綺麗なJSON
+      <Function test_extract_markdown_json>
+        マークダウン付きJSON
+      <Function test_extract_messy_text>
+        余計な文章がある場合
+      <Function test_extract_invalid_json>
+        JSONが見つからない場合
+    <Module test_penguin.py>
+      <Function test_parse_valid_email>
+        正常なメールリクエストのパース
+      <Function test_parse_invalid_format>
+        行数が足りない場合
+      <UnitTestCase TestPenguinHandler>
+        A class whose instances are single test cases.
+        
+        By default, the test code itself should be placed in a method named
+        'runTest'.
+        
+        If the fixture may be used for many test cases, create as
+        many test methods as are needed. When instantiating such a TestCase
+        subclass, specify in the constructor arguments the name of the test method
+        that the instance is to execute.
+        
+        Test authors should subclass TestCase for their own tests. Construction
+        and deconstruction of the test's environment ('fixture') can be
+        implemented by overriding the 'setUp' and 'tearDown' methods respectively.
+        
+        If it is necessary to override the __init__ method, the base class
+        __init__ method must always be called. It is important that subclasses
+        should not change the signature of their __init__ method, since instances
+        of the classes are instantiated automatically by parts of the framework
+        in order to be run.
+        
+        When subclassing TestCase, you can set these attributes:
+        * failureException: determines which exception will be raised when
+            the instance's assertion methods fail; test methods raising this
+            exception will be deemed to have 'failed' rather than 'errored'.
+        * longMessage: determines whether long messages (including repr of
+            objects used in assert methods) will be printed on failure in *addition*
+            to any explicit message passed.
+        * maxDiff: sets the maximum length of a diff in failure messages
+            by assert methods using difflib. It is looked up as an instance
+            attribute so can be configured by individual tests if required.
+        <TestCaseFunction test_handle_concierge_request_flow>
+          お店検索リクエストのフローテスト
+        <TestCaseFunction test_handle_email_request_flow>
+          メール作成リクエストのフローテスト
+        <TestCaseFunction test_handle_postback_send>
+          送信ボタン押下時のテスト
+        <TestCaseFunction test_web_api_endpoints>
+          Web API のテスト
+    <Module test_rabbit.py>
+      <Function test_rabbit_default_reply>
+        デフォルトの返信を確認
+      <Function test_rabbit_morning_reply>
+        おはようメッセージへの返信を確認
+      <Function test_rabbit_morning_reply_contained>
+        文章に完了が含まれる場合の返信を確認
+    <Module test_voidoll.py>
+      <UnitTestCase TestVoidoll>
+        A class whose instances are single test cases.
+        
+        By default, the test code itself should be placed in a method named
+        'runTest'.
+        
+        If the fixture may be used for many test cases, create as
+        many test methods as are needed. When instantiating such a TestCase
+        subclass, specify in the constructor arguments the name of the test method
+        that the instance is to execute.
+        
+        Test authors should subclass TestCase for their own tests. Construction
+        and deconstruction of the test's environment ('fixture') can be
+        implemented by overriding the 'setUp' and 'tearDown' methods respectively.
+        
+        If it is necessary to override the __init__ method, the base class
+        __init__ method must always be called. It is important that subclasses
+        should not change the signature of their __init__ method, since instances
+        of the classes are instantiated automatically by parts of the framework
+        in order to be run.
+        
+        When subclassing TestCase, you can set these attributes:
+        * failureException: determines which exception will be raised when
+            the instance's assertion methods fail; test methods raising this
+            exception will be deemed to have 'failed' rather than 'errored'.
+        * longMessage: determines whether long messages (including repr of
+            objects used in assert methods) will be printed on failure in *addition*
+            to any explicit message passed.
+        * maxDiff: sets the maximum length of a diff in failure messages
+            by assert methods using difflib. It is looked up as an instance
+            attribute so can be configured by individual tests if required.
+        <TestCaseFunction test_handle_voidoll_audio>
+          音声メッセージ処理のテスト
+        <TestCaseFunction test_handle_voidoll_text>
+          テキストメッセージ処理のテスト
+        <TestCaseFunction test_register_voidoll_handler>
+          ハンドラー登録とグローバル変数の設定確認
+        <TestCaseFunction test_web_api_endpoint>
+          Web API エンドポイント /api/voidoll/chat のテスト
+    <Module test_voidoll_service.py>
+      <Function test_voidoll_init>
+        初期化のテスト
+      <Function test_generate_chat_reply>
+        チャット生成のテスト
+      <Function test_generate_voice_url_success>
+        音声URL生成の成功テスト
+      <Function test_voidoll_missing_env>
+        環境変数が足りない場合の挙動
+    <Module test_whale.py>
+      <Function test_calculate_past_date>
+        日付計算のロジックテスト
+      <Function test_get_nasa_apod_image_success>
+        API呼び出し成功時のテスト
+      <Function test_get_nasa_apod_image_failure>
+        API呼び出し失敗時のテスト
+
+=================================== ERRORS ====================================
+______________________ ERROR collecting test_output.txt _______________________
+..\..\..\anaconda3\Lib\pathlib.py:1028: in read_text
+    return f.read()
+<frozen codecs>:322: in decode
+    ???
+E   UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+=========================== short test summary info ===========================
+ERROR test_output.txt - UnicodeDecodeError: 'utf-8' codec can't decode byte 0...
+!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+==================== 67 tests collected, 1 error in 2.54s =====================

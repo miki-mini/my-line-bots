@@ -1,0 +1,17 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.7, pytest-8.0.0, pluggy-1.6.0 -- C:\Users\mikir\anaconda3\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\mikir\OneDrive\デスクトップ\my-line-bots-new
+configfile: pytest.ini
+plugins: anyio-4.11.0, cov-7.0.0, mock-3.15.1
+collecting ... collected 7 items
+
+tests/test_voidoll.py::TestVoidoll::test_callback_general_error PASSED   [ 14%]
+tests/test_voidoll.py::TestVoidoll::test_callback_invalid_signature PASSED [ 28%]
+tests/test_voidoll.py::TestVoidoll::test_handle_voidoll_audio PASSED     [ 42%]
+tests/test_voidoll.py::TestVoidoll::test_handle_voidoll_audio_fallback_to_text PASSED [ 57%]
+tests/test_voidoll.py::TestVoidoll::test_handle_voidoll_text PASSED      [ 71%]
+tests/test_voidoll.py::TestVoidoll::test_register_voidoll_handler PASSED [ 85%]
+tests/test_voidoll.py::TestVoidoll::test_web_api_endpoint PASSED         [100%]
+
+============================== 7 passed in 1.93s ==============================

@@ -5,7 +5,7 @@
 「うちの子、人間でいうと何歳なの？」という素朴な疑問に答えるために作りました。
 犬、猫、うさぎはもちろん、ゾウやペンギン、カピバラまで30種類以上の動物に対応！
 
-![Watchdog Retriever]<img src="https://storage.googleapis.com/zenn-user-upload/0ed0725a176f-20260123.png" width="300">
+<img src="https://storage.googleapis.com/zenn-user-upload/0ed0725a176f-20260123.png" width="300">
 
 ## ✨ 主な機能
 

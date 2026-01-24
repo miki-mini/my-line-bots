@@ -121,3 +121,21 @@ resource "google_service_account_iam_member" "cloud_run_sa_user" {
   role               = "roles/iam.serviceAccountUser"
   member             = "serviceAccount:${google_service_account.github_actions_sa.email}"
 }
+
+# ==============================================================================
+# Terraform 自動化用権限 (CI/CD SAへの強力な権限付与)
+# ==============================================================================
+
+# プロジェクト編集者 (Editor)
+resource "google_project_iam_member" "project_editor" {
+  project = var.project_id
+  role    = "roles/editor"
+  member  = "serviceAccount:${google_service_account.github_actions_sa.email}"
+}
+
+# IAM 管理者 (Project IAM Admin) - 権限変更をTerraformで行うために必要
+resource "google_project_iam_member" "project_iam_admin" {
+  project = var.project_id
+  role    = "roles/resourcemanager.projectIamAdmin"
+  member  = "serviceAccount:${google_service_account.github_actions_sa.email}"
+}

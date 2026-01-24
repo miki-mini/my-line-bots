@@ -11,6 +11,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from animals import voidoll
 from linebot.v3.webhooks import MessageEvent, TextMessageContent, AudioMessageContent
+from linebot.v3.messaging import TextMessage
 
 class TestVoidoll(unittest.TestCase):
 
@@ -135,3 +136,87 @@ class TestVoidoll(unittest.TestCase):
                 assert data["status"] == "success"
                 assert data["message"] == "Webからの返信だにゃ"
                 assert data["audio_url"] == "http://voice/url"
+
+    @patch('animals.voidoll.voidoll_service.generate_voice_url')
+    @patch('google.generativeai.GenerativeModel')
+    @patch('animals.voidoll.MessagingApiBlob')
+    @patch('animals.voidoll.ApiClient')
+    @patch('animals.voidoll.MessagingApi')
+    def test_handle_voidoll_audio_fallback_to_text(self, mock_msg_api, mock_api_client, mock_blob_api, mock_gen_model, mock_gen_voice):
+        """音声生成失敗時にテキストで返信するテスト"""
+        # セットアップ
+        voidoll.register_voidoll_handler(self.mock_app, self.mock_handler, self.mock_config, self.mock_config)
+
+        # イベント
+        mock_event = MagicMock()
+        mock_event.message.id = "msg_id_fail"
+        mock_event.reply_token = "reply_token_fail"
+
+        # Mock Gemini
+        mock_model_instance = MagicMock()
+        mock_gen_model.return_value = mock_model_instance
+        mock_model_instance.generate_content.return_value.text = "返信テキストだにゃ"
+
+        # Mock Voice URL (Noneを返す = 失敗)
+        mock_gen_voice.return_value = None
+
+        # Mock Blob
+        mock_blob_api.return_value.get_message_content.return_value = b"audio"
+
+        # 実行
+        voidoll.handle_voidoll_audio(mock_event)
+
+        # 検証
+        if mock_msg_api.return_value.reply_message.call_count == 0:
+            print("[DEBUG] reply_message NOT CALLED")
+        else:
+            args = mock_msg_api.return_value.reply_message.call_args[0][0]
+            print(f"[DEBUG] Sent Message Type: {type(args.messages[0])}")
+            if isinstance(args.messages[0], TextMessage):
+                print(f"[DEBUG] Sent Text: {args.messages[0].text}")
+
+        mock_msg_api.return_value.reply_message.assert_called_once()
+        sent_req = mock_msg_api.return_value.reply_message.call_args[0][0]
+
+        # テキストメッセージになっているか確認
+        assert len(sent_req.messages) == 1
+        assert isinstance(sent_req.messages[0], TextMessage)
+        assert sent_req.messages[0].text == "返信テキストだにゃ"
+
+    def test_callback_invalid_signature(self):
+        """Webhook署名エラーのテスト"""
+        # ハンドラーのhandleメソッドがInvalidSignatureErrorを投げるようにモック
+        self.mock_handler.handle.side_effect = voidoll.InvalidSignatureError("Invalid signature")
+
+        voidoll.register_voidoll_handler(self.app, self.mock_handler, self.mock_config, self.mock_config)
+        client = TestClient(self.app)
+
+        # 実行
+        response = client.post(
+            "/callback_voidoll",
+            headers={"X-Line-Signature": "invalid_sig"},
+            content=b"body"
+        )
+
+        # 400エラーになるか
+        assert response.status_code == 400
+        assert response.json()["detail"] == "Invalid signature"
+
+    def test_callback_general_error(self):
+        """Webhook一般エラーのテスト"""
+        # ハンドラーが一般例外を投げる
+        self.mock_handler.handle.side_effect = Exception("General Error")
+
+        voidoll.register_voidoll_handler(self.app, self.mock_handler, self.mock_config, self.mock_config)
+        client = TestClient(self.app)
+
+        # 実行
+        response = client.post(
+            "/callback_voidoll",
+            headers={"X-Line-Signature": "valid_sig"},
+            content=b"body"
+        )
+
+        # 500エラーになるか
+        assert response.status_code == 500
+        assert "General Error" in response.json()["detail"]

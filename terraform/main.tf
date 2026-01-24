@@ -10,6 +10,11 @@ terraform {
     }
   }
   required_version = ">= 1.5.0"
+
+  backend "gcs" {
+    bucket = "usaginooekaki-tfstate"
+    prefix = "terraform/state"
+  }
 }
 
 provider "google" {
@@ -17,10 +22,4 @@ provider "google" {
   region  = var.region
 }
 
-# 将来的にはGCSバックエンドを推奨しますが、まずはローカルステートで進めます
-# terraform {
-#   backend "gcs" {
-#     bucket  = "YOUR_TERRAFORM_STATE_BUCKET"
-#     prefix  = "terraform/state"
-#   }
-# }
+
