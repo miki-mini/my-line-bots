@@ -5,7 +5,7 @@
 「うちの子、人間でいうと何歳なの？」という素朴な疑問に答えるために作りました。
 犬、猫、うさぎはもちろん、ゾウやペンギン、カピバラまで30種類以上の動物に対応！
 
-![Watchdog Retriever](https://via.placeholder.com/800x400.png?text=Watchdog+Retriever+Screenshot)
+![Watchdog Retriever]<img src="https://storage.googleapis.com/zenn-user-upload/0ed0725a176f-20260123.png" width="300">
 
 ## ✨ 主な機能
 
@@ -18,13 +18,15 @@
 
 ## 🚀 デモ
 
-[デモサイトはこちら](https://your-demo-url.com)
+[デモサイトはこちら](https://usagi-oekaki-service-1032484155743.asia-northeast1.run.app/static/retriever.html)
+
+[📘 Zenn](https://zenn.dev/miki_mini/articles/816320cdacc065)
 
 ## 📸 スクリーンショット
 
-| 年齢診断画面 | 結果表示 | 記念フォト |
-|------------|---------|-----------|
-| ![診断](https://via.placeholder.com/250x400.png) | ![結果](https://via.placeholder.com/250x400.png) | ![フォト](https://via.placeholder.com/250x400.png) |
+| 🐕 | 🦝 | 🤖 |
+|:---:|:---:|:---:|
+| <img src="https://storage.googleapis.com/zenn-user-upload/23bc94a5f258-20260123.png" width="180"> | <img src="https://storage.googleapis.com/zenn-user-upload/d37206fdbad2-20260123.png" width="180"> | <img src="https://storage.googleapis.com/zenn-user-upload/355190c04b6c-20260123.png" width="180"> |
 
 ## 🎯 なぜ作ったのか
 
