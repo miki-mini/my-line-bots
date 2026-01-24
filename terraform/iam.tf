@@ -82,6 +82,39 @@ resource "google_project_iam_member" "cloud_run_developer" {
   member  = "serviceAccount:${google_service_account.github_actions_sa.email}"
 }
 
+# ソースからのデプロイに必要な権限 (Cloud Build Editor)
+resource "google_project_iam_member" "cloud_build_editor" {
+  project = var.project_id
+  role    = "roles/cloudbuild.builds.editor"
+  member  = "serviceAccount:${google_service_account.github_actions_sa.email}"
+}
+
+# ソースコードのステージング用バケット作成・書き込み権限 (Storage Admin)
+resource "google_project_iam_member" "storage_admin" {
+  project = var.project_id
+  role    = "roles/storage.admin"
+  member  = "serviceAccount:${google_service_account.github_actions_sa.email}"
+}
+
+# Cloud Build APIなどを使用するための権限 (Service Usage Consumer)
+resource "google_project_iam_member" "service_usage_consumer" {
+  project = var.project_id
+  role    = "roles/serviceusage.serviceUsageConsumer"
+  member  = "serviceAccount:${google_service_account.github_actions_sa.email}"
+}
+
+# プロジェクト情報を取得 (プロジェクト番号が必要なため)
+data "google_project" "project" {
+}
+
+# Cloud Build が使用するデフォルトのCompute EngineサービスアカウントへのActAs権限
+# (ソースからのデプロイ時にCloud Buildをトリガーするために必要)
+resource "google_service_account_iam_member" "compute_sa_user" {
+  service_account_id = "projects/${var.project_id}/serviceAccounts/${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${google_service_account.github_actions_sa.email}"
+}
+
 # Cloud Run 実行用サービスアカウントを使用する権限 (Service Account User)
 resource "google_service_account_iam_member" "cloud_run_sa_user" {
   service_account_id = google_service_account.cloud_run_sa.name
