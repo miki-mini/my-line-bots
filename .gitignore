@@ -18,3 +18,18 @@ __pycache__/
 
 # --- VS Codeの設定 ---
 .vscode/
+
+# --- Terraform (絶対に公開してはいけないファイル) ---
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
