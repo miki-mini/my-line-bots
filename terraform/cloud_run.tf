@@ -6,7 +6,7 @@
 # Cloud Runがその権限を認識するまでに（特に初回は）数十秒のラグが発生することがあります。
 # これを防ぐため、権限付与後に30秒間待機します。
 resource "time_sleep" "wait_for_iam" {
-  depends_on = [ google_project_iam_member.secret_accessor ]
+  depends_on = [google_project_iam_member.secret_accessor]
 
   create_duration = "30s"
 }
@@ -40,7 +40,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "LINE_CHANNEL_ACCESS_TOKEN"
         value_source {
           secret_key_ref {
-            secret = google_secret_manager_secret.line_channel_access_token.secret_id
+            secret  = google_secret_manager_secret.line_channel_access_token.secret_id
             version = "latest"
           }
         }
@@ -49,7 +49,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "LINE_CHANNEL_SECRET"
         value_source {
           secret_key_ref {
-            secret = google_secret_manager_secret.line_channel_secret.secret_id
+            secret  = google_secret_manager_secret.line_channel_secret.secret_id
             version = "latest"
           }
         }
@@ -59,7 +59,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "VOIDOLL_ACCESS_TOKEN"
         value_source {
           secret_key_ref {
-            secret = google_secret_manager_secret.line_channel_access_token.secret_id
+            secret  = google_secret_manager_secret.line_channel_access_token.secret_id
             version = "latest"
           }
         }
@@ -68,7 +68,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "VOIDOLL_CHANNEL_SECRET"
         value_source {
           secret_key_ref {
-            secret = google_secret_manager_secret.line_channel_secret.secret_id
+            secret  = google_secret_manager_secret.line_channel_secret.secret_id
             version = "latest"
           }
         }
@@ -77,7 +77,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "VOICEVOX_URL"
         value_source {
           secret_key_ref {
-            secret = google_secret_manager_secret.voicevox_url.secret_id
+            secret  = google_secret_manager_secret.voicevox_url.secret_id
             version = "latest"
           }
         }
@@ -86,7 +86,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "GCS_BUCKET_NAME"
         value_source {
           secret_key_ref {
-            secret = google_secret_manager_secret.gcs_bucket_name.secret_id
+            secret  = google_secret_manager_secret.gcs_bucket_name.secret_id
             version = "latest"
           }
         }
@@ -95,7 +95,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "GCP_PROJECT_ID"
         value_source {
           secret_key_ref {
-            secret = google_secret_manager_secret.gcp_project_id.secret_id
+            secret  = google_secret_manager_secret.gcp_project_id.secret_id
             version = "latest"
           }
         }
@@ -109,7 +109,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
   }
 
   # 依存関係の明示 (Sleepリソースに依存させることで待機を強制)
-  depends_on = [ time_sleep.wait_for_iam ]
+  depends_on = [time_sleep.wait_for_iam]
 
   # CI/CD (GitHub Actions) が新しいイメージをデプロイした後に
   # Terraformが「設定と違う！」と戻してしまわないように、イメージの変更を無視します。
