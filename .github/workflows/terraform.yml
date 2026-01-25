@@ -25,14 +25,12 @@ jobs:
       run:
         working-directory: ./terraform
 
-    env:
-      TF_VAR_project_id: ${{ secrets.GCP_PROJECT_ID }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Authenticate to Google Cloud
+        id: auth
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: '${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}'
@@ -40,6 +38,9 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+
+      - name: Set Terraform Variables
+        run: echo "TF_VAR_project_id=${{ steps.auth.outputs.project_id }}" >> $GITHUB_ENV
 
       - name: Terraform Init
         id: init
