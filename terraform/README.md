@@ -1,80 +1,290 @@
-# Terraform for My LINE Bots
+# 🚀 Terraform for My LINE Bots
 
-このディレクトリには、プロジェクトのGoogle Cloudインフラストラクチャを管理するためのTerraform設定ファイルが含まれています。
+このディレクトリには、Google Cloudインフラストラクチャを管理するためのTerraform設定ファイルが含まれています。
 
-記事で紹介されていた推奨構成（Artifact Registry, Cloud Run, Secret Manager, Workload Identity Federation）をコード（Infrastructure as Code）として定義しています。
+**手動で何時間もかかった設定が、`terraform apply` 一発で完了します。**
 
-## 1. Infrastructure as Code (IaC) とは？
+## 📖 関連記事
 
-これまで `gcloud` コマンドやコンソールで手動で行っていた設定を、コードとして記述し管理する手法です。
-メリット：
-- **再現性**: 誰が実行しても同じ環境が作れます。
-- **バージョン管理**: インフラの変更履歴をGitで管理できます。
-- **一貫性**: 設定ミスや「環境による違い」を防げます。
+詳しい解説はこちら：
+- [【個人開発】未経験が「手動4時間→git push 3分」を実現。Terraformで作る永続的なインフラ資産](記事のURL)
 
-## 2. 記事の手順とTerraformの対応
+## 🎯 このTerraformで構築されるもの
 
-記事で紹介された手動コマンドが、どのTerraformファイルに対応しているかの一覧です。
+- ✅ **Artifact Registry**: Dockerイメージの保存
+- ✅ **Cloud Run**: LINE Botの実行環境
+- ✅ **Secret Manager**: APIキーなどの秘密情報管理
+- ✅ **Workload Identity Federation**: GitHub Actionsからの安全な認証
+- ✅ **IAM**: 最小権限の原則に基づく権限設定
+- ✅ **GCS Backend**: Terraformの状態管理
 
-| 記事の手順 / gcloud コマンド | Terraform ファイル | リソース名 |
-|---------------------------|-------------------|-----------|
-| `gcloud artifacts repositories create ...` | `artifact_registry.tf` | `google_artifact_registry_repository.repo` |
-| `gcloud run deploy ... --set-secrets=...` | `cloud_run.tf` | `google_cloud_run_v2_service.voidoll_bot` |
-| `gcloud secrets create ...` | `secrets.tf` | `google_secret_manager_secret` |
-| `gcloud secrets add-iam-policy-binding ...` | `iam.tf` | `google_project_iam_member.secret_accessor` |
-| WIFプールの作成 (gcloud iam workload-identity-pools ...) | `iam.tf` | `google_iam_workload_identity_pool` |
-| サービスアカウント作成 | `iam.tf` | `google_service_account` |
+## 📁 ファイル構成
 
-## 3. 使い方
+| ファイル | 役割 | 対応するgcloudコマンド |
+|---------|------|---------------------|
+| `main.tf` | プロバイダー設定、基本設定 | - |
+| `backend.tf` | State保存先（GCS） | - |
+| `variables.tf` | 変数定義 | - |
+| `artifact_registry.tf` | Dockerレジストリ | `gcloud artifacts repositories create` |
+| `cloud_run.tf` | Cloud Runサービス | `gcloud run deploy` |
+| `secrets.tf` | Secret Manager | `gcloud secrets create` |
+| `iam.tf` | WIF、権限設定 | `gcloud iam ...` |
+
+## 🚀 クイックスタート
 
 ### 前提条件
-- [Terraform](https://developer.hashicorp.com/terraform/install) がインストールされていること。
-- Google Cloud SDK (`gcloud`) がインストールされ、認証済みであること (`gcloud auth application-default login`)。
 
-### 手順
+- [Terraform](https://developer.hashicorp.com/terraform/install) (>= 1.5.0)
+- [Google Cloud SDK](https://cloud.google.com/sdk/docs/install)
+- GCPプロジェクトとアクセス権限
 
-1. **初期化**
-   Terraformに必要なプラグインをダウンロードします。
-   ```bash
-   cd terraform
-   terraform init
-   ```
+### 1. 認証
 
-2. **変数の設定**
-   `terraform.tfvars` というファイルを作成し、自分のプロジェクトIDなどを設定します。
-   ```hcl
-   # terraform.tfvars
-   project_id = "your-project-id"
-   region     = "asia-northeast1"
-   ```
+```bash
+gcloud auth application-default login
+```
 
-3. **計画の確認 (Dry Run)**
-   どのような変更が行われるかを確認します。実際に変更は行われません。
-   ```bash
-   terraform plan
-   ```
+### 2. 変数ファイルの作成
 
-4. **適用の実行**
-   実際にGoogle Cloudにリソースを作成・変更します。
-   ```bash
-   terraform apply
-   ```
+```bash
+cd terraform
+cp terraform.tfvars.example terraform.tfvars
+```
 
-## 4. CI/CD との関係
+`terraform.tfvars` を編集：
 
-このTerraform設定は、**「アプリケーションが動くための土台（インフラ）」** を作ります。
-一方、既存の GitHub Actions は、**「その土台の上でアプリケーションを更新・デプロイ」** します。
+```hcl
+project_id        = "your-project-id"
+region            = "asia-northeast1"
+service_name      = "voidoll-bot"
+github_repository = "your-username/your-repo"
+```
 
-- **Terraformの役割**:
-  - Artifact Registryを作る
-  - Cloud Runサービス（の枠組み）を作る
-  - 権限（IAM）を設定する
-  - GitHub Actionsがデプロイできるようにする (WIF設定)
+### 3. GCSバケット作成（State保存用）
 
-- **GitHub Actionsの役割**:
-  - コードをテストする
-  - Dockerイメージをビルドする
-  - Artifact Registryにプッシュする
-  - Cloud Runに新しいイメージをデプロイする
+```bash
+PROJECT_ID="your-project-id"
+BUCKET_NAME="${PROJECT_ID}-terraform-state"
 
-したがって、最初にTerraformで `apply` を実行して環境を整えれば、あとはこれまで通り GitHub Actions で日々の開発・デプロイを回すことができます。
+# バケット作成
+gsutil mb -l asia-northeast1 gs://${BUCKET_NAME}
+
+# バージョニング有効化
+gsutil versioning set on gs://${BUCKET_NAME}
+```
+
+`backend.tf` のバケット名を更新：
+
+```hcl
+terraform {
+  backend "gcs" {
+    bucket = "your-project-id-terraform-state"
+    prefix = "terraform/state"
+  }
+}
+```
+
+### 4. 初期化
+
+```bash
+terraform init
+```
+
+### 5. 実行
+
+```bash
+# 変更内容の確認
+terraform plan
+
+# 実行
+terraform apply
+```
+
+## 🤖 GitHub Actionsとの連携
+
+このTerraformは**インフラの土台**を作ります。
+日々のアプリデプロイは `.github/workflows/deploy.yml` が自動で行います。
+
+### インフラの自動化（Terraform）
+
+`.github/workflows/terraform.yml` により、`terraform/` ディレクトリの変更を検知して自動実行：
+
+1. **Pull Request時**: `terraform plan` を実行してPRにコメント
+2. **mainマージ時**: `terraform apply` を自動実行
+
+### 役割分担
+
+```
+Terraform（このディレクトリ）:
+  └─ インフラの構築・変更
+     ├─ Artifact Registry
+     ├─ Cloud Run
+     ├─ Secret Manager
+     └─ IAM/WIF
+
+GitHub Actions（.github/workflows/deploy.yml）:
+  └─ アプリのデプロイ
+     ├─ テスト
+     ├─ Dockerビルド
+     └─ Cloud Runへのデプロイ
+```
+
+## ⚙️ 主な設定
+
+### Secret Managerのシークレット作成
+
+Terraformは**シークレットの箱**だけを作ります。実際の値は別途設定が必要です：
+
+```bash
+# LINE Channel Access Token
+echo -n "YOUR_TOKEN" | gcloud secrets versions add LINE_CHANNEL_ACCESS_TOKEN --data-file=-
+
+# LINE Channel Secret
+echo -n "YOUR_SECRET" | gcloud secrets versions add LINE_CHANNEL_SECRET --data-file=-
+```
+
+### GitHub Secretsの設定
+
+GitHub Actionsで使用するため、以下をGitHub Secretsに登録：
+
+```bash
+# WIF Provider
+terraform output -raw workload_identity_provider
+
+# Service Account Email
+terraform output -raw github_actions_sa_email
+```
+
+GitHub Settings > Secrets and variables > Actions:
+- `GCP_WORKLOAD_IDENTITY_PROVIDER`: 上記のWIF Provider
+- `GCP_SERVICE_ACCOUNT`: 上記のService Account Email
+- `GCP_PROJECT_ID`: あなたのプロジェクトID
+
+## 🔒 セキュリティ
+
+### 秘密情報の管理
+
+- ❌ **絶対にコミットしないもの**:
+  - `terraform.tfvars`
+  - `*.tfstate`
+  - `*.tfstate.backup`
+  - サービスアカウントキー（.json）
+
+- ✅ **安全な管理方法**:
+  - Secret Manager に保存
+  - GCS Backend で State を暗号化
+  - WIF でキーレス認証
+
+### .gitignore
+
+```gitignore
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+terraform.tfvars
+
+# Secrets
+*.json
+!terraform.tfvars.example
+```
+
+## 📊 便利なコマンド
+
+```bash
+# 現在の状態確認
+terraform show
+
+# リソース一覧
+terraform state list
+
+# 特定リソースの詳細
+terraform state show google_cloud_run_v2_service.voidoll_bot
+
+# 出力値の確認
+terraform output
+
+# フォーマット
+terraform fmt -recursive
+
+# 検証
+terraform validate
+
+# リソースの削除（注意！）
+terraform destroy
+```
+
+## 🔄 更新フロー
+
+### ローカルで実行する場合
+
+```bash
+# 1. ファイル編集
+vim cloud_run.tf
+
+# 2. 確認
+terraform plan
+
+# 3. 適用
+terraform apply
+```
+
+### GitHub Actionsで実行する場合（推奨）
+
+```bash
+# 1. ブランチ作成
+git checkout -b feature/update-memory
+
+# 2. ファイル編集
+vim terraform/cloud_run.tf
+
+# 3. コミット & プッシュ
+git add .
+git commit -m "Increase Cloud Run memory to 2Gi"
+git push origin feature/update-memory
+
+# 4. PRを開く
+# → GitHub Actions が自動で terraform plan を実行
+# → Plan結果がPRにコメントされる
+
+# 5. レビュー後、マージ
+# → GitHub Actions が自動で terraform apply を実行
+```
+
+## 🆘 トラブルシューティング
+
+### State がロックされた
+
+```bash
+# ロックの強制解除（注意！）
+terraform force-unlock LOCK_ID
+```
+
+### 権限エラー
+
+```bash
+# 現在の認証情報確認
+gcloud auth list
+
+# 必要な権限
+# - Editor または Owner
+# - Project IAM Admin（IAM設定を変更する場合）
+```
+
+### State の移行（ローカル → GCS）
+
+```bash
+terraform init -migrate-state
+```
+
+## 📚 参考資料
+
+- [Terraform Google Provider Documentation](https://registry.terraform.io/providers/hashicorp/google/latest/docs)
+- [Google Cloud Best Practices](https://cloud.google.com/architecture/framework)
+- [Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation)
+
+
+
+---
+
+**「一度の苦労を永続的な資産に」** 🚀
