@@ -39,9 +39,6 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Set Terraform Variables
-        run: echo "TF_VAR_project_id=${{ steps.auth.outputs.project_id }}" >> $GITHUB_ENV
-
       - name: Terraform Init
         id: init
         run: terraform init
