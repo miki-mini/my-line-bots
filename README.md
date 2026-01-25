@@ -148,6 +148,8 @@ graph TD
 *   **モジュール分割**: 当初は1つのファイル(`main.py`)でしたが、コードが1500行を超えて保守不能になったため、動物ごとにファイルを分割しました。（[詳細記事: Zenn](https://zenn.dev/miki_mini/articles/30264063ad4b7d)）
 *   **Security First**: 機密情報は `Secret Manager` で管理し、GitHub Actions は `Workload Identity Federation` で認証。Gitリポジトリに認証キーを含めない「キーレス運用」を実現。
 *   **Automated Quality**: `pytest` による自動テストを導入。特にAI生成ロジックやDB操作はモック化し、外部依存を排除したテストを行っています（カバレッジ目標 80%+）。
+*   **Infrastructure as Code (IaC)**: Terraform を用いて全リソース（Cloud Run, Artifact Registry, IAM, Secret Manager）をコード定義。プロビジョニングの自動化と再現性を担保しています。
+*   **Remote State Management**: Terraform の状態ファイル (`tfstate`) は Google Cloud Storage (GCS) で安全に暗号化して管理し、整合性を保ちながら運用しています。
 
 ---
 
