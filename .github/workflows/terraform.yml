@@ -25,6 +25,9 @@ jobs:
       run:
         working-directory: ./terraform
 
+    env:
+      TF_VAR_project_id: ${{ secrets.GCP_PROJECT_ID }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
