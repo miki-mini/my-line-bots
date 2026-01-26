@@ -56,7 +56,7 @@ jobs:
         id: deploy
         uses: google-github-actions/deploy-cloudrun@v2
         with:
-          service: '${{ secrets.GCP_APP_NAME }}'
+          service: 'usagi-oekaki-service'
           region: 'asia-northeast1'
           source: '.'
           flags: '--allow-unauthenticated'
