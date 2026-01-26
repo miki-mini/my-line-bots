@@ -13,7 +13,7 @@ variable "region" {
 variable "service_name" {
   description = "Cloud Run service name"
   type        = string
-  default     = "voidoll-bot"
+  default     = "usagi-oekaki-service"
 }
 
 variable "repository_name" {
