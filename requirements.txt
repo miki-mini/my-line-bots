@@ -1,5 +1,5 @@
 fastapi
-uvicorn
+uvicorn==0.29.0
 gunicorn
 line-bot-sdk>=3.0.0
 google-cloud-firestore
