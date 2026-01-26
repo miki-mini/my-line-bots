@@ -129,9 +129,23 @@ GitHub Actions（.github/workflows/deploy.yml）:
      └─ Cloud Runへのデプロイ
 ```
 
-## ⚙️ 主な設定
+## 📸 DevOps in Action
 
-### Secret Managerのシークレット作成
+Pull Requestを作成すると、Botが自動的に変更内容（Plan）をコメントしてくれます。
+
+<スクリーンショット 2026-01-25 160542.png>
+
+## ⚠️ トラブルシューティング (重要)
+
+### 1. "API not enabled" エラーが出る場合
+CI/CDを実行するには、以下のAPIを有効にする必要があります。これを忘れると `Terraform` が動きません。
+
+- **Cloud Resource Manager API** (`cloudresourcemanager.googleapis.com`)
+- **Service Usage API** (`serviceusage.googleapis.com`)
+
+[Google Cloud Console > APIs & Services > Library](https://console.cloud.google.com/apis/library) から検索して有効化してください。
+
+### 2. Secret Managerのシークレット作成
 
 Terraformは**シークレットの箱**だけを作ります。実際の値は別途設定が必要です：
 
