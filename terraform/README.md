@@ -56,7 +56,7 @@ cp terraform.tfvars.example terraform.tfvars
 ```hcl
 project_id        = "your-project-id"
 region            = "asia-northeast1"
-service_name      = "voidoll-bot"
+service_name      = "usagi-oekaki-service"
 github_repository = "your-username/your-repo"
 ```
 
