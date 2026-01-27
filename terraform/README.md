@@ -7,7 +7,7 @@
 ## 📖 関連記事
 
 詳しい解説はこちら：
-- [【個人開発】未経験が「手動4時間→git push 3分」を実現。Terraformで作る永続的なインフラ資産](記事のURL)
+- [Terraform × GCP｜手動4時間を3分に短縮。個人開発を加速させる「永続的インフラ」の作り方🚀](https://zenn.dev/miki_mini/articles/091e7cef00c704)
 
 ## 🎯 このTerraformで構築されるもの
 
