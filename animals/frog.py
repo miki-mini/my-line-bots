@@ -72,9 +72,10 @@ def register_frog_handler(
     # ==========================================
     # ☀️ 朝の天気配信（Broadcast）
     # ==========================================
-    @app.post("/trigger_morning_weather")
-    def trigger_morning_weather():
-        return broadcast_morning_weather(search_model, configuration_frog)
+    # Deprecated: Now handled by router at the bottom
+    # @app.post("/trigger_morning_weather")
+    # def trigger_morning_weather():
+    #     return broadcast_morning_weather(search_model, configuration_frog)
 
     print("🐸 Frog Handler Registered (Refactored)")
 
@@ -625,6 +626,16 @@ class FrogRequest(BaseModel):
     text: Optional[str] = None
     lat: Optional[float] = None
     lon: Optional[float] = None
+
+@router.post("/trigger_morning_weather")
+def trigger_morning_weather():
+    """朝の天気配信トリガー (Static Logic)"""
+    # グローバル変数を使用
+    model = _search_model if _search_model else _text_model
+    if not model:
+        return {"status": "error", "message": "Model not initialized"}
+
+    return broadcast_morning_weather(model, _configuration_frog)
 
 @router.post("/api/frog/weather")
 async def frog_web_weather(req: FrogRequest):
