@@ -167,6 +167,82 @@ def _send_reply(event, configuration, text):
         print(f"❌ ニュース配信エラー: {e}")
         return {"status": "error", "message": str(e)}
 
+# ==========================================
+# 🌍 Web API (Router)
+# ==========================================
+from fastapi import APIRouter
+router = APIRouter()
+
+@router.post("/trigger_morning_news")
+def trigger_morning_news():
+    print("☀️ 朝のニュース配信を開始します...")
+
+    try:
+        # グローバル変数を参照
+        global _search_model
+        model = _search_model
+
+        if model:
+            # JSTで日付取得
+            today = dt.datetime.now(JST).strftime("%Y年%m月%d日")
+
+            prompt = f"""
+【重要】本日の日付は {today} です。
+
+タスク: 最新の日本や世界のAIニュースを3つピックアップして検索し、解説してください。
+
+【検索のポント】
+- 基本的に「今日」や「ここ24時間」のニュースを探してください。
+- もし今日 ({today}) のニュースが少なければ、ここ2〜3日以内のニュースでも構いません。
+- 「未来のニュースは見つかりません」といった言い訳は不要です。検索で見つかった最新情報を紹介してください。
+
+【厳守事項】
+- 1週間以上前の古いニュースは含めないこと
+- 1週間以上前のニュースは絶対に含めないこと
+
+【出力フォーマット】
+最初の1行目: 必ず以下の文言を一言一句変えずに出力してください（重複はさせないこと）
+「はっぴー！今日も元気いっぱいのカピバラさんだよ！🐹🌸 {today}の日本の世界もAIのニュースをチェックするっぴ！📺🤖」
+
+その後:
+### 1. [ニュースタイトル] [絵文字]
+[本文]
+**【カピバラさんからの解説】** [解説]
+
+### 2. [ニュースタイトル] [絵文字]
+[本文]
+**【カピバラさんからの解説】** [解説]
+
+### 3. [ニュースタイトル] [絵文字]
+[本文]
+**【カピバラさんからの解説】** [解説]
+
+最終行: 「今日も一日がんばるっぴ！🍊」
+
+【スタイル】
+- 役割: カピバラ（語尾は「〜っぴ」）
+- 絵文字: 📺, 🤖, 💡, 🐹, 🌸 を適度に使用
+- 初心者にも分かりやすく、朝から元気が出る明るい文章
+"""
+            response = model.generate_content(prompt)
+            news_text = response.text
+        else:
+            news_text = "今はニュースが見られないっぴ...💦 ごめんっぴ🐹"
+
+        # 全員に送信 (global configuration reused)
+        if _configuration_capybara:
+             with ApiClient(_configuration_capybara) as api_client:
+                line_bot_api = MessagingApi(api_client)
+                line_bot_api.broadcast(
+                    BroadcastRequest(messages=[TextMessage(text=news_text)])
+                )
+
+        return {"status": "ok", "message": "ニュース配信完了っぴ！"}
+
+    except Exception as e:
+        print(f"❌ ニュース配信エラー: {e}")
+        return {"status": "error", "message": str(e)}
+
 @router.get("/api/capybara/news")
 async def get_capybara_news():
     """Webアプリ用: 今日のニュースを取得"""
