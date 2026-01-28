@@ -23,6 +23,11 @@ from pydantic import BaseModel
 # Firestore Collection Name
 COLLECTION_NAME = "tv_watch_lists"
 
+# Globals
+_db = None
+_search_model = None
+_configuration_bat = None
+
 def process_bat_command(text: str, user_id: str, db, search_model) -> str:
     """
     コウモリのコマンド処理ロジック（テスト可能）
@@ -87,9 +92,10 @@ def register_bat_handler(app, handler, configuration, search_model, db):
     Parameters:
         db: Firestore Client
     """
-    global _db, _search_model
+    global _db, _search_model, _configuration_bat
     _db = db
     _search_model = search_model
+    _configuration_bat = configuration
 
     # ==========================================
     # 🦇 Webhook エンドポイント
@@ -135,54 +141,11 @@ def register_bat_handler(app, handler, configuration, search_model, db):
             print(f"🦇❌ Reply Error: {e}")
 
     # ==========================================
-    # 🕒 Cron用チェック機能 (動的リスト対応)
+    # 🕒 Cron用チェック機能 (動的リスト対応) - Moved to Router
     # ==========================================
-    @app.get("/cron/bat_check")
-    def cron_bat_check():
-        """
-        全ユーザーの登録キーワードをチェックし、該当があれば通知する。
-        """
-        print("🦇 Cron: TVスケジュールチェック開始 (Dynamic)...")
-
-        # 1. 全監視キーワードを取得 (重複排除)
-        all_keywords = _get_all_unique_keywords(db)
-        if not all_keywords:
-             print("🦇 監視対象キーワードなし")
-             return {"status": "ok", "message": "No keywords to check"}
-
-        found_shows = []
-
-        # 2. キーワードごとに検索
-        for keyword in all_keywords:
-            # クエリ作成（「今日」に限定）
-            today_str = datetime.date.today().strftime("%Y年%m月%d日")
-            query = f"今日は{today_str}です。今日、地上波テレビで「{keyword}」の放送予定はある？"
-
-            # 検索チェック
-            result_text = _check_schedule_strict(keyword, query, search_model)
-
-            if result_text:
-                found_shows.append(result_text)
-
-        if not found_shows:
-            print("🦇 今回は特に放送予定なし")
-            return {"status": "ok", "message": "No shows found"}
-
-        # 3. 通知（簡易実装：全員にブロードキャスト）
-        push_text = "🦇 キキキ...監視中の番組が見つかったモリ！📺\n\n" + "\n\n".join(found_shows)
-
-        try:
-            with ApiClient(configuration) as api_client:
-                line_bot_api = MessagingApi(api_client)
-                line_bot_api.broadcast(
-                    BroadcastRequest(messages=[TextMessage(text=push_text)])
-                )
-            print("🦇 ブロードキャスト送信完了")
-        except Exception as e:
-            print(f"🦇❌ Broadcast Error: {e}")
-            return {"status": "error", "detail": str(e)}
-
-        return {"status": "ok", "message": f"Sent notifications for: {len(found_shows)} shows"}
+    # @app.get("/cron/bat_check")
+    # def cron_bat_check():
+    # ... (Moved to router)
 
     print("🦇 コウモリハンドラー登録完了")
 
@@ -197,6 +160,60 @@ router = APIRouter()
 class WatchListRequest(BaseModel):
     user_id: str
     keyword: str
+
+@router.get("/cron/bat_check")
+def cron_bat_check():
+    """
+    全ユーザーの登録キーワードをチェックし、該当があれば通知する。
+    (Moved from dynamic registration)
+    """
+    print("🦇 Cron: TVスケジュールチェック開始 (Static Router)...")
+
+    # Use globals
+    db = _db
+    search_model = _search_model
+    configuration = _configuration_bat
+
+    # 1. 全監視キーワードを取得 (重複排除)
+    all_keywords = _get_all_unique_keywords(db)
+    if not all_keywords:
+            print("🦇 監視対象キーワードなし")
+            return {"status": "ok", "message": "No keywords to check"}
+
+    found_shows = []
+
+    # 2. キーワードごとに検索
+    for keyword in all_keywords:
+        # クエリ作成（「今日」に限定）
+        today_str = datetime.date.today().strftime("%Y年%m月%d日")
+        query = f"今日は{today_str}です。今日、地上波テレビで「{keyword}」の放送予定はある？"
+
+        # 検索チェック
+        result_text = _check_schedule_strict(keyword, query, search_model)
+
+        if result_text:
+            found_shows.append(result_text)
+
+    if not found_shows:
+        print("🦇 今回は特に放送予定なし")
+        return {"status": "ok", "message": "No shows found"}
+
+    # 3. 通知（簡易実装：全員にブロードキャスト）
+    push_text = "🦇 キキキ...監視中の番組が見つかったモリ！📺\n\n" + "\n\n".join(found_shows)
+
+    try:
+        if configuration:
+            with ApiClient(configuration) as api_client:
+                line_bot_api = MessagingApi(api_client)
+                line_bot_api.broadcast(
+                    BroadcastRequest(messages=[TextMessage(text=push_text)])
+                )
+            print("🦇 ブロードキャスト送信完了")
+    except Exception as e:
+        print(f"🦇❌ Broadcast Error: {e}")
+        return {"status": "error", "detail": str(e)}
+
+    return {"status": "ok", "message": f"Sent notifications for: {len(found_shows)} shows"}
 
 @router.get("/api/bat/keywords/{user_id}")
 async def get_bat_keywords(user_id: str):
