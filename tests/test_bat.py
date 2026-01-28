@@ -158,6 +158,9 @@ def test_bat_endpoint_registration():
 def test_cron_bat_check_endpoint():
     """/cron/bat_check エンドポイントが登録されるか確認"""
     app = FastAPI()
+    # Routerを追加
+    app.include_router(bat.router)
+
     handler = MagicMock(spec=WebhookHandler)
     config = MagicMock()
     search_model = MagicMock()
@@ -177,6 +180,9 @@ def test_cron_bat_check_endpoint():
 def test_cron_bat_check_with_results():
     """Cronで番組が見つかった場合のブロードキャストテスト"""
     app = FastAPI()
+    # Routerを追加
+    app.include_router(bat.router)
+
     handler = MagicMock()
     config = MagicMock()
     search_model = MagicMock()
