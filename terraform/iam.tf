@@ -14,11 +14,12 @@ resource "google_project_iam_member" "secret_accessor" {
 }
 
 # 他に必要な権限があればここに追加（例: Firestore, Vertex AIなど）
-# resource "google_project_iam_member" "vertex_ai_user" {
-#   project = var.project_id
-#   role    = "roles/aiplatform.user"
-#   member  = "serviceAccount:${google_service_account.cloud_run_sa.email}"
-# }
+# 他に必要な権限があればここに追加（例: Firestore, Vertex AIなど）
+resource "google_project_iam_member" "vertex_ai_user" {
+  project = var.project_id
+  role    = "roles/aiplatform.user"
+  member  = "serviceAccount:${google_service_account.cloud_run_sa.email}"
+}
 
 # ==============================================================================
 # Workload Identity Federation (GitHub Actions 用)
