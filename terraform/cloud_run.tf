@@ -92,10 +92,209 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         }
       }
       env {
-        name = "GCP_PROJECT_ID"
+        name  = "GCP_PROJECT_ID"
+        value = var.project_id
+      }
+
+      # --------------------------------------------------------------------------------
+      # Bot Specific Tokens (Mapped to Shared LINE Channel Secret for simplicity)
+      # --------------------------------------------------------------------------------
+
+      # 🦡 Mole
+      env {
+        name = "TRAIN_ACCESS_TOKEN"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.gcp_project_id.secret_id
+            secret  = google_secret_manager_secret.line_channel_access_token.secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "TRAIN_CHANNEL_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.line_channel_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      # 🦊 Fox
+      env {
+        name = "FOX_ACCESS_TOKEN"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.line_channel_access_token.secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "FOX_CHANNEL_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.line_channel_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      # 🐸 Frog
+      env {
+        name = "FROG_ACCESS_TOKEN"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.line_channel_access_token.secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "FROG_CHANNEL_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.line_channel_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      # 🐧 Penguin
+      env {
+        name = "PENGUIN_ACCESS_TOKEN"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.line_channel_access_token.secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "PENGUIN_CHANNEL_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.line_channel_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      # 🐹 Capybara
+      env {
+        name = "CAPYBARA_ACCESS_TOKEN"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.line_channel_access_token.secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "CAPYBARA_CHANNEL_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.line_channel_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      # 🐋 Whale
+      env {
+        name = "WHALE_ACCESS_TOKEN"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.line_channel_access_token.secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "WHALE_CHANNEL_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.line_channel_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      # 🦫 Beaver
+      env {
+        name = "BEAVER_ACCESS_TOKEN"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.line_channel_access_token.secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "BEAVER_CHANNEL_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.line_channel_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      # 🦇 Bat
+      env {
+        name = "BAT_ACCESS_TOKEN"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.line_channel_access_token.secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "BAT_CHANNEL_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.line_channel_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      # 🐰 Rabbit
+      env {
+        name = "RABBIT_ACCESS_TOKEN"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.line_channel_access_token.secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "RABBIT_CHANNEL_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.line_channel_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      # 🦉 Owl
+      env {
+        name = "OWL_ACCESS_TOKEN"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.line_channel_access_token.secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "OWL_CHANNEL_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.line_channel_secret.secret_id
             version = "latest"
           }
         }
