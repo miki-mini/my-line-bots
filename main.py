@@ -125,79 +125,78 @@ class SearchModelWrapper:
 load_dotenv()
 
 # Webhook Handler (Main)
-LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET")
-LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
+# Helper to safetly get and strip env vars
+def get_env_stripped(key):
+    val = os.getenv(key)
+    return val.strip() if val else None
+
+# Webhook Handler (Main)
+LINE_CHANNEL_SECRET = get_env_stripped("LINE_CHANNEL_SECRET")
+LINE_CHANNEL_ACCESS_TOKEN = get_env_stripped("LINE_CHANNEL_ACCESS_TOKEN")
 handler = WebhookHandler(LINE_CHANNEL_SECRET) if LINE_CHANNEL_SECRET else None
 configuration = Configuration(access_token=LINE_CHANNEL_ACCESS_TOKEN) if LINE_CHANNEL_ACCESS_TOKEN else None
 
 # 🦡 Mole (Train) Bot Settings
-TRAIN_ACCESS_TOKEN = os.getenv("TRAIN_ACCESS_TOKEN")
-TRAIN_CHANNEL_SECRET = os.getenv("TRAIN_CHANNEL_SECRET")
+TRAIN_ACCESS_TOKEN = get_env_stripped("TRAIN_ACCESS_TOKEN")
+TRAIN_CHANNEL_SECRET = get_env_stripped("TRAIN_CHANNEL_SECRET")
 configuration_train = Configuration(access_token=TRAIN_ACCESS_TOKEN) if TRAIN_ACCESS_TOKEN else None
 handler_train = WebhookHandler(TRAIN_CHANNEL_SECRET) if TRAIN_CHANNEL_SECRET else None
 
 # 🦊 Fox (YouTube) Bot Settings
-FOX_ACCESS_TOKEN = os.getenv("FOX_ACCESS_TOKEN")
-FOX_CHANNEL_SECRET = os.getenv("FOX_CHANNEL_SECRET")
+FOX_ACCESS_TOKEN = get_env_stripped("FOX_ACCESS_TOKEN")
+FOX_CHANNEL_SECRET = get_env_stripped("FOX_CHANNEL_SECRET")
 configuration_fox = Configuration(access_token=FOX_ACCESS_TOKEN) if FOX_ACCESS_TOKEN else None
 handler_fox = WebhookHandler(FOX_CHANNEL_SECRET) if FOX_CHANNEL_SECRET else None
 
 # 🐸 Frog (Weather) Bot Settings
-FROG_ACCESS_TOKEN = os.getenv("FROG_ACCESS_TOKEN")
-FROG_CHANNEL_SECRET = os.getenv("FROG_CHANNEL_SECRET")
+FROG_ACCESS_TOKEN = get_env_stripped("FROG_ACCESS_TOKEN")
+FROG_CHANNEL_SECRET = get_env_stripped("FROG_CHANNEL_SECRET")
 configuration_frog = Configuration(access_token=FROG_ACCESS_TOKEN) if FROG_ACCESS_TOKEN else None
 handler_frog = WebhookHandler(FROG_CHANNEL_SECRET) if FROG_CHANNEL_SECRET else None
 
 # 🐧 Penguin (Concierge) Bot Settings
-PENGUIN_ACCESS_TOKEN = os.getenv("PENGUIN_ACCESS_TOKEN")
-PENGUIN_CHANNEL_SECRET = os.getenv("PENGUIN_CHANNEL_SECRET")
+PENGUIN_ACCESS_TOKEN = get_env_stripped("PENGUIN_ACCESS_TOKEN")
+PENGUIN_CHANNEL_SECRET = get_env_stripped("PENGUIN_CHANNEL_SECRET")
 configuration_penguin = Configuration(access_token=PENGUIN_ACCESS_TOKEN) if PENGUIN_ACCESS_TOKEN else None
 handler_penguin = WebhookHandler(PENGUIN_CHANNEL_SECRET) if PENGUIN_CHANNEL_SECRET else None
 
 # 🤖 Voidoll (Voice) Bot Settings
-VOIDOLL_ACCESS_TOKEN = os.getenv("VOIDOLL_ACCESS_TOKEN")
-VOIDOLL_CHANNEL_SECRET = os.getenv("VOIDOLL_CHANNEL_SECRET")
+VOIDOLL_ACCESS_TOKEN = get_env_stripped("VOIDOLL_ACCESS_TOKEN")
+VOIDOLL_CHANNEL_SECRET = get_env_stripped("VOIDOLL_CHANNEL_SECRET")
 configuration_voidoll = Configuration(access_token=VOIDOLL_ACCESS_TOKEN) if VOIDOLL_ACCESS_TOKEN else None
 handler_voidoll = WebhookHandler(VOIDOLL_CHANNEL_SECRET) if VOIDOLL_CHANNEL_SECRET else None
 
 # 🐹 Capybara (Relax) Bot Settings
-CAPYBARA_ACCESS_TOKEN = os.getenv("CAPYBARA_ACCESS_TOKEN")
-CAPYBARA_CHANNEL_SECRET = os.getenv("CAPYBARA_CHANNEL_SECRET")
+CAPYBARA_ACCESS_TOKEN = get_env_stripped("CAPYBARA_ACCESS_TOKEN")
+CAPYBARA_CHANNEL_SECRET = get_env_stripped("CAPYBARA_CHANNEL_SECRET")
 configuration_capybara = Configuration(access_token=CAPYBARA_ACCESS_TOKEN) if CAPYBARA_ACCESS_TOKEN else None
 handler_capybara = WebhookHandler(CAPYBARA_CHANNEL_SECRET) if CAPYBARA_CHANNEL_SECRET else None
 
 # 🐋 Whale (Space) Bot Settings
-WHALE_ACCESS_TOKEN = os.getenv("WHALE_ACCESS_TOKEN")
-WHALE_CHANNEL_SECRET = os.getenv("WHALE_CHANNEL_SECRET")
+WHALE_ACCESS_TOKEN = get_env_stripped("WHALE_ACCESS_TOKEN")
+WHALE_CHANNEL_SECRET = get_env_stripped("WHALE_CHANNEL_SECRET")
 configuration_whale = Configuration(access_token=WHALE_ACCESS_TOKEN) if WHALE_ACCESS_TOKEN else None
 handler_whale = WebhookHandler(WHALE_CHANNEL_SECRET) if WHALE_CHANNEL_SECRET else None
 
 # 🦫 Beaver (OCR) Bot Settings
-BEAVER_ACCESS_TOKEN = os.getenv("BEAVER_ACCESS_TOKEN")
-BEAVER_CHANNEL_SECRET = os.getenv("BEAVER_CHANNEL_SECRET")
+BEAVER_ACCESS_TOKEN = get_env_stripped("BEAVER_ACCESS_TOKEN")
+BEAVER_CHANNEL_SECRET = get_env_stripped("BEAVER_CHANNEL_SECRET")
 configuration_beaver = Configuration(access_token=BEAVER_ACCESS_TOKEN) if BEAVER_ACCESS_TOKEN else None
 handler_beaver = WebhookHandler(BEAVER_CHANNEL_SECRET) if BEAVER_CHANNEL_SECRET else None
 
 # 🦇 Bat (TV) Bot Settings
-BAT_ACCESS_TOKEN = os.getenv("BAT_ACCESS_TOKEN")
-BAT_CHANNEL_SECRET = os.getenv("BAT_CHANNEL_SECRET")
+BAT_ACCESS_TOKEN = get_env_stripped("BAT_ACCESS_TOKEN")
+BAT_CHANNEL_SECRET = get_env_stripped("BAT_CHANNEL_SECRET")
 configuration_bat = Configuration(access_token=BAT_ACCESS_TOKEN) if BAT_ACCESS_TOKEN else None
 handler_bat = WebhookHandler(BAT_CHANNEL_SECRET) if BAT_CHANNEL_SECRET else None
 
 # 🦉 Owl (Diet/Search) Bot Settings
-# Owl uses HTTP endpoints mostly, but may have LINE settings for future use
-OWL_ACCESS_TOKEN = os.getenv("OWL_ACCESS_TOKEN")
-OWL_CHANNEL_SECRET = os.getenv("OWL_CHANNEL_SECRET")
-# Backup didn't show Owl config vars, but we can define them for safety or skip.
-# Based on register_owl_handler(app), it doesn't take config args.
-
-from routers import web_apps
-
-
+OWL_ACCESS_TOKEN = get_env_stripped("OWL_ACCESS_TOKEN")
+OWL_CHANNEL_SECRET = get_env_stripped("OWL_CHANNEL_SECRET")
 
 # 🐰 Rabbit (Moon) Bot Settings
-RABBIT_ACCESS_TOKEN = os.getenv("RABBIT_ACCESS_TOKEN")
-RABBIT_CHANNEL_SECRET = os.getenv("RABBIT_CHANNEL_SECRET")
+RABBIT_ACCESS_TOKEN = get_env_stripped("RABBIT_ACCESS_TOKEN")
+RABBIT_CHANNEL_SECRET = get_env_stripped("RABBIT_CHANNEL_SECRET")
 configuration_rabbit = Configuration(access_token=RABBIT_ACCESS_TOKEN) if RABBIT_ACCESS_TOKEN else None
 handler_rabbit = WebhookHandler(RABBIT_CHANNEL_SECRET) if RABBIT_CHANNEL_SECRET else None
 
