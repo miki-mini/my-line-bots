@@ -631,9 +631,11 @@ class FrogRequest(BaseModel):
 def trigger_morning_weather():
     """朝の天気配信トリガー (Static Logic)"""
     # グローバル変数を使用
+    # グローバル変数を使用
     model = _search_model if _search_model else _text_model
     if not model:
-        return {"status": "error", "message": "Model not initialized"}
+        debug_info = f"Nodes: search={_search_model is not None}, text={_text_model is not None}, config={_configuration_frog is not None}"
+        return {"status": "error", "message": f"Model not initialized. {debug_info}"}
 
     return broadcast_morning_weather(model, _configuration_frog)
 
