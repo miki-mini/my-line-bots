@@ -315,22 +315,33 @@ def get_due_memos():
 @router.get("/get-daily-summary-memos")
 async def get_daily_summary_memos():
     """日次要約用のメモ取得（GASの日次タイマー用）"""
-    if not _db:
-        return {"memos_by_user": {}}
+    print("🦫 日次要約のリクエスト受信")
+    try:
+        if not _db:
+            print("🦫 ❌ DB未接続")
+            return {"memos_by_user": {}}
 
-    # reminder_time が空文字のものを検索（日次要約用）
-    docs = _db.collection("memos").where("reminder_time", "==", "").stream()
-    memos = {}
+        # reminder_time が空文字のものを検索（日次要約用）
+        docs = _db.collection("memos").where("reminder_time", "==", "").stream()
+        memos = {}
 
-    for d in docs:
-        uid = d.to_dict().get("user_id")
-        if uid:
-            memos.setdefault(uid, []).append({
-                "memo_id": d.id,
-                "text": d.to_dict().get("text")
-            })
+        for d in docs:
+            data = d.to_dict()
+            uid = data.get("user_id")
+            if uid:
+                memos.setdefault(uid, []).append({
+                    "memo_id": d.id,
+                    "text": data.get("text")
+                })
 
-    return {"memos_by_user": memos}
+        print(f"🦫 要約対象: {len(memos)} ユーザー")
+        return {"memos_by_user": memos}
+
+    except Exception as e:
+        print(f"🦫 ❌ Daily Summary Error: {e}")
+        import traceback
+        traceback.print_exc()
+        return {"memos_by_user": {}, "error": str(e)}
 
 @router.get("/trigger-check-reminders")
 def trigger_check_reminders():
