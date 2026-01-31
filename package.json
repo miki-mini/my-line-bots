@@ -1,0 +1,29 @@
+{
+  "name": "my-line-bots-new",
+  "version": "1.0.0",
+  "description": "![CI/CD](https://img.shields.io/github/actions/workflow/status/miki-mini/my-line-bots/ci.yml?label=CI%2FCD&logo=github)\r ![Coverage](https://img.shields.io/badge/Coverage-80%25%2B-green?logo=pytest&logoColor=white)\r ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)\r ![FastAPI](https://img.shields.io/badge/FastAPI-0.109%2B-009688?logo=fastapi&logoColor=white)\r ![Google Cloud Run](https://img.shields.io/badge/Google_Cloud-Run-4285F4?logo=google-cloud&logoColor=white)\r ![Gemini](https://img.shields.io/badge/AI-Gemini_2.5_Flash-8E75B2?logo=google-gemini&logoColor=white)\r ![License](https://img.shields.io/badge/License-MIT-green)\r [![Demo Portal](https://img.shields.io/badge/🚀-Live_Demo-blue)](https://usagi-oekaki-service-1032484155743.asia-northeast1.run.app)\r [![API Docs](https://img.shields.io/badge/📖-Swagger_UI-green)](https://usagi-oekaki-service-1032484155743.asia-northeast1.run.app/docs)",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/miki-mini/my-line-bots.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/miki-mini/my-line-bots/issues"
+  },
+  "homepage": "https://github.com/miki-mini/my-line-bots#readme",
+  "dependencies": {
+    "@capacitor/android": "^8.0.2",
+    "@capacitor/cli": "^8.0.2",
+    "@capacitor/core": "^8.0.2"
+  }
+}

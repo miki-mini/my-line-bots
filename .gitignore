@@ -33,3 +33,8 @@ override.tf.json
 *_override.tf.json
 .terraformrc
 terraform.rc
+# --- Node.js and IDEs ---
+node_modules/
+.idea/
+*.iml
+
