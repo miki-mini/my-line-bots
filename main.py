@@ -37,7 +37,7 @@ from animals.beaver import register_beaver_handler
 from animals.bat import register_bat_handler
 from animals.owl import register_owl_handler
 
-from routers import web_apps
+from routers import web_apps, butsubutsu
 from animals import beaver, fox, bat, mole, frog, capybara, penguin, owl, raccoon, retriever
 
 # Google Cloud Imports
@@ -53,6 +53,7 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(web_apps.router)
+app.include_router(butsubutsu.router)
 app.include_router(beaver.router)
 app.include_router(fox.router)
 app.include_router(bat.router)

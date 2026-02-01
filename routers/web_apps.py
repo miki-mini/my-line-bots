@@ -149,3 +149,12 @@ async def fish_page():
     except FileNotFoundError:
         return HTMLResponse(content="<h1>Page Not Found</h1>", status_code=404)
 
+
+@router.get("/butsubutsu", response_class=HTMLResponse)
+async def butsubutsu_page():
+    """英語嫌いのブツブツアプリ（認証なし）"""
+    try:
+        with open("static/butsubutsu.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read(), headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"})
+    except FileNotFoundError:
+        return HTMLResponse(content="<h1>Page Not Found</h1>", status_code=404)

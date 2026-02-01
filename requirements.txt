@@ -8,6 +8,7 @@ cryptography<44
 google-genai
 google-cloud-aiplatform==1.71.0
 google-generativeai==0.8.3
+google-cloud-texttospeech
 
 python-multipart
 googlemaps
