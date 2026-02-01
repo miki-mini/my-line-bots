@@ -325,6 +325,58 @@
         .score-bad {
             color: var(--accent);
         }
+
+        /* --- Animations --- */
+        @keyframes shake {
+            0% {
+                transform: translate(1px, 1px) rotate(0deg);
+            }
+
+            10% {
+                transform: translate(-1px, -2px) rotate(-1deg);
+            }
+
+            20% {
+                transform: translate(-3px, 0px) rotate(1deg);
+            }
+
+            30% {
+                transform: translate(3px, 2px) rotate(0deg);
+            }
+
+            40% {
+                transform: translate(1px, -1px) rotate(1deg);
+            }
+
+            50% {
+                transform: translate(-1px, 2px) rotate(-1deg);
+            }
+
+            60% {
+                transform: translate(-3px, 1px) rotate(0deg);
+            }
+
+            70% {
+                transform: translate(3px, 1px) rotate(-1deg);
+            }
+
+            80% {
+                transform: translate(-1px, -1px) rotate(1deg);
+            }
+
+            90% {
+                transform: translate(1px, 2px) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(1px, -2px) rotate(-1deg);
+            }
+        }
+
+        .shake {
+            animation: shake 0.5s;
+            animation-iteration-count: 1;
+        }
     </style>
 </head>
 
@@ -580,6 +632,9 @@
                         }
                         msg.innerHTML = content;
 
+                        // EFFECT: Shake & Sound
+                        app.triggerAttackEffect();
+
                         if (data.is_defeated || data.remaining_hp <= 0) {
                             setTimeout(() => {
                                 alert("🎉 Monster Defeated!");
@@ -766,6 +821,45 @@
             }
             return outputArray;
         }
+
+        // --- Sound & Effects ---
+        app.triggerAttackEffect = () => {
+            // 1. Visual Shake
+            const card = document.getElementById('battle-monstercard');
+            card.classList.remove('shake');
+            void card.offsetWidth; // trigger reflow
+            card.classList.add('shake');
+
+            // 2. Audio
+            app.playAttackSound();
+        };
+
+        app.playAttackSound = () => {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+
+                const ctx = new AudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                // A simple "punchy" sound
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(150, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.1);
+
+                gain.gain.setValueAtTime(0.5, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+
+                osc.start();
+                osc.stop(ctx.currentTime + 0.1);
+            } catch (e) {
+                console.error("Audio play failed", e);
+            }
+        };
 
         // Init
         app.init();
