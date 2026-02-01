@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUTSUBUTSU - 英語嫌いのためのブツブツアプリ</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Noto+Sans+JP:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --text-color: #ededed;
+            --accent-color: #00ff9d;
+            /* Neon Green */
+            --accent-dim: #008f58;
+            --secondary-bg: #1a1a1a;
+            --error-color: #ff4d4d;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        header {
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
+        }
+
+        h1 {
+            font-weight: 900;
+            font-size: 2rem;
+            margin: 0;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #fff, var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        main {
+            width: 90%;
+            max-width: 600px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding-bottom: 40px;
+        }
+
+        /* CARD STYLE */
+        .card {
+            background-color: var(--secondary-bg);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            transition: transform 0.2s;
+        }
+
+        /* PHASE 1: INPUT */
+        .input-section {
+            text-align: center;
+        }
+
+        .mic-btn-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--secondary-bg);
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+            font-size: 32px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.2);
+        }
+
+        .mic-btn-large.listening {
+            background: var(--accent-color);
+            color: #000;
+            transform: scale(1.1);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(0, 255, 157, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 20px rgba(0, 255, 157, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 255, 157, 0);
+            }
+        }
+
+        .text-preview {
+            font-size: 1.1rem;
+            min-height: 1.5em;
+            margin-bottom: 20px;
+            color: #ccc;
+        }
+
+        .translate-btn {
+            background: var(--accent-color);
+            color: #000;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .translate-btn:disabled {
+            background: #444;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        .translate-btn:not(:disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 157, 0.4);
+        }
+
+        /* PHASE 2: LEARNING */
+        .learning-section {
+            display: none;
+            /* Hidden by default */
+            flex-direction: column;
+            gap: 20px;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .learning-section.visible {
+            display: flex;
+            opacity: 1;
+        }
+
+        .english-display {
+            font-size: 1.8rem;
+            font-weight: 700;
+            line-height: 1.4;
+            text-align: center;
+            color: #fff;
+            padding: 20px 0;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #333;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .control-btn {
+            background: #333;
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-btn:hover {
+            background: #444;
+        }
+
+        /* SHADOWING UI */
+        .shadowing-area {
+            margin-top: 20px;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+            text-align: center;
+        }
+
+        .feedback-msg {
+            font-size: 1.2rem;
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 1.5em;
+        }
+
+        .feedback-success {
+            color: var(--accent-color);
+        }
+
+        .feedback-fail {
+            color: var(--error-color);
+        }
+
+        /* LOADING */
+        .loader {
+            border: 4px solid #333;
+            border-top: 4px solid var(--accent-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>BUTSUBUTSU</h1>
+        <div class="subtitle">英語嫌いのためのブツブツ独り言アプリ</div>
+    </header>
+
+    <main>
+        <!-- PHASE 1: INPUT -->
+        <div id="input-phase" class="card input-section">
+            <div class="status-badge">STEP 1: 愚痴る</div>
+            <p style="color:#aaa;">日本語で言いたいことをブツブツどうぞ。</p>
+
+            <button id="mic-input-btn" class="mic-btn-large">
+                🎤
+            </button>
+
+            <div id="input-preview" class="text-preview">...</div>
+
+            <button id="translate-btn" class="translate-btn" disabled>
+                英語にする ✨
+            </button>
+            <div id="loading-spinner" class="loader"></div>
+        </div>
+
+        <!-- PHASE 2: LEARNING -->
+        <div id="learning-phase" class="card learning-section">
+            <div class="status-badge">STEP 2: 丸暗記</div>
+
+            <div id="english-text" class="english-display">
+                <!-- English goes here -->
+            </div>
+
+            <div class="controls">
+                <button class="control-btn" id="replay-btn">🔄 もう一回聞く</button>
+                <button class="control-btn" id="speed-btn">🐢 ゆっくリ</button>
+            </div>
+
+            <div class="shadowing-area">
+                <p style="color:#aaa; font-size:0.9rem;">3回聞いて、4回目はあなたの番！</p>
+                <button id="shadow-mic-btn" class="mic-btn-large">
+                    🎤
+                </button>
+                <div id="shadow-feedback" class="feedback-msg"></div>
+            </div>
+        </div>
+
+        <div style="text-align:center; margin-top:20px;">
+            <a href="/" style="color:#666; text-decoration:none; font-size:0.8rem;">← Home</a>
+        </div>
+    </main>
+
+    <script>
+        // State
+        let currentEnglishText = "";
+        let cleanEnglishText = "";
+        let isListening = false;
+        let audioBlobInfo = null; // Base64 or Blob URL
+        let isSlow = false;
+
+        const inputPhase = document.getElementById('input-phase');
+        const learningPhase = document.getElementById('learning-phase');
+        const inputPreview = document.getElementById('input-preview');
+        const micBtn = document.getElementById('mic-input-btn');
+        const translateBtn = document.getElementById('translate-btn');
+        const englishDisplay = document.getElementById('english-text');
+        const spinner = document.getElementById('loading-spinner');
+
+        // Shadowing Elements
+        const shadowMicBtn = document.getElementById('shadow-mic-btn');
+        const shadowFeedback = document.getElementById('shadow-feedback');
+
+        // Web Speech API for Input
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'ja-JP';
+        recognition.interimResults = true;
+        recognition.continuous = false;
+
+        // Web Speech API for Shadowing Check
+        const shadowRecognition = new SpeechRecognition();
+        shadowRecognition.lang = 'en-US';
+        shadowRecognition.interimResults = false;
+        shadowRecognition.continuous = false;
+
+        // --- INPUT HANDLERS ---
+
+        micBtn.addEventListener('click', () => {
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        });
+
+        recognition.onstart = () => {
+            isListening = true;
+            micBtn.classList.add('listening');
+            inputPreview.innerText = "聞いてます...";
+        };
+
+        recognition.onend = () => {
+            isListening = false;
+            micBtn.classList.remove('listening');
+        };
+
+        recognition.onresult = (event) => {
+            const transcript = Array.from(event.results)
+                .map(result => result[0])
+                .map(result => result.transcript)
+                .join('');
+
+            inputPreview.innerText = transcript;
+            translateBtn.disabled = transcript.length === 0;
+        };
+
+        // --- TRANSLATE HANDLER ---
+
+        translateBtn.addEventListener('click', async () => {
+            const text = inputPreview.innerText;
+            if (!text) return;
+
+            // UI Update
+            translateBtn.disabled = true;
+            translateBtn.style.display = 'none';
+            spinner.style.display = 'block';
+
+            try {
+                // 1. Get Translation
+                const transRes = await fetch('/api/butsubutsu/translate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+                const transData = await transRes.json();
+
+                if (transData.error) throw new Error(transData.error);
+
+                currentEnglishText = transData.english_text;
+                // Remove punctuation for easier comparison later
+                cleanEnglishText = currentEnglishText.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").toLowerCase();
+
+                englishDisplay.innerText = currentEnglishText;
+
+                // 2. Get Audio
+                const speechRes = await fetch('/api/butsubutsu/speak', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: currentEnglishText })
+                });
+                const speechData = await speechRes.json();
+
+                if (speechData.error) throw new Error(speechData.error);
+
+                // Convert Base64 to Audio
+                const audioSrc = "data:audio/mp3;base64," + speechData.audio_content;
+                audioBlobInfo = new Audio(audioSrc);
+
+                // Switch Phase
+                inputPhase.style.display = 'none';
+                learningPhase.classList.add('visible');
+
+                // Start Loop
+                startLoopPlayback();
+
+            } catch (e) {
+                alert("Error: " + e.message);
+                translateBtn.style.display = 'inline-block';
+                translateBtn.disabled = false;
+                spinner.style.display = 'none';
+            }
+        });
+
+        // --- PLAYBACK LOGIC ---
+
+        async function startLoopPlayback() {
+            if (!audioBlobInfo) return;
+
+            // Play 3 times
+            for (let i = 0; i < 3; i++) {
+                await playAudio();
+                await new Promise(r => setTimeout(r, 1000)); // Pause between loops
+            }
+
+            shadowFeedback.innerText = "Your Turn! 🎤";
+            shadowMicBtn.classList.add('listening'); // Auto highlight
+        }
+
+        function playAudio() {
+            return new Promise((resolve) => {
+                audioBlobInfo.currentTime = 0;
+                audioBlobInfo.playbackRate = isSlow ? 0.7 : 1.0;
+                audioBlobInfo.play();
+                audioBlobInfo.onended = resolve;
+            });
+        }
+
+        document.getElementById('replay-btn').addEventListener('click', () => {
+            playAudio();
+        });
+
+        document.getElementById('speed-btn').addEventListener('click', (e) => {
+            isSlow = !isSlow;
+            e.target.innerText = isSlow ? "🐇 速くする" : "🐢 ゆっくり";
+        });
+
+        // --- SHADOWING HANDLERS ---
+
+        shadowMicBtn.addEventListener('click', () => {
+            shadowRecognition.start();
+            shadowFeedback.innerText = "Listening...";
+            shadowFeedback.className = "feedback-msg";
+        });
+
+        shadowRecognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            const cleanTranscript = transcript.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").toLowerCase();
+
+            console.log("Expected:", cleanEnglishText);
+            console.log("Heard:", cleanTranscript);
+
+            // Simple similarity check (contains significant words)
+            // Since strict equality is too hard, let's check if > 50% length match or inclusion.
+            // Actually, just showing what was heard is funnier.
+
+            if (cleanTranscript === cleanEnglishText) {
+                shadowFeedback.innerHTML = `🎉 Perfect!<br>"${transcript}"`;
+                shadowFeedback.classList.add('feedback-success');
+            } else {
+                // Calculate simple accuracy? Nah, just show result.
+                // If completely different:
+                shadowFeedback.innerHTML = `🤣 Nice try!<br>I heard: "${transcript}"`;
+                shadowFeedback.classList.add('feedback-fail');
+            }
+        };
+
+        shadowRecognition.onend = () => {
+            shadowMicBtn.classList.remove('listening');
+        };
+
+    </script>
+</body>
+
+</html>
