@@ -4,23 +4,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BUTSUBUTSU - 英語嫌いのためのブツブツアプリ</title>
+    <title>WOLF SHADOWING - 独り言 遠吠えシャドーイング</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Noto+Sans+JP:wght@400;700&display=swap"
         rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0a0a0a;
-            --text-color: #ededed;
-            --accent-color: #00ff9d;
-            /* Neon Green */
-            --accent-dim: #008f58;
-            --secondary-bg: #1a1a1a;
-            --error-color: #ff4d4d;
+            --bg-color: #0b1021;
+            /* Dark Night Blue */
+            --text-color: #e0e6ed;
+            --accent-color: #a5b4fc;
+            /* Pale Moon Blue */
+            --accent-dim: #6366f1;
+            --secondary-bg: #1e293b;
+            --error-color: #ef4444;
         }
 
         body {
             background-color: var(--bg-color);
+            background-image: radial-gradient(circle at 50% 0%, #2e3b55 0%, #0b1021 60%);
             color: var(--text-color);
             font-family: 'Inter', 'Noto Sans JP', sans-serif;
             margin: 0;
@@ -33,26 +35,27 @@
 
         header {
             width: 100%;
-            padding: 20px;
+            padding: 30px 20px;
             text-align: center;
-            background: linear-gradient(180deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
         }
 
         h1 {
             font-weight: 900;
-            font-size: 2rem;
+            font-size: 2.2rem;
             margin: 0;
-            letter-spacing: -1px;
+            letter-spacing: 1px;
             text-transform: uppercase;
-            background: linear-gradient(90deg, #fff, var(--accent-color));
+            background: linear-gradient(180deg, #fff, #a5b4fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(165, 180, 252, 0.4);
         }
 
         .subtitle {
-            font-size: 0.8rem;
-            color: #888;
-            margin-top: 5px;
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-top: 8px;
+            letter-spacing: 0.05em;
         }
 
         main {
@@ -61,17 +64,19 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 25px;
             padding-bottom: 40px;
+            z-index: 10;
         }
 
         /* CARD STYLE */
         .card {
-            background-color: var(--secondary-bg);
+            background-color: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
             border-radius: 20px;
             padding: 24px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            border: 1px solid #333;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             transition: transform 0.2s;
         }
 
@@ -81,71 +86,82 @@
         }
 
         .mic-btn-large {
-            width: 80px;
-            height: 80px;
+            width: 90px;
+            height: 90px;
             border-radius: 50%;
-            background: var(--secondary-bg);
+            background: rgba(255, 255, 255, 0.05);
             border: 2px solid var(--accent-color);
             color: var(--accent-color);
-            font-size: 32px;
+            font-size: 36px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 20px auto;
             transition: all 0.3s ease;
-            box-shadow: 0 0 15px rgba(0, 255, 157, 0.2);
+            box-shadow: 0 0 20px rgba(165, 180, 252, 0.1);
+        }
+
+        .mic-btn-large:hover {
+            box-shadow: 0 0 30px rgba(165, 180, 252, 0.3);
+            background: rgba(165, 180, 252, 0.1);
         }
 
         .mic-btn-large.listening {
             background: var(--accent-color);
-            color: #000;
+            color: #0b1021;
             transform: scale(1.1);
             animation: pulse 1.5s infinite;
+            box-shadow: 0 0 40px rgba(165, 180, 252, 0.6);
         }
 
         @keyframes pulse {
             0% {
-                box-shadow: 0 0 0 0 rgba(0, 255, 157, 0.7);
+                box-shadow: 0 0 0 0 rgba(165, 180, 252, 0.7);
             }
 
             70% {
-                box-shadow: 0 0 0 20px rgba(0, 255, 157, 0);
+                box-shadow: 0 0 0 20px rgba(165, 180, 252, 0);
             }
 
             100% {
-                box-shadow: 0 0 0 0 rgba(0, 255, 157, 0);
+                box-shadow: 0 0 0 0 rgba(165, 180, 252, 0);
             }
         }
 
         .text-preview {
             font-size: 1.1rem;
             min-height: 1.5em;
-            margin-bottom: 20px;
-            color: #ccc;
+            margin-bottom: 25px;
+            color: #cbd5e1;
+            font-style: italic;
         }
 
         .translate-btn {
-            background: var(--accent-color);
-            color: #000;
+            background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%);
+            color: white;
             border: none;
-            padding: 12px 32px;
+            padding: 14px 36px;
             border-radius: 30px;
             font-weight: 700;
             font-size: 1rem;
             cursor: pointer;
             transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .translate-btn:disabled {
-            background: #444;
-            color: #888;
+            background: #334155;
+            color: #64748b;
             cursor: not-allowed;
+            box-shadow: none;
         }
 
         .translate-btn:not(:disabled):hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 255, 157, 0.4);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
         }
 
         /* PHASE 2: LEARNING */
@@ -170,16 +186,20 @@
             text-align: center;
             color: #fff;
             padding: 20px 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
         }
 
         .status-badge {
             display: inline-block;
-            padding: 4px 12px;
-            background: #333;
-            border-radius: 12px;
+            padding: 6px 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
             font-size: 0.8rem;
-            color: #aaa;
-            margin-bottom: 10px;
+            color: #94a3b8;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .controls {
@@ -190,26 +210,27 @@
         }
 
         .control-btn {
-            background: #333;
+            background: rgba(255, 255, 255, 0.1);
             border: none;
-            color: #fff;
+            color: #e2e8f0;
             padding: 10px 20px;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 8px;
+            transition: background 0.2s;
         }
 
         .control-btn:hover {
-            background: #444;
+            background: rgba(255, 255, 255, 0.2);
         }
 
         /* SHADOWING UI */
         .shadowing-area {
             margin-top: 20px;
-            border-top: 1px solid #333;
-            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 25px;
             text-align: center;
         }
 
@@ -221,7 +242,8 @@
         }
 
         .feedback-success {
-            color: var(--accent-color);
+            color: #a5b4fc;
+            text-shadow: 0 0 10px rgba(165, 180, 252, 0.5);
         }
 
         .feedback-fail {
@@ -230,7 +252,7 @@
 
         /* LOADING */
         .loader {
-            border: 4px solid #333;
+            border: 4px solid rgba(255, 255, 255, 0.1);
             border-top: 4px solid var(--accent-color);
             border-radius: 50%;
             width: 30px;
@@ -249,60 +271,76 @@
                 transform: rotate(360deg);
             }
         }
+
+        /* IMAGE FOOTER */
+        .wolf-footer-image {
+            width: 100%;
+            max-width: 600px;
+            border-radius: 20px 20px 0 0;
+            mask-image: linear-gradient(to bottom, transparent 0%, black 20%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%);
+            opacity: 0.8;
+            margin-top: auto;
+            display: block;
+        }
     </style>
 </head>
 
 <body>
 
     <header>
-        <h1>BUTSUBUTSU</h1>
-        <div class="subtitle">英語嫌いのためのブツブツ独り言アプリ</div>
+        <h1>WOLF SHADOWING</h1>
+        <div class="subtitle">独り言・遠吠えシャドーイング</div>
     </header>
 
     <main>
         <!-- PHASE 1: INPUT -->
         <div id="input-phase" class="card input-section">
-            <div class="status-badge">STEP 1: 愚痴る</div>
-            <p style="color:#aaa;">日本語で言いたいことをブツブツどうぞ。</p>
+            <div class="status-badge">STEP 1: 遠吠え (Howl)</div>
+            <p style="color:#94a3b8;">言いたいことを叫んでスッキリしよう。<br>AIがクールな英語にして返します。</p>
 
             <button id="mic-input-btn" class="mic-btn-large">
-                🎤
+                🐺
             </button>
 
             <div id="input-preview" class="text-preview">...</div>
 
             <button id="translate-btn" class="translate-btn" disabled>
-                英語にする ✨
+                TRANSLATE
             </button>
             <div id="loading-spinner" class="loader"></div>
         </div>
 
         <!-- PHASE 2: LEARNING -->
         <div id="learning-phase" class="card learning-section">
-            <div class="status-badge">STEP 2: 丸暗記</div>
+            <div class="status-badge">STEP 2: 共鳴 (Resonate)</div>
 
             <div id="english-text" class="english-display">
                 <!-- English goes here -->
             </div>
 
             <div class="controls">
-                <button class="control-btn" id="replay-btn">🔄 もう一回聞く</button>
-                <button class="control-btn" id="speed-btn">🐢 ゆっくリ</button>
+                <button class="control-btn" id="replay-btn">🔄 再生</button>
+                <button class="control-btn" id="speed-btn">🐢 ゆっくり</button>
             </div>
 
             <div class="shadowing-area">
-                <p style="color:#aaa; font-size:0.9rem;">3回聞いて、4回目はあなたの番！</p>
+                <p style="color:#94a3b8; font-size:0.9rem;">3回聞いて、4回目は一緒に遠吠え！</p>
                 <button id="shadow-mic-btn" class="mic-btn-large">
-                    🎤
+                    🐺
                 </button>
                 <div id="shadow-feedback" class="feedback-msg"></div>
             </div>
         </div>
 
         <div style="text-align:center; margin-top:20px;">
-            <a href="/" style="color:#666; text-decoration:none; font-size:0.8rem;">← Home</a>
+            <a href="/" style="color:#64748b; text-decoration:none; font-size:0.8rem; transition:color 0.2s;">← Return
+                to Portal</a>
         </div>
     </main>
+
+    <!-- WOLF IMAGE AT BOTTOM -->
+    <img src="images/wolf_howl.jpg" alt="Howling Wolf" class="wolf-footer-image">
 
     <script>
         // State
@@ -350,7 +388,7 @@
         recognition.onstart = () => {
             isListening = true;
             micBtn.classList.add('listening');
-            inputPreview.innerText = "聞いてます...";
+            inputPreview.innerText = "Listening...";
         };
 
         recognition.onend = () => {
@@ -436,8 +474,9 @@
                 await new Promise(r => setTimeout(r, 1000)); // Pause between loops
             }
 
-            shadowFeedback.innerText = "Your Turn! 🎤";
+            shadowFeedback.innerText = "Your Turn! 🐺";
             shadowMicBtn.classList.add('listening'); // Auto highlight
+            // Optional: Auto start recording? Maybe better to let user click.
         }
 
         function playAudio() {
@@ -473,17 +512,12 @@
             console.log("Expected:", cleanEnglishText);
             console.log("Heard:", cleanTranscript);
 
-            // Simple similarity check (contains significant words)
-            // Since strict equality is too hard, let's check if > 50% length match or inclusion.
-            // Actually, just showing what was heard is funnier.
-
+            // Simple similarity check
             if (cleanTranscript === cleanEnglishText) {
-                shadowFeedback.innerHTML = `🎉 Perfect!<br>"${transcript}"`;
+                shadowFeedback.innerHTML = `🎉 Perfect Howling!<br>"${transcript}"`;
                 shadowFeedback.classList.add('feedback-success');
             } else {
-                // Calculate simple accuracy? Nah, just show result.
-                // If completely different:
-                shadowFeedback.innerHTML = `🤣 Nice try!<br>I heard: "${transcript}"`;
+                shadowFeedback.innerHTML = `� Needs more howl!<br>Heard: "${transcript}"`;
                 shadowFeedback.classList.add('feedback-fail');
             }
         };
@@ -491,7 +525,6 @@
         shadowRecognition.onend = () => {
             shadowMicBtn.classList.remove('listening');
         };
-
     </script>
 </body>
 

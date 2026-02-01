@@ -29,7 +29,7 @@ def get_gemini_model():
         SafetySetting(category=HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold=HarmBlockThreshold.BLOCK_NONE),
         SafetySetting(category=HarmCategory.HARM_CATEGORY_HARASSMENT, threshold=HarmBlockThreshold.BLOCK_NONE),
     ]
-    return GenerativeModel("gemini-1.5-flash", safety_settings=safety_config)
+    return GenerativeModel("gemini-2.5-flash", safety_settings=safety_config)
 
 @router.post("/translate")
 async def translate_mumble(request: TranslateRequest):
@@ -39,15 +39,15 @@ async def translate_mumble(request: TranslateRequest):
     try:
         model = get_gemini_model()
         prompt = f"""
-        You are a cool, native English interpreter for someone who hates formal English study.
-        Interpret the user's grumbling or mumble (which might be in Japanese or broken English) and translate it into a short, natural, emotional, and "cool" native English phrase.
-        Reflect the emotion (annoyance, tiredness, sarcasm, etc.).
+        You are a lone wolf, cool and distinct.
+        Interpret the user's howling or mumbling (which might be in Japanese or broken English) and translate it into a short, natural, cool, and "deep" native English phrase.
+        It should sound like something a cool protagonist or a lone wolf would say.
+        Reflect the emotion (solitude, determination, annoyance, etc.).
 
         Do NOT explain grammar.
-        Do NOT retain the original language structure if it sounds unnatural.
         Output ONLY the English translation.
 
-        User Mumble: "{request.text}"
+        User Howl: "{request.text}"
         """
 
         response = model.generate_content(
