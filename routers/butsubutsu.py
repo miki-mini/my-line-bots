@@ -92,11 +92,14 @@ async def translate_mumble(request: TranslateRequest):
 
         # Save to Cache
         if doc_ref:
-            doc_ref.set({
-                "original_text": request.text,
-                "english_text": english_text,
-                "created_at": firestore.SERVER_TIMESTAMP
-            })
+            try:
+                doc_ref.set({
+                    "original_text": request.text,
+                    "english_text": english_text,
+                    "created_at": firestore.SERVER_TIMESTAMP
+                })
+            except Exception as e:
+                print(f"⚠️ Firestore Write Error: {e}")
 
         return {"english_text": english_text}
     except Exception as e:
