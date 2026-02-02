@@ -50,21 +50,26 @@ async def translate_mumble(request: TranslateRequest):
     Translates user mumble (Japanese/English) to cool, native English.
     """
     try:
-        # Check Cache
-        db = get_db()
-        doc_ref = None
+        try:
+            # Check Cache
+            db = get_db()
+            doc_ref = None
 
-        if db:
-            # Hash the input text to create a document ID
-            doc_id = hashlib.sha256(request.text.encode("utf-8")).hexdigest()
-            doc_ref = db.collection("wolf_translations").document(doc_id)
-            doc = doc_ref.get()
+            if db:
+                try:
+                    # Hash the input text to create a document ID
+                    doc_id = hashlib.sha256(request.text.encode("utf-8")).hexdigest()
+                    doc_ref = db.collection("wolf_translations").document(doc_id)
+                    doc = doc_ref.get()
 
-            if doc.exists:
-                print(f"✨ Using Cached Translation for: {request.text[:10]}...")
-                return {"english_text": doc.to_dict()["english_text"]}
+                    if doc.exists:
+                        print(f"✨ Using Cached Translation for: {request.text[:10]}...")
+                        return {"english_text": doc.to_dict()["english_text"]}
+                except Exception as e:
+                    print(f"⚠️ Firestore Read Error (Proceeding without cache): {e}")
+                    doc_ref = None
 
-        model = get_gemini_model()
+            model = get_gemini_model()
         prompt = f"""
         You are a lone wolf, cool and distinct.
         Interpret the user's howling or mumbling (which might be in Japanese or broken English) and translate it into a short, natural, cool, and "deep" native English phrase.
@@ -99,7 +104,7 @@ async def translate_mumble(request: TranslateRequest):
                     "created_at": firestore.SERVER_TIMESTAMP
                 })
             except Exception as e:
-                print(f"⚠️ Firestore Write Error: {e}")
+                print(f"⚠️ Firestore Write Error (Proceeding): {e}")
 
         return {"english_text": english_text}
     except Exception as e:
@@ -120,13 +125,17 @@ async def speak_text(request: SpeakRequest):
         doc_ref = None
 
         if db:
-            doc_id = hashlib.sha256(request.text.encode("utf-8")).hexdigest()
-            doc_ref = db.collection("wolf_tts").document(doc_id)
-            doc = doc_ref.get()
+            try:
+                doc_id = hashlib.sha256(request.text.encode("utf-8")).hexdigest()
+                doc_ref = db.collection("wolf_tts").document(doc_id)
+                doc = doc_ref.get()
 
-            if doc.exists:
-                print(f"🔊 Using Cached Audio for: {request.text[:10]}...")
-                return {"audio_content": doc.to_dict()["audio_content"]}
+                if doc.exists:
+                    print(f"🔊 Using Cached Audio for: {request.text[:10]}...")
+                    return {"audio_content": doc.to_dict()["audio_content"]}
+            except Exception as e:
+                print(f"⚠️ Firestore Read Error (Proceeding without cache): {e}")
+                doc_ref = None
 
         client = get_tts_client()
         synthesis_input = texttospeech.SynthesisInput(text=request.text)

@@ -1,6 +1,33 @@
-.git
-.gitignore
-__pycache__
+# Python
+__pycache__/
 *.pyc
-venv
-.env
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Cloud Build / Deploy
+.gcloudignore
+.git/
+.gitignore
+.vscode/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Mac
+.DS_Store
+
+# Node
+node_modules/
