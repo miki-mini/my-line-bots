@@ -2,7 +2,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import base64
 import os
-from google.cloud import texttospeech
+import hashlib
+from google.cloud import texttospeech, firestore
 from vertexai.generative_models import GenerativeModel, SafetySetting, HarmCategory, HarmBlockThreshold
 
 router = APIRouter(
@@ -31,12 +32,38 @@ def get_gemini_model():
     ]
     return GenerativeModel("gemini-2.5-flash", safety_settings=safety_config)
 
+# Helper for Firestore (Lazy Init)
+_db = None
+def get_db():
+    global _db
+    if _db is None:
+        try:
+            _db = firestore.Client()
+        except Exception as e:
+            print(f"⚠️ Firestore Init Error: {e}")
+            return None
+    return _db
+
 @router.post("/translate")
 async def translate_mumble(request: TranslateRequest):
     """
     Translates user mumble (Japanese/English) to cool, native English.
     """
     try:
+        # Check Cache
+        db = get_db()
+        doc_ref = None
+
+        if db:
+            # Hash the input text to create a document ID
+            doc_id = hashlib.sha256(request.text.encode("utf-8")).hexdigest()
+            doc_ref = db.collection("wolf_translations").document(doc_id)
+            doc = doc_ref.get()
+
+            if doc.exists:
+                print(f"✨ Using Cached Translation for: {request.text[:10]}...")
+                return {"english_text": doc.to_dict()["english_text"]}
+
         model = get_gemini_model()
         prompt = f"""
         You are a lone wolf, cool and distinct.
@@ -61,7 +88,17 @@ async def translate_mumble(request: TranslateRequest):
             generation_config={"temperature": 0.7, "max_output_tokens": 200}
         )
 
-        return {"english_text": response.text.strip()}
+        english_text = response.text.strip()
+
+        # Save to Cache
+        if doc_ref:
+            doc_ref.set({
+                "original_text": request.text,
+                "english_text": english_text,
+                "created_at": firestore.SERVER_TIMESTAMP
+            })
+
+        return {"english_text": english_text}
     except Exception as e:
         print(f"❌ Translation Error: {e}")
         return {"error": str(e), "english_text": "I'm speechless..."}
@@ -72,6 +109,22 @@ async def speak_text(request: SpeakRequest):
     Generates TTS audio for the given English text.
     """
     try:
+        if not request.text:
+             return {"error": "No text provided"}
+
+        # Check Cache
+        db = get_db()
+        doc_ref = None
+
+        if db:
+            doc_id = hashlib.sha256(request.text.encode("utf-8")).hexdigest()
+            doc_ref = db.collection("wolf_tts").document(doc_id)
+            doc = doc_ref.get()
+
+            if doc.exists:
+                print(f"🔊 Using Cached Audio for: {request.text[:10]}...")
+                return {"audio_content": doc.to_dict()["audio_content"]}
+
         client = get_tts_client()
         synthesis_input = texttospeech.SynthesisInput(text=request.text)
 
@@ -95,6 +148,18 @@ async def speak_text(request: SpeakRequest):
 
         # The response's audio_content is binary.
         audio_base64 = base64.b64encode(response.audio_content).decode("utf-8")
+
+        # Save to Cache (Be careful with FireStore size limits, base64 audio is big but usually ok for short phrases)
+        # Max document size is 1MB. A short sentence MP3 is only a few KB.
+        if doc_ref:
+            try:
+                doc_ref.set({
+                    "text": request.text,
+                    "audio_content": audio_base64,
+                    "created_at": firestore.SERVER_TIMESTAMP
+                })
+            except Exception as e:
+                print(f"⚠️ Failed to cache audio: {e}")
 
         return {"audio_content": audio_base64}
 

@@ -512,21 +512,67 @@
             shadowFeedback.className = "feedback-msg";
         });
 
+        // --- LEVENSHTEIN DISTANCE (Fuzzy Matching) ---
+        function levenshtein(a, b) {
+            const matrix = [];
+
+            for (let i = 0; i <= b.length; i++) {
+                matrix[i] = [i];
+            }
+
+            for (let j = 0; j <= a.length; j++) {
+                matrix[0][j] = j;
+            }
+
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1, // substitution
+                            Math.min(
+                                matrix[i][j - 1] + 1, // insertion
+                                matrix[i - 1][j] + 1 // deletion
+                            )
+                        );
+                    }
+                }
+            }
+
+            return matrix[b.length][a.length];
+        }
+
+        // Calculate Similarity (0.0 to 1.0)
+        function getSimilarity(str1, str2) {
+            const maxLength = Math.max(str1.length, str2.length);
+            if (maxLength === 0) return 1.0;
+            const distance = levenshtein(str1, str2);
+            return 1.0 - (distance / maxLength);
+        }
+
         shadowRecognition.onresult = (event) => {
             const transcript = event.results[0][0].transcript;
-            const cleanTranscript = transcript.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").toLowerCase();
+            const cleanTranscript = transcript.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").toLowerCase().trim();
+            const target = cleanEnglishText.trim();
 
-            console.log("Expected:", cleanEnglishText);
+            console.log("Expected:", target);
             console.log("Heard:", cleanTranscript);
 
-            // Simple similarity check
-            if (cleanTranscript === cleanEnglishText) {
-                shadowFeedback.innerHTML = `🎉 Perfect Howling!<br>"${transcript}"`;
+            // Fuzzy Match Logic
+            const similarity = getSimilarity(target, cleanTranscript);
+            const similarityPercent = Math.round(similarity * 100);
+
+            console.log(`Similarity: ${similarityPercent}%`);
+
+            if (similarity >= 0.85) { // 85% threshold
+                shadowFeedback.innerHTML = `🎉 Perfect Howling! (${similarityPercent}%)<br>"${transcript}"`;
                 shadowFeedback.classList.add('feedback-success');
+                shadowFeedback.classList.remove('feedback-fail');
             } else {
-                shadowFeedback.innerHTML = ` Needs more howl!<br>Heard: "${transcript}"`;
-                shadowFeedback.innerHTML = ` Needs more howl!<br>Heard: "${transcript}"`;
+                shadowFeedback.innerHTML = `🤔 Needs more howl... (${similarityPercent}%)<br>Heard: "${transcript}"`;
                 shadowFeedback.classList.add('feedback-fail');
+                shadowFeedback.classList.remove('feedback-success');
             }
         };
 
