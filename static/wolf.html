@@ -318,6 +318,10 @@
             <div id="english-text" class="english-display">
                 <!-- English goes here -->
             </div>
+            <div
+                style="text-align: center; color: var(--accent-color); font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; margin-top: -10px; margin-bottom: 20px; opacity: 0.8;">
+                ✨ Native English ✨
+            </div>
 
             <div class="controls">
                 <button class="control-btn" id="replay-btn">🔄 再生</button>
@@ -331,11 +335,17 @@
                 </button>
                 <div id="shadow-feedback" class="feedback-msg"></div>
             </div>
+
+            <div style="text-align:center; margin-top:30px;">
+                <button id="reset-btn" class="control-btn"
+                    style="width:100%; justify-content:center; background:rgba(165, 180, 252, 0.1); color: #a5b4fc;">
+                    ← 違うことを吠える (Return)
+                </button>
+            </div>
         </div>
 
         <div style="text-align:center; margin-top:20px;">
-            <a href="/" style="color:#64748b; text-decoration:none; font-size:0.8rem; transition:color 0.2s;">← Return
-                to Portal</a>
+            <a href="/" style="color:#334155; text-decoration:none; font-size:0.8rem; transition:color 0.2s;">Portal</a>
         </div>
     </main>
 
@@ -518,6 +528,7 @@
                 shadowFeedback.classList.add('feedback-success');
             } else {
                 shadowFeedback.innerHTML = `� Needs more howl!<br>Heard: "${transcript}"`;
+                shadowFeedback.innerHTML = ` Needs more howl!<br>Heard: "${transcript}"`;
                 shadowFeedback.classList.add('feedback-fail');
             }
         };
@@ -525,7 +536,33 @@
         shadowRecognition.onend = () => {
             shadowMicBtn.classList.remove('listening');
         };
+
+        // Reset Flow
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            // Stop audio if playing
+            if (audioBlobInfo) {
+                audioBlobInfo.pause();
+                audioBlobInfo.currentTime = 0;
+            }
+
+            // Reset Text
+            inputPreview.innerText = "...";
+            translateBtn.disabled = true;
+            translateBtn.style.display = 'inline-block';
+            spinner.style.display = 'none';
+
+            // Switch Views
+            learningPhase.classList.remove('visible');
+            setTimeout(() => {
+                learningPhase.style.display = 'none';
+                inputPhase.style.display = 'block';
+            }, 500); // Wait for fade out
+
+            shadowFeedback.innerText = "";
+            shadowFeedback.className = "feedback-msg";
+        });
     </script>
 </body>
 
 </html>
+```
