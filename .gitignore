@@ -38,3 +38,8 @@ node_modules/
 .idea/
 *.iml
 
+
+# --- Build Artifacts ---
+build/
+dist/
+*.egg-info/
