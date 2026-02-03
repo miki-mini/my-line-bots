@@ -50,26 +50,25 @@ async def translate_mumble(request: TranslateRequest):
     Translates user mumble (Japanese/English) to cool, native English.
     """
     try:
-        try:
-            # Check Cache
-            db = get_db()
-            doc_ref = None
+        # Check Cache
+        db = get_db()
+        doc_ref = None
 
-            if db:
-                try:
-                    # Hash the input text to create a document ID
-                    doc_id = hashlib.sha256(request.text.encode("utf-8")).hexdigest()
-                    doc_ref = db.collection("wolf_translations").document(doc_id)
-                    doc = doc_ref.get()
+        if db:
+            try:
+                # Hash the input text to create a document ID
+                doc_id = hashlib.sha256(request.text.encode("utf-8")).hexdigest()
+                doc_ref = db.collection("wolf_translations").document(doc_id)
+                doc = doc_ref.get()
 
-                    if doc.exists:
-                        print(f"✨ Using Cached Translation for: {request.text[:10]}...")
-                        return {"english_text": doc.to_dict()["english_text"]}
-                except Exception as e:
-                    print(f"⚠️ Firestore Read Error (Proceeding without cache): {e}")
-                    doc_ref = None
+                if doc.exists:
+                    print(f"[CACHE] Using Cached Translation for: {request.text[:10]}...")
+                    return {"english_text": doc.to_dict()["english_text"]}
+            except Exception as e:
+                print(f"[WARNING] Firestore Read Error (Proceeding without cache): {e}")
+                doc_ref = None
 
-            model = get_gemini_model()
+        model = get_gemini_model()
         prompt = f"""
         You are a lone wolf, cool and distinct.
         Interpret the user's howling or mumbling (which might be in Japanese or broken English) and translate it into a short, natural, cool, and "deep" native English phrase.
