@@ -18,10 +18,10 @@ class VoidollService:
                 print(f"DEBUG: Vertex AI Initialized for project {project_id}")
                 self.use_vertex = True
             except Exception as e:
-                print(f"⚠️ Vertex AI Init Error: {e}")
+                print(f"[WARNING] Vertex AI Init Error: {e}")
                 self.use_vertex = False
         else:
-            print("⚠️ GCP_PROJECT_ID not found. AI features may fail.")
+            print("[WARNING] GCP_PROJECT_ID not found. AI features may fail.")
             self.use_vertex = False
 
     def generate_chat_reply(self, user_text: str, is_audio_input: bool = False) -> str:
@@ -63,7 +63,7 @@ class VoidollService:
             response = model.generate_content(prompt)
             return response.text
         except Exception as e:
-            print(f"❌ Voidoll Chat Error: {e}")
+            print(f"[ERROR] Voidoll Chat Error: {e}")
             return "回路にノイズが走ったようだにゃ...😿 もう一度言ってほしいにゃ。"
 
     def generate_voice_url(self, text: str) -> str:
@@ -71,7 +71,7 @@ class VoidollService:
         Generates audio using VoiceVox and uploads to GCS, returning the public URL.
         """
         if not self.voicevox_url or not self.gcs_bucket_name:
-            print("⚠️ Voice config missing, skipping audio generation.")
+            print("[WARNING] Voice config missing, skipping audio generation.")
             return None
 
         try:
@@ -109,5 +109,5 @@ class VoidollService:
             return blob.public_url
 
         except Exception as e:
-            print(f"❌ Voidoll Voice Gen Error: {e}")
+            print(f"[ERROR] Voidoll Voice Gen Error: {e}")
             return None
