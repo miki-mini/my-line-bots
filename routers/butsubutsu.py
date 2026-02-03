@@ -30,7 +30,7 @@ def get_gemini_model():
         SafetySetting(category=HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold=HarmBlockThreshold.BLOCK_NONE),
         SafetySetting(category=HarmCategory.HARM_CATEGORY_HARASSMENT, threshold=HarmBlockThreshold.BLOCK_NONE),
     ]
-    return GenerativeModel("gemini-1.5-flash", safety_settings=safety_config)
+    return GenerativeModel("gemini-2.5-flash", safety_settings=safety_config)
 
 # Helper for Firestore (Lazy Init)
 _db = None
