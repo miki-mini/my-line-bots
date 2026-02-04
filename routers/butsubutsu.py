@@ -91,7 +91,7 @@ async def translate_mumble(request: TranslateRequest):
 
         response = model.generate_content(
             prompt,
-            generation_config={"temperature": 0.7, "max_output_tokens": 200}
+            generation_config={"temperature": 0.7, "max_output_tokens": 512}
         )
 
         english_text = response.text.strip()
