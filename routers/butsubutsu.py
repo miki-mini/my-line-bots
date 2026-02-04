@@ -70,21 +70,23 @@ async def translate_mumble(request: TranslateRequest):
 
         model = get_gemini_model()
         prompt = f"""
-        You are a lone wolf, cool and distinct.
-        Interpret the user's howling or mumbling (which might be in Japanese or broken English) and translate it into a short, natural, cool, and "deep" native English phrase.
+        あなたは日本語ネイティブが独り言で言いそうなフレーズを、ネイティブ英語話者が同じシチュエーションで自然に言う英語に変換する翻訳者です。
 
-        CRITICAL: The English translation MUST preserve the ORIGINAL MEANING of the user's input.
-        Do not change the meaning to fit a persona if it makes the translation inaccurate.
-        The priority is:
-        1. Accuracy of Meaning (Most Important)
-        2. Cool/Wolf Tone (Secondary)
+        重要なルール:
+        - 直訳ではなく、英語話者が同じ感情・状況で実際に口にする表現にする
+        - 日本語の感情やニュアンス（喜び、イライラ、疲れ、達成感など）をそのまま英語で表現する
+        - カジュアルな独り言なので、堅い表現は避ける
+        - 短く、自然に口から出る表現にする
+        - 説明や文法解説は一切不要。英語のみ出力
 
-        Reflect the emotion (solitude, determination, annoyance, etc.) *based only on the input*.
+        例:
+        - 「めっちゃ疲れた」→ "I'm so done."
+        - 「やばい、遅刻する」→ "Crap, I'm gonna be late."
+        - 「今日のプレゼンうまくいった！」→ "Nailed it today!"
+        - 「だるい」→ "Ugh, I can't be bothered."
+        - 「腹減った」→ "Man, I'm starving."
 
-        Do NOT explain grammar.
-        Output ONLY the English translation.
-
-        User Howl: "{request.text}"
+        ユーザーの独り言: "{request.text}"
         """
 
         response = model.generate_content(
