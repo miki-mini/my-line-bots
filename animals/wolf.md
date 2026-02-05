@@ -2,13 +2,15 @@
 
 **英語嫌いのための独り言シャドーイングアプリ**
 
+![alt text](images/wolf.jpg)
+
 文法ゼロ・音で覚える。自分の本心を英語にするから、脳への定着率が段違い。
 
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[🌟 今すぐ試す](https://your-site-url.com) | [📖 技術記事](https://zenn.dev/your-article)
+[🌟 今すぐ試す](https://usagi-oekaki-service-1032484155743.asia-northeast1.run.app/static/wolf.html) | [📖 技術記事]
 
 ![WOLF SHADOWING Demo](images/demo.gif)
 

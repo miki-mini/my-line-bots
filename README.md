@@ -95,7 +95,7 @@ graph TD
 | <img src="animals/images/squirrel.png" width="40"> | **リスのほっぺたどんぐりゲーム🐿️**<br>[(Squirrel)](animals/squirrel.md) | **対戦アクションゲーム**<br>カメラで手を認識し、落ちてくるどんぐりをキャッチしてほっぺたを膨らませる2人対戦ゲーム。 | `MediaPipe Hands` `Canvas` `Web Audio` |
 | <img src="animals/images/fish.jpg" width="40"> | **カラフルお魚のお部屋水族館🐠**<br>[(Fish)](animals/fish.md) | **バーチャル水族館**<br>手で魚と触れ合える癒やしの空間。サメやタコも登場します。 | `MediaPipe Hands` `Canvas` `Audio` |
 | <img src="animals/images/retriever.jpg" width="40"> | **見守りレトリバー🐕**<br>[(Retriever)](static/retriever.html) | **年齢換算 & 健康**<br>ペットの年齢を人間に換算し、ライフステージに合わせた健康アドバイスを提供。 | `FastAPI` `Vanilla JS` |
-| <img src="animals/images/wolf.jpg" width="40"> | **独り言シャドーイング Wolf🐺**<br>[(Wolf)](animals/wolf.md) | **英語学習 & 遠吠え**<br>日本語の独り言をCoolな英語に変換し、AIと一緒に遠吠えシャドーイング。 | `Gemini 1.5` `Cloud TTS` `Firestore` |
+| <img src="animals/images/wolf.jpg" width="40"> | **独り言シャドーイング Wolf🐺**<br>[(Wolf)](animals/wolf.md) | **英語学習 & 遠吠え**<br>日本語の独り言をCoolな英語に変換し、AIと一緒に遠吠えシャドーイング。 | `Cloud TTS` `Firestore` |
 
 ## 👉 **[詳細ドキュメントとデモはこちら (animals/README.md)](animals/README.md)**
 
