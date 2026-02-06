@@ -2,15 +2,13 @@
 
 **英語嫌いのための独り言シャドーイングアプリ**
 
-![alt text](images/wolf.jpg)
-
 文法ゼロ・音で覚える。自分の本心を英語にするから、脳への定着率が段違い。
 
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[🌟 今すぐ試す](https://usagi-oekaki-service-1032484155743.asia-northeast1.run.app/static/wolf.html) | [📖 技術記事]
+[🌟 今すぐ試す](https://your-site-url.com) | [📖 技術記事](https://zenn.dev/your-article)
 
 ![WOLF SHADOWING Demo](images/demo.gif)
 
@@ -204,6 +202,11 @@ if (similarity >= 0.85) {
 - 「meeting」を「meetin」と発音しても合格（類似度92%）
 - 初心者でも挫折しない優しい判定
 
+**翻訳例:**
+- 「めっちゃ疲れた」→ "I'm so done."（"very tired" より自然）
+- 「やばい、遅刻する」→ "Crap, I'm gonna be late."（ネイティブが実際に使う）
+- 「今日のプレゼンうまくいった！」→ "Nailed it today!"（達成感が伝わる）
+
 ### 2. Firestoreキャッシュ
 
 同じ入力は2回目以降、キャッシュから即座に返却。
@@ -213,9 +216,13 @@ if (similarity >= 0.85) {
 doc_id = hashlib.sha256(request.text.encode("utf-8")).hexdigest()
 doc_ref = db.collection("wolf_translations").document(doc_id)
 
-# キャッシュHIT時は即返却
-if doc.exists:
-    return {"english_text": doc.to_dict()["english_text"]}
+# キャッシュHIT時は即返却（エラーハンドリング付き）
+try:
+    doc = doc_ref.get()
+    if doc.exists:
+        return {"english_text": doc.to_dict()["english_text"]}
+except Exception as e:
+    print(f"[WARNING] Firestore Read Error (Proceeding without cache): {e}")
 ```
 
 **効果:**
@@ -225,20 +232,30 @@ if doc.exists:
 
 ### 3. Geminiプロンプト設計
 
-「正確性」と「クールさ」の両立を実現。
+「正確性」と「自然さ」の両立を実現。
 
 ```python
 prompt = f"""
-CRITICAL: The English translation MUST preserve the ORIGINAL MEANING of the user's input.
-The priority is:
-1. Accuracy of Meaning (Most Important)
-2. Cool/Wolf Tone (Secondary)
+あなたは日本語ネイティブが独り言で言いそうなフレーズを、ネイティブ英語話者が同じシチュエーションで自然に言う英語に変換する翻訳者です。
+
+重要なルール:
+- 直訳ではなく、英語話者が同じ感情・状況で実際に口にする表現にする
+- 日本語の感情やニュアンス（喜び、イライラ、疲れ、達成感など）をそのまま英語で表現する
+- カジュアルな独り言なので、堅い表現は避ける
+- 短く、自然に口から出る表現にする
+- 説明や文法解説は一切不要。英語のみ出力
+
+例:
+- 「めっちゃ疲れた」→ "I'm so done."
+- 「やばい、遅刻する」→ "Crap, I'm gonna be late."
+- 「今日のプレゼンうまくいった！」→ "Nailed it today!"
 """
 ```
 
 **ポイント:**
 - `temperature: 0.7` → クリエイティブすぎず、正確性を保つ
-- 意味の正確性を最優先と明記
+- 具体例を提示してAIの理解を助ける
+- 直訳ではなく、ネイティブが実際に使う表現に変換
 
 ## 💰 コストについて
 
@@ -281,6 +298,7 @@ gcloud run deploy wolf-shadowing \
 
 ## 🤝 コントリビューション
 
+プルリクエストを歓迎します！大きな変更の場合は、まずissueを開いて変更内容を議論してください。
 
 1. このリポジトリをフォーク
 2. フィーチャーブランチを作成 (`git checkout -b feature/amazing-feature`)
@@ -294,7 +312,7 @@ gcloud run deploy wolf-shadowing \
 
 
 
-
 ## 👤 作者
 
 **miki-mini**
+
