@@ -97,7 +97,7 @@ class SearchModelWrapper:
             self.client = None
             self.types = None
 
-        self.model_name = "gemini-1.5-flash"
+        self.model_name = "gemini-2.5-flash"
 
     def generate_content(self, prompt, generation_config=None):
         """今まで通りの呼び出し方で使える"""
@@ -228,7 +228,7 @@ def startup_event():
                     SafetySetting(category=HarmCategory.HARM_CATEGORY_HARASSMENT, threshold=HarmBlockThreshold.BLOCK_NONE),
                 ]
 
-                text_model = GenerativeModel("gemini-1.5-flash", safety_settings=safety_config)
+                text_model = GenerativeModel("gemini-2.5-flash", safety_settings=safety_config)
                 print("✅ Gemini (text_model) Initialized!", flush=True)
             except Exception as e:
                 print(f"⚠️ Vertex AI Init Failed: {e}", flush=True)
@@ -521,7 +521,7 @@ async def diagnose_butterfly(request: ButterflyDiagnosisRequest):
         # Using a fresh instance to ensure settings
         # Using a fresh instance to ensure settings
 
-        bf_model = GenerativeModel("gemini-1.5-flash", safety_settings=safety_config)
+        bf_model = GenerativeModel("gemini-2.5-flash", safety_settings=safety_config)
 
         # 2. Decode Image
         image_data = request.image.split(',')[1] if ',' in request.image else request.image
@@ -683,10 +683,10 @@ async def diagnose_flamingo(request: FlamingoDiagnosisRequest):
         ```
         """
 
-        # 3. Model Generation (Using gemini-1.5-flash for speed)
+        # 3. Model Generation (Using gemini-2.5-flash for speed)
         # Note: Using existing text_model or bf_model?
         # Let's use a fresh instance to ensure standard settings.
-        # Use gemini-1.5-flash for Flamingo as it needs speed/availability.
+        # Use gemini-2.5-flash for Flamingo as it needs speed/availability.
 
         safety_config = [
             SafetySetting(category=HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold=HarmBlockThreshold.BLOCK_NONE),
@@ -695,7 +695,7 @@ async def diagnose_flamingo(request: FlamingoDiagnosisRequest):
             SafetySetting(category=HarmCategory.HARM_CATEGORY_HARASSMENT, threshold=HarmBlockThreshold.BLOCK_NONE),
         ]
 
-        flamingo_model = GenerativeModel("gemini-1.5-flash", safety_settings=safety_config)
+        flamingo_model = GenerativeModel("gemini-2.5-flash", safety_settings=safety_config)
 
         response = flamingo_model.generate_content(
             [prompt, image_part],
