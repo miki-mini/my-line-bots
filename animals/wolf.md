@@ -249,6 +249,7 @@ prompt = f"""
 - 「めっちゃ疲れた」→ "I'm so done."
 - 「やばい、遅刻する」→ "Crap, I'm gonna be late."
 - 「今日のプレゼンうまくいった！」→ "Nailed it today!"
+- 「何の映画見ようかな？」→ "What movie should I watch?"
 """
 ```
 
