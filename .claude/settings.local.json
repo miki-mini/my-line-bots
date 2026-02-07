@@ -3,7 +3,10 @@
     "allow": [
       "Bash(python main.py:*)",
       "Bash(PYTHONIOENCODING=utf-8 python:*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "Bash(gcloud run services describe:*)",
+      "Bash(gcloud run services list:*)",
+      "Bash(gcloud projects add-iam-policy-binding:*)"
     ]
   }
 }
