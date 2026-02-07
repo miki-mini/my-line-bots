@@ -73,6 +73,7 @@ async def translate_mumble(request: TranslateRequest):
         あなたは日本語ネイティブが独り言で言いそうなフレーズを、ネイティブ英語話者が同じシチュエーションで自然に言う英語に変換する翻訳者です。
 
         重要なルール:
+        - 常に完全な文（主語＋動詞）にする。名詞句や不定詞だけの文 ("What movie to watch?", "Nice weather") は禁止。
         - 直訳ではなく、英語話者が同じ感情・状況で実際に口にする表現にする
         - 日本語の感情やニュアンス（喜び、イライラ、疲れ、達成感など）をそのまま英語で表現する
         - カジュアルな独り言なので、堅い表現は避ける
@@ -80,6 +81,7 @@ async def translate_mumble(request: TranslateRequest):
         - 説明や文法解説は一切不要。英語のみ出力
 
         例:
+        - 「何の映画見ようかな？」→ "What movie should I watch?"
         - 「めっちゃ疲れた」→ "I'm so done."
         - 「やばい、遅刻する」→ "Crap, I'm gonna be late."
         - 「今日のプレゼンうまくいった！」→ "Nailed it today!"
