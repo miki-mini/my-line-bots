@@ -8,13 +8,13 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[🌟 今すぐ試す](https://your-site-url.com) | [📖 技術記事](https://zenn.dev/your-article)
+[🌟 今すぐ試す](https://usagi-oekaki-service-1032484155743.asia-northeast1.run.app/static/wolf.html) | [📖 技術記事](https://zenn.dev/your-article)
 
-![WOLF SHADOWING Demo](images/demo.gif)
+![WOLF SHADOWING Demo](images/fullmovie.webp)
 
 ## 🎯 特徴
 
-- **独り言→超訳**: 日本語の愚痴を、Gemini AIが超クールなネイティブ英語に変換
+- **独り言→超訳**: 日本語の愚痴を、Gemini AIが超クールなネイティブ英語に変換（完全な文で音声認識精度UP）
 - **3回リピート再生**: 耳で覚えるまで自動ループ
 - **あいまいシャドーイング判定**: 85%以上の類似度でOK！完璧じゃなくても合格
 - **Firestoreキャッシュ**: 同じ言葉なら2回目以降は爆速＆無料
@@ -203,6 +203,7 @@ if (similarity >= 0.85) {
 - 初心者でも挫折しない優しい判定
 
 **翻訳例:**
+- 「何の映画見ようかな？」→ "What movie should I watch?"（完全な文で自然）
 - 「めっちゃ疲れた」→ "I'm so done."（"very tired" より自然）
 - 「やばい、遅刻する」→ "Crap, I'm gonna be late."（ネイティブが実際に使う）
 - 「今日のプレゼンうまくいった！」→ "Nailed it today!"（達成感が伝わる）
@@ -239,6 +240,7 @@ prompt = f"""
 あなたは日本語ネイティブが独り言で言いそうなフレーズを、ネイティブ英語話者が同じシチュエーションで自然に言う英語に変換する翻訳者です。
 
 重要なルール:
+- 常に完全な文（主語＋動詞）にする。名詞句や不定詞だけの文 ("What movie to watch?", "Nice weather") は禁止。
 - 直訳ではなく、英語話者が同じ感情・状況で実際に口にする表現にする
 - 日本語の感情やニュアンス（喜び、イライラ、疲れ、達成感など）をそのまま英語で表現する
 - カジュアルな独り言なので、堅い表現は避ける
@@ -246,17 +248,25 @@ prompt = f"""
 - 説明や文法解説は一切不要。英語のみ出力
 
 例:
+- 「何の映画見ようかな？」→ "What movie should I watch?"
 - 「めっちゃ疲れた」→ "I'm so done."
 - 「やばい、遅刻する」→ "Crap, I'm gonna be late."
 - 「今日のプレゼンうまくいった！」→ "Nailed it today!"
-- 「何の映画見ようかな？」→ "What movie should I watch?"
 """
 ```
 
 **ポイント:**
 - `temperature: 0.7` → クリエイティブすぎず、正確性を保つ
+- **完全な文（主語＋動詞）を強制** → 音声認識の精度向上
 - 具体例を提示してAIの理解を助ける
 - 直訳ではなく、ネイティブが実際に使う表現に変換
+
+**なぜ「完全な文」が重要？**
+- Web Speech APIは完全な文の方が正確に認識
+- シャドーイング効果: 自然なリズムとイントネーションが身につく
+- 実用性: 実際の会話でそのまま使える
+
+例: "What movie to watch?" ❌ → "What movie should I watch?" ⭕
 
 ## 💰 コストについて
 
@@ -316,4 +326,3 @@ gcloud run deploy wolf-shadowing \
 ## 👤 作者
 
 **miki-mini**
-
