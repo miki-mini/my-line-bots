@@ -21,6 +21,11 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
   template {
     service_account = google_service_account.cloud_run_sa.email
 
+    scaling {
+      min_instance_count = 0
+      max_instance_count = 3
+    }
+
     containers {
       # 初期デプロイ用のプレースホルダーイメージ (Cloud Run Hello World)
       # これにより、まだアプリのイメージがArtifact RegistryになくてもTerraformが成功します。
@@ -30,8 +35,12 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
       resources {
         limits = {
           cpu    = "1"
-          memory = "1Gi"
+          memory = "512Mi"
         }
+        # リクエスト処理中のみCPUを割り当て（アイドル時のCPU課金を防止）
+        cpu_idle = true
+        # コールドスタート時にCPUをブーストして起動を高速化
+        startup_cpu_boost = true
       }
 
       # 環境変数設定 (Secret Manager からの読み込み)
@@ -314,7 +323,8 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
   # Terraformが「設定と違う！」と戻してしまわないように、イメージの変更を無視します。
   lifecycle {
     ignore_changes = [
-      template[0].containers[0].image
+      template[0].containers[0].image,
+      template[0].labels,
     ]
   }
 }

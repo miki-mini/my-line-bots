@@ -10,7 +10,7 @@
 
 [🌟 今すぐ試す](https://usagi-oekaki-service-1032484155743.asia-northeast1.run.app/static/wolf.html) | [📖 技術記事](https://zenn.dev/your-article)
 
-![WOLF SHADOWING Demo](images/fullmovie.webp =250x)
+![WOLF SHADOWING Demo](images/fullmovie.webp width="250px")
 
 ## 🎯 特徴
 
