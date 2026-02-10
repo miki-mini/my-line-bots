@@ -1,4 +1,4 @@
-# 🚀 Terraform for My LINE Bots
+# 🚀 Terraform for My AI ZOO Portal
 
 このディレクトリには、Google Cloudインフラストラクチャを管理するためのTerraform設定ファイルが含まれています。
 
