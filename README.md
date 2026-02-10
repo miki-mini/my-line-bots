@@ -1,4 +1,4 @@
-# 🤖 My LINE Bots Collection (Animal Agents)
+# 🤖 My AI ZOO Portal (Animal Agents)
 
 ![CI/CD](https://img.shields.io/github/actions/workflow/status/miki-mini/my-line-bots/ci.yml?label=CI%2FCD&logo=github)
 ![Coverage](https://img.shields.io/badge/Coverage-80%25%2B-green?logo=pytest&logoColor=white)
