@@ -106,7 +106,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
       }
 
       # --------------------------------------------------------------------------------
-      # Bot Specific Tokens (Mapped to Shared LINE Channel Secret for simplicity)
+      # Bot-Specific Tokens (各ボット固有のLINEチャネルシークレット)
       # --------------------------------------------------------------------------------
 
       # 🦡 Mole
@@ -114,7 +114,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "TRAIN_ACCESS_TOKEN"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.line_channel_access_token.secret_id
+            secret  = data.google_secret_manager_secret.train_access_token.secret_id
             version = "latest"
           }
         }
@@ -123,7 +123,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "TRAIN_CHANNEL_SECRET"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.line_channel_secret.secret_id
+            secret  = data.google_secret_manager_secret.train_channel_secret.secret_id
             version = "latest"
           }
         }
@@ -134,7 +134,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "FOX_ACCESS_TOKEN"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.line_channel_access_token.secret_id
+            secret  = data.google_secret_manager_secret.fox_access_token.secret_id
             version = "latest"
           }
         }
@@ -143,7 +143,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "FOX_CHANNEL_SECRET"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.line_channel_secret.secret_id
+            secret  = data.google_secret_manager_secret.fox_channel_secret.secret_id
             version = "latest"
           }
         }
@@ -154,7 +154,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "FROG_ACCESS_TOKEN"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.line_channel_access_token.secret_id
+            secret  = data.google_secret_manager_secret.frog_access_token.secret_id
             version = "latest"
           }
         }
@@ -163,7 +163,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "FROG_CHANNEL_SECRET"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.line_channel_secret.secret_id
+            secret  = data.google_secret_manager_secret.frog_channel_secret.secret_id
             version = "latest"
           }
         }
@@ -174,7 +174,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "PENGUIN_ACCESS_TOKEN"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.line_channel_access_token.secret_id
+            secret  = data.google_secret_manager_secret.penguin_access_token.secret_id
             version = "latest"
           }
         }
@@ -183,7 +183,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "PENGUIN_CHANNEL_SECRET"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.line_channel_secret.secret_id
+            secret  = data.google_secret_manager_secret.penguin_channel_secret.secret_id
             version = "latest"
           }
         }
@@ -194,7 +194,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "CAPYBARA_ACCESS_TOKEN"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.line_channel_access_token.secret_id
+            secret  = data.google_secret_manager_secret.capybara_access_token.secret_id
             version = "latest"
           }
         }
@@ -203,7 +203,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "CAPYBARA_CHANNEL_SECRET"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.line_channel_secret.secret_id
+            secret  = data.google_secret_manager_secret.capybara_channel_secret.secret_id
             version = "latest"
           }
         }
@@ -214,7 +214,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "WHALE_ACCESS_TOKEN"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.line_channel_access_token.secret_id
+            secret  = data.google_secret_manager_secret.whale_access_token.secret_id
             version = "latest"
           }
         }
@@ -223,7 +223,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "WHALE_CHANNEL_SECRET"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.line_channel_secret.secret_id
+            secret  = data.google_secret_manager_secret.whale_channel_secret.secret_id
             version = "latest"
           }
         }
@@ -234,7 +234,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "BEAVER_ACCESS_TOKEN"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.line_channel_access_token.secret_id
+            secret  = data.google_secret_manager_secret.beaver_access_token.secret_id
             version = "latest"
           }
         }
@@ -243,7 +243,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "BEAVER_CHANNEL_SECRET"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.line_channel_secret.secret_id
+            secret  = data.google_secret_manager_secret.beaver_channel_secret.secret_id
             version = "latest"
           }
         }
@@ -254,7 +254,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "BAT_ACCESS_TOKEN"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.line_channel_access_token.secret_id
+            secret  = data.google_secret_manager_secret.bat_access_token.secret_id
             version = "latest"
           }
         }
@@ -263,7 +263,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "BAT_CHANNEL_SECRET"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.line_channel_secret.secret_id
+            secret  = data.google_secret_manager_secret.bat_channel_secret.secret_id
             version = "latest"
           }
         }
@@ -274,7 +274,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "RABBIT_ACCESS_TOKEN"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.line_channel_access_token.secret_id
+            secret  = data.google_secret_manager_secret.rabbit_access_token.secret_id
             version = "latest"
           }
         }
@@ -283,7 +283,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "RABBIT_CHANNEL_SECRET"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.line_channel_secret.secret_id
+            secret  = data.google_secret_manager_secret.rabbit_channel_secret.secret_id
             version = "latest"
           }
         }
@@ -294,7 +294,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "OWL_ACCESS_TOKEN"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.line_channel_access_token.secret_id
+            secret  = data.google_secret_manager_secret.owl_access_token.secret_id
             version = "latest"
           }
         }
@@ -303,7 +303,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "OWL_CHANNEL_SECRET"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.line_channel_secret.secret_id
+            secret  = data.google_secret_manager_secret.owl_channel_secret.secret_id
             version = "latest"
           }
         }
