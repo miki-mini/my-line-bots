@@ -269,45 +269,9 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         }
       }
 
-      # 🐰 Rabbit
-      env {
-        name = "RABBIT_ACCESS_TOKEN"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.rabbit_access_token.secret_id
-            version = "latest"
-          }
-        }
-      }
-      env {
-        name = "RABBIT_CHANNEL_SECRET"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.rabbit_channel_secret.secret_id
-            version = "latest"
-          }
-        }
-      }
-
-      # 🦉 Owl
-      env {
-        name = "OWL_ACCESS_TOKEN"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.owl_access_token.secret_id
-            version = "latest"
-          }
-        }
-      }
-      env {
-        name = "OWL_CHANNEL_SECRET"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.owl_channel_secret.secret_id
-            version = "latest"
-          }
-        }
-      }
+      # 🐰 Rabbit / 🦉 Owl
+      # Secret Managerに値が設定されていないため、Cloud Runの環境変数からは除外
+      # トークンを設定したら、ここに env ブロックを追加すること
     }
   }
 
