@@ -161,12 +161,6 @@ def _send_reply(event, configuration, text):
     except Exception as e:
         print(f"❌ カピバラ返信エラー: {e}")
 
-        return {"status": "ok", "message": "ニュース配信完了っぴ！"}
-
-    except Exception as e:
-        print(f"❌ ニュース配信エラー: {e}")
-        return {"status": "error", "message": str(e)}
-
 # ==========================================
 # 🌍 Web API (Router)
 # ==========================================
