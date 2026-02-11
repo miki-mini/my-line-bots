@@ -86,33 +86,8 @@ data "google_secret_manager_secret" "bat_channel_secret" {
   secret_id = "BAT_CHANNEL_SECRET"
 }
 
-# 🐰 Rabbit (Secret Manager未作成のため新規作成)
-resource "google_secret_manager_secret" "rabbit_access_token" {
-  secret_id = "RABBIT_ACCESS_TOKEN"
-  replication {
-    auto {}
-  }
-}
-resource "google_secret_manager_secret" "rabbit_channel_secret" {
-  secret_id = "RABBIT_CHANNEL_SECRET"
-  replication {
-    auto {}
-  }
-}
-
-# 🦉 Owl (Secret Manager未作成のため新規作成)
-resource "google_secret_manager_secret" "owl_access_token" {
-  secret_id = "OWL_ACCESS_TOKEN"
-  replication {
-    auto {}
-  }
-}
-resource "google_secret_manager_secret" "owl_channel_secret" {
-  secret_id = "OWL_CHANNEL_SECRET"
-  replication {
-    auto {}
-  }
-}
+# 🐰 Rabbit / 🦉 Owl
+# Secret Managerにトークンを設定したら、ここに data ブロックを追加すること
 
 # ------------------------------------------------------------------------------
 # Shared Secrets
