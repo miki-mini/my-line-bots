@@ -274,7 +274,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "RABBIT_ACCESS_TOKEN"
         value_source {
           secret_key_ref {
-            secret  = data.google_secret_manager_secret.rabbit_access_token.secret_id
+            secret  = google_secret_manager_secret.rabbit_access_token.secret_id
             version = "latest"
           }
         }
@@ -283,7 +283,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "RABBIT_CHANNEL_SECRET"
         value_source {
           secret_key_ref {
-            secret  = data.google_secret_manager_secret.rabbit_channel_secret.secret_id
+            secret  = google_secret_manager_secret.rabbit_channel_secret.secret_id
             version = "latest"
           }
         }
@@ -294,7 +294,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "OWL_ACCESS_TOKEN"
         value_source {
           secret_key_ref {
-            secret  = data.google_secret_manager_secret.owl_access_token.secret_id
+            secret  = google_secret_manager_secret.owl_access_token.secret_id
             version = "latest"
           }
         }
@@ -303,7 +303,7 @@ resource "google_cloud_run_v2_service" "voidoll_bot" {
         name = "OWL_CHANNEL_SECRET"
         value_source {
           secret_key_ref {
-            secret  = data.google_secret_manager_secret.owl_channel_secret.secret_id
+            secret  = google_secret_manager_secret.owl_channel_secret.secret_id
             version = "latest"
           }
         }

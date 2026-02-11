@@ -86,20 +86,32 @@ data "google_secret_manager_secret" "bat_channel_secret" {
   secret_id = "BAT_CHANNEL_SECRET"
 }
 
-# 🐰 Rabbit
-data "google_secret_manager_secret" "rabbit_access_token" {
+# 🐰 Rabbit (Secret Manager未作成のため新規作成)
+resource "google_secret_manager_secret" "rabbit_access_token" {
   secret_id = "RABBIT_ACCESS_TOKEN"
+  replication {
+    auto {}
+  }
 }
-data "google_secret_manager_secret" "rabbit_channel_secret" {
+resource "google_secret_manager_secret" "rabbit_channel_secret" {
   secret_id = "RABBIT_CHANNEL_SECRET"
+  replication {
+    auto {}
+  }
 }
 
-# 🦉 Owl
-data "google_secret_manager_secret" "owl_access_token" {
+# 🦉 Owl (Secret Manager未作成のため新規作成)
+resource "google_secret_manager_secret" "owl_access_token" {
   secret_id = "OWL_ACCESS_TOKEN"
+  replication {
+    auto {}
+  }
 }
-data "google_secret_manager_secret" "owl_channel_secret" {
+resource "google_secret_manager_secret" "owl_channel_secret" {
   secret_id = "OWL_CHANNEL_SECRET"
+  replication {
+    auto {}
+  }
 }
 
 # ------------------------------------------------------------------------------
