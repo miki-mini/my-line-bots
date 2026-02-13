@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 import base64
 import os
@@ -45,11 +45,18 @@ def get_db():
     return _db
 
 @router.post("/translate")
-async def translate_mumble(request: TranslateRequest):
+async def translate_mumble(request: TranslateRequest, raw_request: Request = None):
     """
     Translates user mumble (Japanese/English) to cool, native English.
     """
     try:
+        # 使用回数制限チェック
+        if raw_request:
+            from core.rate_limiter import check_and_increment_by_ip
+            allowed, limit_msg = check_and_increment_by_ip(None, raw_request, "butsubutsu")
+            if not allowed:
+                return {"english_text": limit_msg}
+
         # Check Cache
         db = get_db()
         doc_ref = None

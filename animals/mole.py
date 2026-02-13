@@ -54,15 +54,16 @@ def get_current_calendar():
         return "odpt.Calendar:Weekday"
 
 
-def register_mole_handler(app, handler_mole, configuration_mole, text_model):
+def register_mole_handler(app, handler_mole, configuration_mole, text_model, db=None):
     """
     もぐら駅長のハンドラーを登録
     """
 
     # Google Maps クライアント
-    global _gmaps, _text_model
+    global _gmaps, _text_model, _db
     _gmaps = googlemaps.Client(key=os.getenv("GMAPS_API_KEY")) if os.getenv("GMAPS_API_KEY") else None
     _text_model = text_model
+    _db = db
 
 
     @app.post("/callback_train")
@@ -91,6 +92,24 @@ def register_mole_handler(app, handler_mole, configuration_mole, text_model):
         """駅名テキストで時刻表を検索"""
         user_text = event.message.text
         print(f"🦡 もぐら受信: {user_text}")
+
+        # 使用回数制限チェック
+        from core.rate_limiter import check_and_increment
+        user_id = event.source.user_id
+        allowed, limit_msg = check_and_increment(_db, user_id, "mole")
+        if not allowed:
+            try:
+                with ApiClient(configuration_mole) as c:
+                    api = MessagingApi(c)
+                    api.reply_message(
+                        ReplyMessageRequest(
+                            reply_token=event.reply_token,
+                            messages=[TextMessage(text=limit_msg)]
+                        )
+                    )
+            except Exception as e:
+                print(f"❌ 返信送信エラー: {e}")
+            return
 
         try:
             # Geminiで駅名だけ抽出
@@ -346,6 +365,7 @@ from pydantic import BaseModel
 router = APIRouter()
 _gmaps = None
 _text_model = None
+_db = None
 
 class MoleRequest(BaseModel):
     station: str

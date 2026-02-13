@@ -98,6 +98,19 @@ def register_beaver_handler(app, handler, configuration, db, text_model=None):
         message_id = event.message.id
         user_id = event.source.user_id
 
+        # 使用回数制限チェック
+        from core.rate_limiter import check_and_increment
+        allowed, limit_msg = check_and_increment(_db, user_id, "beaver")
+        if not allowed:
+            with ApiClient(configuration) as api_client:
+                MessagingApi(api_client).reply_message(
+                    ReplyMessageRequest(
+                        reply_token=event.reply_token,
+                        messages=[TextMessage(text=limit_msg)],
+                    )
+                )
+            return
+
         with ApiClient(configuration) as api_client:
             line_bot_api = MessagingApi(api_client)
             line_bot_blob_api = MessagingApiBlob(api_client)
@@ -217,7 +230,13 @@ def register_beaver_handler(app, handler, configuration, db, text_model=None):
 
                 # 📝 3. その他（AI自動判断：メモ or 雑談）
                 else:
-                    reply_text = _process_memo_or_chat(user_id, user_text)
+                    # 使用回数制限チェック（AI判定のみ）
+                    from core.rate_limiter import check_and_increment
+                    allowed, limit_msg = check_and_increment(_db, user_id, "beaver")
+                    if not allowed:
+                        reply_text = limit_msg
+                    else:
+                        reply_text = _process_memo_or_chat(user_id, user_text)
 
             except Exception as e:
                 print(f"🦫 ❌ エラー: {e}")

@@ -245,12 +245,16 @@ def register_owl_handler(app, auth_dependency=None):
 # ==========================================
 # 🌍 Web API (Router)
 # ==========================================
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 router = APIRouter()
 
 # 1. Legacy Endpoints (Keep for compatibility if needed)
 @router.post("/analyze_image/")
-async def analyze_image_legacy(image_file: UploadFile = File(...)):
+async def analyze_image_legacy(request: Request, image_file: UploadFile = File(...)):
+    from core.rate_limiter import check_and_increment_by_ip
+    allowed, limit_msg = check_and_increment_by_ip(None, request, "owl")
+    if not allowed:
+        return {"analysis": limit_msg}
     return await _process_image_analysis(image_file)
 
 @router.post("/record/weight")
@@ -267,7 +271,11 @@ async def get_calories_graph_legacy():
 
 # 2. Web App Endpoints (Now Public / Unlocked)
 @router.post("/api/owl/analyze_image")
-async def analyze_image_secure(image_file: UploadFile = File(...)):
+async def analyze_image_secure(request: Request, image_file: UploadFile = File(...)):
+    from core.rate_limiter import check_and_increment_by_ip
+    allowed, limit_msg = check_and_increment_by_ip(None, request, "owl")
+    if not allowed:
+        return {"analysis": limit_msg}
     return await _process_image_analysis(image_file)
 
 @router.post("/api/owl/record_weight")

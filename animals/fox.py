@@ -19,6 +19,7 @@ from fastapi import Request, HTTPException
 # Globals for API access
 _search_model = None
 _text_model = None
+_db = None
 
 def extract_youtube_id(text: str) -> str | None:
     """
@@ -36,13 +37,14 @@ def extract_youtube_id(text: str) -> str | None:
 
 
 
-def register_fox_handler(app, handler_fox, configuration_fox, search_model, text_model):
+def register_fox_handler(app, handler_fox, configuration_fox, search_model, text_model, db=None):
     """
     キツネのハンドラーを登録
     """
-    global _search_model, _text_model
+    global _search_model, _text_model, _db
     _search_model = search_model
     _text_model = text_model
+    _db = db
 
     @app.post("/callback_fox")
     async def callback_fox(request: Request):
@@ -79,14 +81,20 @@ def register_fox_handler(app, handler_fox, configuration_fox, search_model, text
             video_id = extract_youtube_id(user_message)
 
             if video_id:
+                # 使用回数制限チェック
+                from core.rate_limiter import check_and_increment
+                user_id = event.source.user_id
+                allowed, limit_msg = check_and_increment(_db, user_id, "fox")
+                if not allowed:
+                    msg = limit_msg
+                else:
+                    print(f"🦊 YouTube動画ID検出: {video_id}")
 
-                print(f"🦊 YouTube動画ID検出: {video_id}")
+                    # 処理中のメッセージを送る（オプション: LINEの仕様上、応答は1回なのでここはスキップしますが、ログには残します）
+                    print("🦊 動画要約プロセスを開始します...")
 
-                # 処理中のメッセージを送る（オプション: LINEの仕様上、応答は1回なのでここはスキップしますが、ログには残します）
-                print("🦊 動画要約プロセスを開始します...")
-
-                # YouTube動画の要約実行
-                msg = summarize_youtube_with_search(video_id, search_model, text_model)
+                    # YouTube動画の要約実行
+                    msg = summarize_youtube_with_search(video_id, search_model, text_model)
             else:
                 msg = "🦊 キツネ先生だコン！\n要約したいYouTube動画のURLを送ってコン！\n長〜い動画でもバッチリ解説するコン！"
 
@@ -281,7 +289,7 @@ class FoxRequest(BaseModel):
     url: str
 
 @router.post("/api/fox/summary")
-async def fox_web_summary(req: FoxRequest):
+async def fox_web_summary(req: FoxRequest, request: Request = None):
     """Webからの要約リクエスト処理"""
     url = req.url
     print(f"🦊 Web Request: {url}")
@@ -290,6 +298,12 @@ async def fox_web_summary(req: FoxRequest):
     video_id = extract_youtube_id(url)
 
     if video_id:
+        # 使用回数制限チェック
+        if request:
+            from core.rate_limiter import check_and_increment_by_ip
+            allowed, limit_msg = check_and_increment_by_ip(_db, request, "fox")
+            if not allowed:
+                return {"status": "error", "message": limit_msg}
 
         # Use globals initialized by register handler
         summary = summarize_youtube_with_search(video_id, _search_model, _text_model)
