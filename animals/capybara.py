@@ -34,13 +34,15 @@ def check_onsen_mode(text: str) -> bool:
 _search_model = None
 _text_model = None
 _configuration_capybara = None
+_db = None
 JST = timezone(timedelta(hours=9), 'JST')
 
-def register_capybara_handler(app, handler_capybara, configuration_capybara, search_model, text_model):
-    global _search_model, _text_model, _configuration_capybara
+def register_capybara_handler(app, handler_capybara, configuration_capybara, search_model, text_model, db=None):
+    global _search_model, _text_model, _configuration_capybara, _db
     _search_model = search_model
     _text_model = text_model
     _configuration_capybara = configuration_capybara
+    _db = db
     """
     カピバラのWebhookエンドポイントとハンドラーを登録する
     """
@@ -71,6 +73,14 @@ def register_capybara_handler(app, handler_capybara, configuration_capybara, sea
     def handle_capybara_message(event):
         user_text = event.message.text
         print(f"🐹 カピバラ受信: {user_text}")
+
+        # 使用回数制限チェック
+        from core.rate_limiter import check_and_increment
+        user_id = event.source.user_id
+        allowed, limit_msg = check_and_increment(_db, user_id, "capybara")
+        if not allowed:
+            _send_reply(event, configuration_capybara, limit_msg)
+            return
 
         # 今日の日付を取得 (JST)
         try:
@@ -164,7 +174,7 @@ def _send_reply(event, configuration, text):
 # ==========================================
 # 🌍 Web API (Router)
 # ==========================================
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 router = APIRouter()
 
 @router.post("/trigger_morning_news")
@@ -238,8 +248,15 @@ def trigger_morning_news():
         return {"status": "error", "message": str(e)}
 
 @router.get("/api/capybara/news")
-async def get_capybara_news():
+async def get_capybara_news(request: Request = None):
     """Webアプリ用: 今日のニュースを取得"""
+    # 使用回数制限チェック
+    if request:
+        from core.rate_limiter import check_and_increment_by_ip
+        allowed, limit_msg = check_and_increment_by_ip(_db, request, "capybara")
+        if not allowed:
+            return {"news": limit_msg}
+
     global _search_model # グローバル変数を参照
     if not _search_model:
         return {"news": "機能がメンテナンス中だっぴ...🐹 (Model loading)"}
@@ -264,8 +281,15 @@ async def get_capybara_news():
         return {"news": f"エラーだっぴ... {str(e)}"}
 
 @router.post("/api/capybara/chat")
-async def chat_capybara_web(req: CapybaraChatRequest):
+async def chat_capybara_web(req: CapybaraChatRequest, request: Request = None):
     """Webアプリ用: チャット"""
+    # 使用回数制限チェック
+    if request:
+        from core.rate_limiter import check_and_increment_by_ip
+        allowed, limit_msg = check_and_increment_by_ip(_db, request, "capybara")
+        if not allowed:
+            return {"reply": limit_msg}
+
     global _search_model # グローバル変数を参照
     if not _search_model:
         return {"reply": "今は眠いっぴ... (Model Not Loaded)"}

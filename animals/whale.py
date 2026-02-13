@@ -11,10 +11,14 @@ from linebot.v3.messaging import ApiClient, MessagingApi, ReplyMessageRequest, T
 # 🐋 whale.py - 星くじら（宇宙の案内人）
 # ========================================
 
-def register_whale_handler(app, handler_whale, configuration_whale, model):
+_db = None
+
+def register_whale_handler(app, handler_whale, configuration_whale, model, db=None):
     """
     星くじらのエンドポイントを登録する
     """
+    global _db
+    _db = db
 
     @app.post("/callback_whale")
     async def callback_whale(request: Request):
@@ -36,6 +40,14 @@ def register_whale_handler(app, handler_whale, configuration_whale, model):
     def handle_whale_message(event):
         user_text = event.message.text
         print(f"🐋 星くじら受信: {user_text}")
+
+        # 使用回数制限チェック
+        from core.rate_limiter import check_and_increment
+        user_id = event.source.user_id
+        allowed, limit_msg = check_and_increment(_db, user_id, "whale")
+        if not allowed:
+            _send_reply_messages(event, configuration_whale, [TextMessage(text=limit_msg)])
+            return
 
         # コアロジックを呼び出し
         response_data = get_whale_reply_content(user_text, model)

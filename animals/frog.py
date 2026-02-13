@@ -22,14 +22,16 @@ from linebot.v3.exceptions import InvalidSignatureError
 _search_model = None
 _text_model = None
 _configuration_frog = None
+_db = None
 
 def register_frog_handler(
-    app, handler_frog, configuration_frog, search_model, text_model
+    app, handler_frog, configuration_frog, search_model, text_model, db=None
 ):
-    global _search_model, _text_model, _configuration_frog
+    global _search_model, _text_model, _configuration_frog, _db
     _search_model = search_model
     _text_model = text_model
     _configuration_frog = configuration_frog
+    _db = db
     """
     カエルのハンドラーを登録
 
@@ -97,6 +99,13 @@ def handle_frog_message_event(event):
     print(f"🐸 ユーザーID: {user_id}")
     print(f"🐸 reply_token: {event.reply_token}")
 
+    # 使用回数制限チェック
+    from core.rate_limiter import check_and_increment
+    allowed, limit_msg = check_and_increment(_db, user_id, "frog")
+    if not allowed:
+        send_reply(event.reply_token, limit_msg, _configuration_frog)
+        return
+
     user_message = event.message.text
     # グローバルモデルを使用
     msg = handle_text_message(user_message, _search_model, _text_model)
@@ -112,6 +121,16 @@ def handle_frog_location_event(event):
     print(f"🐸 住所: {event.message.address}")
     print(f"🐸 緯度: {event.message.latitude}")
     print(f"🐸 経度: {event.message.longitude}")
+
+    # 使用回数制限チェック
+    from core.rate_limiter import check_and_increment
+    user_id = "unknown"
+    if hasattr(event, 'source') and hasattr(event.source, 'user_id'):
+        user_id = event.source.user_id
+    allowed, limit_msg = check_and_increment(_db, user_id, "frog")
+    if not allowed:
+        send_reply(event.reply_token, limit_msg, _configuration_frog)
+        return
 
     # 位置情報から天気を取得
     msg = handle_location_message(
@@ -616,7 +635,7 @@ def create_google_maps_link(location: str, use_api: bool = False) -> str:
 # ==========================================
 # 🐸 Web App API (Router)
 # ==========================================
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from pydantic import BaseModel
 from typing import Optional
 
@@ -640,8 +659,15 @@ def trigger_morning_weather():
     return broadcast_morning_weather(model, _configuration_frog)
 
 @router.post("/api/frog/weather")
-async def frog_web_weather(req: FrogRequest):
+async def frog_web_weather(req: FrogRequest, request: Request = None):
     """Webからの天気リクエスト処理"""
+    # 使用回数制限チェック
+    if request:
+        from core.rate_limiter import check_and_increment_by_ip
+        allowed, limit_msg = check_and_increment_by_ip(_db, request, "frog")
+        if not allowed:
+            return {"status": "error", "message": limit_msg}
+
     print(f"🐸 Web Request: {req}")
 
     # 位置情報がある場合

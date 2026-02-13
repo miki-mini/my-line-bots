@@ -39,6 +39,7 @@ from animals.owl import register_owl_handler
 
 from routers import web_apps, butsubutsu
 from animals import beaver, fox, bat, mole, frog, capybara, penguin, owl, raccoon, retriever
+from core.rate_limiter import check_and_increment_by_ip
 
 # Google Cloud Imports
 from google.cloud import storage
@@ -259,35 +260,35 @@ def startup_event():
             # Register Animal Handlers
             # ---------------------------
 
-            # 1. Mole (4 args)
-            register_mole_handler(app, handler_train, configuration_train, text_model)
+            # 1. Mole (5 args)
+            register_mole_handler(app, handler_train, configuration_train, text_model, db)
             print("🦡 Mole Registered!", flush=True)
 
-            # 2. Fox (5 args) - Now passing search_model!
-            register_fox_handler(app, handler_fox, configuration_fox, search_model, text_model)
+            # 2. Fox (6 args) - Now passing search_model!
+            register_fox_handler(app, handler_fox, configuration_fox, search_model, text_model, db)
             print("🦊 Fox Registered!", flush=True)
 
-            # 3. Frog (5 args) - Now passing search_model!
-            register_frog_handler(app, handler_frog, configuration_frog, search_model, text_model)
+            # 3. Frog (6 args) - Now passing search_model!
+            register_frog_handler(app, handler_frog, configuration_frog, search_model, text_model, db)
             print("🐸 Frog Registered!", flush=True)
 
-            # 4. Penguin (4 args)
-            register_penguin_handler(app, handler_penguin, configuration_penguin, text_model)
+            # 4. Penguin (5 args)
+            register_penguin_handler(app, handler_penguin, configuration_penguin, text_model, db)
             print("🐧 Penguin Registered!", flush=True)
 
             # 7. Owl (フクロウ) - Router化済みのため関数呼び出し不要 (Deprecated)
             # register_owl_handler(app, None)
 
             # 8. Voidoll (ボイドール)
-            register_voidoll_handler(app, handler_voidoll, configuration_voidoll, text_model)
+            register_voidoll_handler(app, handler_voidoll, configuration_voidoll, text_model, db)
             print(" Voidoll Registered!", flush=True)
 
-            # 6. Capybara (5 args: app, handler, config, search_model, text_model)
-            register_capybara_handler(app, handler_capybara, configuration_capybara, search_model, text_model)
+            # 6. Capybara (6 args: app, handler, config, search_model, text_model, db)
+            register_capybara_handler(app, handler_capybara, configuration_capybara, search_model, text_model, db)
             print(" Capybara Registered!", flush=True)
 
-            # 7. Whale (4 args: app, handler, config, model) -> Passing text_model
-            register_whale_handler(app, handler_whale, configuration_whale, text_model)
+            # 7. Whale (5 args: app, handler, config, model, db) -> Passing text_model
+            register_whale_handler(app, handler_whale, configuration_whale, text_model, db)
             print("🐋 Whale Registered!", flush=True)
 
             # 8. Beaver (5 args: app, handler, config, db, text_model)
@@ -331,13 +332,17 @@ class WhaleChatRequest(BaseModel):
     text: str
 
 @app.post("/api/whale/chat")
-async def chat_whale(request: WhaleChatRequest):
+async def chat_whale(request: WhaleChatRequest, raw_request: Request = None):
     """
     星くじらとチャットするAPI
 
     - **text**: ユーザーからのメッセージ
     - **return**: 星くじらからの返信（テキスト、画像URLなど）
     """
+    if raw_request:
+        allowed, limit_msg = check_and_increment_by_ip(db, raw_request, "whale")
+        if not allowed:
+            return {"results": [{"type": "text", "text": limit_msg}]}
     # グローバル変数のtext_modelを使用
     # text_modelはstartup時に初期化される
     response = get_whale_reply_content(request.text, text_model)
@@ -370,7 +375,7 @@ class EyeAnalysisRequest(BaseModel):
     image: str  # Base64エンコードされた画像
 
 @app.post("/api/alpaca-salon/analyze-eye")
-async def analyze_eye(request: EyeAnalysisRequest):
+async def analyze_eye(request: EyeAnalysisRequest, raw_request: Request = None):
     """
     🦙 アルパカのまつエクサロン - AI目分析API
 
@@ -380,6 +385,11 @@ async def analyze_eye(request: EyeAnalysisRequest):
     - **return**: 目の特徴と推奨スタイル
     """
     try:
+        if raw_request:
+            allowed, limit_msg = check_and_increment_by_ip(db, raw_request, "alpaca")
+            if not allowed:
+                return {"success": False, "error": limit_msg, "analysis": None}
+
         # Base64画像をデコード
         # data:image/png;base64, を除去
         image_data = request.image.split(',')[1] if ',' in request.image else request.image
@@ -503,11 +513,16 @@ class ButterflyDiagnosisRequest(BaseModel):
     lighting: str = "sun"  # "sun", "office", "bulb"
 
 @app.post("/api/butterfly/diagnose")
-async def diagnose_butterfly(request: ButterflyDiagnosisRequest):
+async def diagnose_butterfly(request: ButterflyDiagnosisRequest, raw_request: Request = None):
     """
     🦋 Butterfly (Checko) - AIパーソナルカラー診断API
     """
     try:
+        if raw_request:
+            allowed, limit_msg = check_and_increment_by_ip(db, raw_request, "butterfly")
+            if not allowed:
+                return {"success": False, "error": limit_msg}
+
         # 1. Setup Model (Use standard 1.5-flash)
         from vertexai.generative_models import GenerativeModel, SafetySetting, HarmCategory, HarmBlockThreshold
 
@@ -654,8 +669,13 @@ class FlamingoDiagnosisRequest(BaseModel):
     image: str  # Base64 encoded image
 
 @app.post("/api/flamingo/diagnose")
-async def diagnose_flamingo(request: FlamingoDiagnosisRequest):
+async def diagnose_flamingo(request: FlamingoDiagnosisRequest, raw_request: Request = None):
     try:
+        if raw_request:
+            allowed, limit_msg = check_and_increment_by_ip(db, raw_request, "flamingo")
+            if not allowed:
+                return {"success": False, "error": limit_msg}
+
         # 1. Image Processing
         image_data = request.image.split(',')[1] if ',' in request.image else request.image
         image_bytes = base64.b64decode(image_data)

@@ -81,7 +81,13 @@ def process_bat_command(text: str, user_id: str, db, search_model) -> str:
 
     else:
         # --- 通常会話（検索） ---
-        reply_text = _search_tv_schedule_with_gemini(text, search_model)
+        # 使用回数制限チェック（Gemini検索のみ）
+        from core.rate_limiter import check_and_increment
+        allowed, limit_msg = check_and_increment(db, user_id, "bat")
+        if not allowed:
+            reply_text = limit_msg
+        else:
+            reply_text = _search_tv_schedule_with_gemini(text, search_model)
 
     return reply_text
 

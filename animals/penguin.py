@@ -28,12 +28,14 @@ pending_emails = {}
 # Globals
 _configuration_penguin = None
 _text_model = None
+_db = None
 
 
-def register_penguin_handler(app, handler_penguin, configuration_penguin, text_model):
-    global _configuration_penguin, _text_model
+def register_penguin_handler(app, handler_penguin, configuration_penguin, text_model, db=None):
+    global _configuration_penguin, _text_model, _db
     _configuration_penguin = configuration_penguin
     _text_model = text_model
+    _db = db
 
     @app.post("/callback_penguin")
     async def callback_penguin(request: Request):
@@ -64,11 +66,23 @@ def handle_penguin_message(event):
 
     try:
         if user_message.startswith("メール："):
+            # 使用回数制限チェック
+            from core.rate_limiter import check_and_increment
+            allowed, limit_msg = check_and_increment(_db, user_id, "penguin")
+            if not allowed:
+                reply_simple_message(event.reply_token, limit_msg, _configuration_penguin)
+                return
             handle_email_request(
                 event, user_message, user_id, _configuration_penguin, _text_model
             )
 
         elif user_message.startswith(("お店：", "接待：", "手土産：")):
+            # 使用回数制限チェック
+            from core.rate_limiter import check_and_increment
+            allowed, limit_msg = check_and_increment(_db, user_id, "penguin")
+            if not allowed:
+                reply_simple_message(event.reply_token, limit_msg, _configuration_penguin)
+                return
             handle_concierge_request(
                 event, user_message, _configuration_penguin, _text_model
             )
@@ -335,7 +349,7 @@ def send_email_via_gas(to, sub, body):
     # Moved to module level below
     pass
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -349,8 +363,15 @@ class PenguinConciergeRequest(BaseModel):
     query: str
 
 @router.post("/api/penguin/email")
-async def penguin_web_email(req: PenguinEmailRequest):
+async def penguin_web_email(req: PenguinEmailRequest, request: Request = None):
     """Webからのメール下書き生成"""
+    # 使用回数制限チェック
+    if request:
+        from core.rate_limiter import check_and_increment_by_ip
+        allowed, limit_msg = check_and_increment_by_ip(_db, request, "penguin")
+        if not allowed:
+            return {"status": "error", "subject": req.subject, "body": limit_msg}
+
     # モデルがロードされていない場合のハンドリング
     if not _text_model:
         return {"status": "error", "subject": req.subject, "body": "現在AIモデルが準備中です...💦"}
@@ -369,8 +390,15 @@ async def penguin_web_send_email(req: PenguinEmailRequest):
         return {"status": "error", "message": f"送信失敗... {msg}"}
 
 @router.post("/api/penguin/concierge")
-async def penguin_web_concierge(req: PenguinConciergeRequest):
+async def penguin_web_concierge(req: PenguinConciergeRequest, request: Request = None):
     """Webからのお店検索"""
+    # 使用回数制限チェック
+    if request:
+        from core.rate_limiter import check_and_increment_by_ip
+        allowed, limit_msg = check_and_increment_by_ip(_db, request, "penguin")
+        if not allowed:
+            return {"status": "error", "intro": limit_msg, "shops": []}
+
     if not _text_model:
         return {"status": "error", "intro": "準備中だペン...", "shops": []}
 

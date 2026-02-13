@@ -22,15 +22,16 @@ from core.voidoll_service import VoidollService
 # Global Service Instance
 voidoll_service = VoidollService()
 
-def register_voidoll_handler(app, handler_voidoll, configuration_voidoll, text_model=None):
+def register_voidoll_handler(app, handler_voidoll, configuration_voidoll, text_model=None, db=None):
     """
     ボイドールのWebhookエンドポイントとハンドラーを登録する
     """
 
     # グローバル変数に設定
-    global _configuration_voidoll, _text_model
+    global _configuration_voidoll, _text_model, _db
     _configuration_voidoll = configuration_voidoll
     _text_model = text_model # もし使うなら
+    _db = db
 
     # ==========================================
     # 🤖 ボイドール Webhook エンドポイント
@@ -57,9 +58,16 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll, text_m
         text: str
 
     @app.post("/api/voidoll/chat")
-    async def voidoll_web_chat(req: VoidollRequest):
+    async def voidoll_web_chat(req: VoidollRequest, request: Request = None):
         """Webからのチャット"""
         try:
+            # 使用回数制限チェック
+            if request:
+                from core.rate_limiter import check_and_increment_by_ip
+                allowed, limit_msg = check_and_increment_by_ip(_db, request, "voidoll")
+                if not allowed:
+                    return {"status": "error", "message": limit_msg}
+
             reply_text = voidoll_service.generate_chat_reply(req.text)
             audio_url = voidoll_service.generate_voice_url(reply_text)
 
@@ -108,6 +116,23 @@ def register_voidoll_handler(app, handler_voidoll, configuration_voidoll, text_m
 # ==========================================
 def handle_voidoll_audio(event):
     print(f"🤖 ボイドール: 音声メッセージ受信 ID: {event.message.id}")
+
+    # 使用回数制限チェック
+    from core.rate_limiter import check_and_increment
+    user_id = event.source.user_id
+    allowed, limit_msg = check_and_increment(_db, user_id, "voidoll")
+    if not allowed:
+        try:
+            with ApiClient(_configuration_voidoll) as api_client:
+                MessagingApi(api_client).reply_message(
+                    ReplyMessageRequest(
+                        reply_token=event.reply_token,
+                        messages=[TextMessage(text=limit_msg)]
+                    )
+                )
+        except:
+            pass
+        return
 
     try:
         # 1. 音声データを取得
@@ -191,6 +216,23 @@ def handle_voidoll_audio(event):
 def handle_voidoll_text(event):
     user_text = event.message.text
     print(f"🤖 ボイドール(猫)テキスト受信: {user_text}")
+
+    # 使用回数制限チェック
+    from core.rate_limiter import check_and_increment
+    user_id = event.source.user_id
+    allowed, limit_msg = check_and_increment(_db, user_id, "voidoll")
+    if not allowed:
+        try:
+            with ApiClient(_configuration_voidoll) as api_client:
+                MessagingApi(api_client).reply_message(
+                    ReplyMessageRequest(
+                        reply_token=event.reply_token,
+                        messages=[TextMessage(text=limit_msg)]
+                    )
+                )
+        except:
+            pass
+        return
 
     try:
         # サービスを使って返信生成

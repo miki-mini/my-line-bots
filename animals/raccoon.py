@@ -68,9 +68,16 @@ class PushSubscription(BaseModel):
 # --- Endpoints ---
 
 @router.post("/api/raccoon/battle/start", response_model=BattleStartResponse)
-async def start_battle(req: ImageRequest):
+async def start_battle(req: ImageRequest, request: Request = None):
     """子供モード：部屋の画像からモンスターを生成"""
     try:
+        # 使用回数制限チェック
+        if request:
+            from core.rate_limiter import check_and_increment_by_ip
+            allowed, limit_msg = check_and_increment_by_ip(None, request, "raccoon")
+            if not allowed:
+                raise HTTPException(status_code=429, detail=limit_msg)
+
         model = get_gemini_model()
 
         # Decode image
@@ -107,9 +114,16 @@ async def start_battle(req: ImageRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/api/raccoon/battle/attack", response_model=BattleAttackResponse)
-async def attack_monster(req: BattleAttackRequest):
+async def attack_monster(req: BattleAttackRequest, request: Request = None):
     """子供モード：片付け後の画像でダメージ計算"""
     try:
+        # 使用回数制限チェック
+        if request:
+            from core.rate_limiter import check_and_increment_by_ip
+            allowed, limit_msg = check_and_increment_by_ip(None, request, "raccoon")
+            if not allowed:
+                raise HTTPException(status_code=429, detail=limit_msg)
+
         if not req.before_image:
              # If no before image, just give a generic small damage or error.
              # For simplicity, let's assume valid play.
@@ -173,9 +187,16 @@ async def attack_monster(req: BattleAttackRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/api/raccoon/adult/gacha", response_model=GachaResponse)
-async def adult_gacha(req: ImageRequest):
+async def adult_gacha(req: ImageRequest, request: Request = None):
     """大人モード：15分タスクを3つ提案"""
     try:
+        # 使用回数制限チェック
+        if request:
+            from core.rate_limiter import check_and_increment_by_ip
+            allowed, limit_msg = check_and_increment_by_ip(None, request, "raccoon")
+            if not allowed:
+                raise HTTPException(status_code=429, detail=limit_msg)
+
         model = get_gemini_model()
 
         image_data = req.image.split(',')[1] if ',' in req.image else req.image
@@ -212,9 +233,16 @@ async def adult_gacha(req: ImageRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/api/raccoon/adult/complete")
-async def adult_complete(req: TaskCompleteRequest):
+async def adult_complete(req: TaskCompleteRequest, request: Request = None):
     """大人モード：完了報告で褒める"""
     try:
+        # 使用回数制限チェック
+        if request:
+            from core.rate_limiter import check_and_increment_by_ip
+            allowed, limit_msg = check_and_increment_by_ip(None, request, "raccoon")
+            if not allowed:
+                raise HTTPException(status_code=429, detail=limit_msg)
+
         model = get_gemini_model()
 
         prompt = "ユーザーが15分のお片付けタスクを完了しました。風水や心理学的な観点、あるいは単に労いの言葉として、心が温まる「褒めメッセージ」を1つ作成してください。短めでお願いします。"
@@ -231,9 +259,16 @@ async def adult_complete(req: TaskCompleteRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/api/raccoon/mania/analyze", response_model=ManiaResponse)
-async def mania_analyze(req: ImageRequest):
+async def mania_analyze(req: ImageRequest, request: Request = None):
     """マニアモード：シンデレラフィット判定"""
     try:
+        # 使用回数制限チェック
+        if request:
+            from core.rate_limiter import check_and_increment_by_ip
+            allowed, limit_msg = check_and_increment_by_ip(None, request, "raccoon")
+            if not allowed:
+                raise HTTPException(status_code=429, detail=limit_msg)
+
         model = get_gemini_model()
 
         image_data = req.image.split(',')[1] if ',' in req.image else req.image
