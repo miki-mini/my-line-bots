@@ -21,8 +21,7 @@ def create_calendar(year, month, logo_path, output_path):
 
     # Load Logo
     if not os.path.exists(logo_path):
-        print(f"Error: Logo file not found at {logo_path}")
-        return
+        raise FileNotFoundError(f"Logo file not found at {logo_path}")
 
     try:
         logo = Image.open(logo_path)
@@ -37,8 +36,7 @@ def create_calendar(year, month, logo_path, output_path):
         logo_y = 200
         img.paste(logo, (logo_x, logo_y), logo if logo.mode == 'RGBA' else None)
     except Exception as e:
-        print(f"Error loading logo: {e}")
-        return
+        raise RuntimeError(f"Error loading logo: {e}")
 
     # Fonts
     try:
@@ -49,12 +47,7 @@ def create_calendar(year, month, logo_path, output_path):
         font_days = ImageFont.truetype("arial.ttf", 30)
         font_dates = ImageFont.truetype("arial.ttf", 45) # Smaller dates
     except IOError:
-        print("Warning: arial.ttf not found, using default font.")
-        font_header = ImageFont.load_default()
-        font_sub_header = ImageFont.load_default()
-        font_month_name = ImageFont.load_default()
-        font_days = ImageFont.load_default()
-        font_dates = ImageFont.load_default()
+        raise IOError("arial.ttf not found. Please install the required font.")
 
     # Draw Header Information
     year_text = f"{year}"
@@ -62,20 +55,12 @@ def create_calendar(year, month, logo_path, output_path):
     month_num_text = f"{month}"
 
     # Calculate text sizes
-    if hasattr(draw, 'textbbox'):
-        # Year
-        bbox_year = draw.textbbox((0, 0), year_text, font=font_sub_header)
-        year_width = bbox_year[2] - bbox_year[0]
-        # Month Name
-        bbox_month = draw.textbbox((0, 0), month_name, font=font_month_name)
-        month_width = bbox_month[2] - bbox_month[0]
-        # Month Number
-        bbox_num = draw.textbbox((0, 0), month_num_text, font=font_sub_header)
-        num_width = bbox_num[2] - bbox_num[0]
-    else:
-        year_width, _ = draw.textsize(year_text, font=font_sub_header)
-        month_width, _ = draw.textsize(month_name, font=font_month_name)
-        num_width, _ = draw.textsize(month_num_text, font=font_sub_header)
+    bbox_year = draw.textbbox((0, 0), year_text, font=font_sub_header)
+    year_width = bbox_year[2] - bbox_year[0]
+    bbox_month = draw.textbbox((0, 0), month_name, font=font_month_name)
+    month_width = bbox_month[2] - bbox_month[0]
+    bbox_num = draw.textbbox((0, 0), month_num_text, font=font_sub_header)
+    num_width = bbox_num[2] - bbox_num[0]
 
     # Position text
     current_y = logo_y + logo_height + 50
@@ -101,17 +86,13 @@ def create_calendar(year, month, logo_path, output_path):
 
     # Draw Headers
     for i, day in enumerate(week_days):
-        if hasattr(draw, 'textbbox'):
-            bbox = draw.textbbox((0, 0), day, font=font_days)
-            text_w = bbox[2] - bbox[0]
-        else:
-            text_w, _ = draw.textsize(day, font=font_days)
-
+        bbox = draw.textbbox((0, 0), day, font=font_days)
+        text_w = bbox[2] - bbox[0]
         x = i * col_width + (col_width - text_w) // 2
 
         color = GRAY
         if i == 0: color = RED
-        if i == 6: color = PYTHON_BLUE
+        elif i == 6: color = PYTHON_BLUE
 
         draw.text((x, start_y), day, fill=color, font=font_days)
 
@@ -124,11 +105,8 @@ def create_calendar(year, month, logo_path, output_path):
         for i, day in enumerate(week):
             if day != 0:
                 day_str = str(day)
-                if hasattr(draw, 'textbbox'):
-                    bbox = draw.textbbox((0, 0), day_str, font=font_dates)
-                    text_w = bbox[2] - bbox[0]
-                else:
-                    text_w, _ = draw.textsize(day_str, font=font_dates)
+                bbox = draw.textbbox((0, 0), day_str, font=font_dates)
+                text_w = bbox[2] - bbox[0]
 
                 x = i * col_width + (col_width - text_w) // 2
 

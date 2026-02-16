@@ -43,3 +43,4 @@ node_modules/
 build/
 dist/
 *.egg-info/
+.claude/settings.local.json
