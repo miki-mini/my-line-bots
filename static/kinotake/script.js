@@ -12,6 +12,7 @@ const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft',
 // Elements
 const bambooScoreEl = document.getElementById('bamboo-score');
 const mushroomScoreEl = document.getElementById('mushroom-score');
+const prettierScoreEl = document.getElementById('prettier-score');
 const bambooBar = document.getElementById('bamboo-bar');
 const mushroomBar = document.getElementById('mushroom-bar');
 const logList = document.getElementById('log-list');
@@ -21,7 +22,10 @@ const refereeSpeech = document.getElementById('referee-speech');
 async function fetchState() {
     try {
         const res = await fetch(`${apiBase}/state`);
-        if (!res.ok) return;
+        if (!res.ok) {
+            console.error("State fetch failed:", res.status, res.statusText);
+            return;
+        }
         const data = await res.json();
         updateUI(data);
     } catch (e) {
@@ -30,9 +34,15 @@ async function fetchState() {
 }
 
 async function sendVote(team, count, cheat = null, helper = null) {
-    // Optimistic UI update (simple increment) - creates responsive feel
-    if (!cheat && team === 'bamboo') bambooScoreEl.innerText = parseInt(bambooScoreEl.innerText) + count;
-    if (!cheat && team === 'mushroom') mushroomScoreEl.innerText = parseInt(mushroomScoreEl.innerText) + count;
+    console.log(`Sending vote: Team=${team}, Count=${count}, Cheat=${cheat}`);
+
+    // Optimistic UI update
+    if (!cheat && team === 'bamboo' && bambooScoreEl) {
+        bambooScoreEl.innerText = parseInt(bambooScoreEl.innerText || "0") + count;
+    }
+    if (!cheat && team === 'mushroom' && mushroomScoreEl) {
+        mushroomScoreEl.innerText = parseInt(mushroomScoreEl.innerText || "0") + count;
+    }
 
     try {
         const res = await fetch(`${apiBase}/vote`, {
@@ -40,6 +50,14 @@ async function sendVote(team, count, cheat = null, helper = null) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ team, count, cheat_code: cheat, helper_name: helper })
         });
+
+        if (!res.ok) {
+            console.error("Vote failed:", res.status, res.statusText);
+            const text = await res.text();
+            console.error("Response:", text);
+            return;
+        }
+
         const data = await res.json();
 
         if (data.success) {
@@ -49,29 +67,30 @@ async function sendVote(team, count, cheat = null, helper = null) {
             refereeSpeech.innerText = "API制限だ！\n落ち着け！";
         }
     } catch (e) {
-        console.error("Vote failed", e);
+        console.error("Vote request exception", e);
     }
 }
 
 function updateUI(data) {
+    if (!data) return;
+
     bambooVotes = data.bamboo || 0;
     mushroomVotes = data.mushroom || 0;
-    document.getElementById('prettier-score').innerText = data.prettier || 0;
+    if (prettierScoreEl) prettierScoreEl.innerText = data.prettier || 0;
 
-    bambooScoreEl.innerText = bambooVotes;
-    mushroomScoreEl.innerText = mushroomVotes;
+    if (bambooScoreEl) bambooScoreEl.innerText = bambooVotes;
+    if (mushroomScoreEl) mushroomScoreEl.innerText = mushroomVotes;
 
-    // Bar Logic (Visual Exaggeration)
+    // Bar Logic
     const total = Math.max(bambooVotes + mushroomVotes, 1);
     let bHeight = (bambooVotes / total) * 100;
     let mHeight = (mushroomVotes / total) * 100;
 
-    // Safety clamp
-    bambooBar.style.height = `${bHeight}%`;
-    mushroomBar.style.height = `${mHeight}%`;
+    if (bambooBar) bambooBar.style.height = `${bHeight}%`;
+    if (mushroomBar) mushroomBar.style.height = `${mHeight}%`;
 
     // Logs
-    if (data.culprits) {
+    if (data.culprits && logList) {
         logList.innerHTML = '';
         data.culprits.slice().reverse().forEach(log => {
             const li = document.createElement('li');
@@ -83,13 +102,24 @@ function updateUI(data) {
 }
 
 // Event Listeners
-document.getElementById('btn-bamboo').addEventListener('click', () => {
-    sendVote('bamboo', 1);
-});
-document.getElementById('btn-mushroom').addEventListener('click', () => {
-    sendVote('mushroom', 1);
-});
-document.getElementById('btn-prettier').addEventListener('click', () => sendVote('prettier', 1));
+const btnBamboo = document.getElementById('btn-bamboo');
+if (btnBamboo) {
+    btnBamboo.addEventListener('click', () => sendVote('bamboo', 1));
+} else {
+    console.error("Element btn-bamboo not found");
+}
+
+const btnMushroom = document.getElementById('btn-mushroom');
+if (btnMushroom) {
+    btnMushroom.addEventListener('click', () => sendVote('mushroom', 1));
+} else {
+    console.error("Element btn-mushroom not found");
+}
+
+const btnPrettier = document.getElementById('btn-prettier');
+if (btnPrettier) {
+    btnPrettier.addEventListener('click', () => sendVote('prettier', 1));
+}
 
 // Cheat Input Listener
 const cheatInput = document.getElementById('cheat-input');
@@ -99,7 +129,6 @@ if (cheatBtn && cheatInput) {
     cheatBtn.addEventListener('click', () => {
         const code = cheatInput.value.trim();
         if (code) {
-            // Simple manual override for cheats if typed directly
             if (code === "上上下下左右左右BA" || code.toLowerCase() === "uuddlrlrba") {
                 sendVote('bamboo', 100, "上上下下左右左右BA", "手入力ハッカー");
                 alert("Konami Code Applied!");
@@ -180,19 +209,22 @@ document.addEventListener('keyup', (e) => {
 
 // Hidden Trigger (Background 5 clicks)
 let hidden_clicks = 0;
-document.getElementById('hidden-trigger').addEventListener('click', () => {
-    hidden_clicks++;
-    if (hidden_clicks === 5) {
-        alert("Hidden Character Found!");
-        hidden_clicks = 0;
-    }
-});
+const hiddenTrigger = document.getElementById('hidden-trigger');
+if (hiddenTrigger) {
+    hiddenTrigger.addEventListener('click', () => {
+        hidden_clicks++;
+        if (hidden_clicks === 5) {
+            alert("Hidden Character Found!");
+            hidden_clicks = 0;
+        }
+    });
+}
 
 // Anywhere Door Cheat
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.get('gadget') === 'anywhere-door') {
     document.body.style.filter = "invert(1)";
-    refereeSpeech.innerText = "どこでもドアだと！？\n票を奪う気か！";
+    if (refereeSpeech) refereeSpeech.innerText = "どこでもドアだと！？\n票を奪う気か！";
 }
 
 function triggerExplosion() {
@@ -201,5 +233,6 @@ function triggerExplosion() {
 }
 
 // Init
+console.log("Kinotae Seisen Script Loaded");
 fetchState();
-setInterval(fetchState, 3000); // Polling slower to save bandwidth
+setInterval(fetchState, 3000);

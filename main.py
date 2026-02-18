@@ -298,7 +298,11 @@ def startup_event():
 
             # 9. Bat (5 args: app, handler, config, search_model, db)
             register_bat_handler(app, handler_bat, configuration_bat, search_model, db)
+            # 9. Bat (5 args: app, handler, config, search_model, db)
+            register_bat_handler(app, handler_bat, configuration_bat, search_model, db)
             print("🦇 Bat Registered!", flush=True)
+
+            print("🐼 Lesser Panda (Kinotake) Registered!", flush=True)
 
 
 
