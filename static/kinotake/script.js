@@ -64,7 +64,7 @@ async function sendVote(team, count, cheat = null, helper = null) {
             updateUI(data.state);
         } else if (data.error === 'API_LIMIT_EXCEEDED') {
             alert(data.message);
-            refereeSpeech.innerText = "API制限だ！\n落ち着け！";
+            if (refereeSpeech) refereeSpeech.innerText = "API制限だ！\n落ち着け！";
         }
     } catch (e) {
         console.error("Vote request exception", e);
@@ -105,15 +105,11 @@ function updateUI(data) {
 const btnBamboo = document.getElementById('btn-bamboo');
 if (btnBamboo) {
     btnBamboo.addEventListener('click', () => sendVote('bamboo', 1));
-} else {
-    console.error("Element btn-bamboo not found");
 }
 
 const btnMushroom = document.getElementById('btn-mushroom');
 if (btnMushroom) {
     btnMushroom.addEventListener('click', () => sendVote('mushroom', 1));
-} else {
-    console.error("Element btn-mushroom not found");
 }
 
 const btnPrettier = document.getElementById('btn-prettier');
@@ -216,7 +212,10 @@ if (hiddenTrigger) {
         if (hidden_clicks === 5) {
             const inputArea = document.querySelector('.input-area');
             if (inputArea) {
-                inputArea.style.display = inputArea.style.display === 'block' ? 'none' : 'block';
+                // Toggle display properly
+                const currentDisplay = window.getComputedStyle(inputArea).display;
+                inputArea.style.display = currentDisplay === 'none' ? 'block' : 'none';
+
                 if (inputArea.style.display === 'block') {
                     alert("Hidden Command Input Unlocked!");
                 }
@@ -244,21 +243,29 @@ const btnAudio = document.getElementById('btn-audio');
 let audioStarted = false;
 
 function toggleAudio() {
-    if (!bgm) return;
+    if (!bgm) {
+        console.error("BGM Element not found!");
+        return;
+    }
     if (bgm.paused) {
         bgm.play().then(() => {
             btnAudio.innerText = "🔊";
             audioStarted = true;
-        }).catch(e => console.log("Audio play failed", e));
+            console.log("Audio playing");
+        }).catch(e => {
+            console.log("Audio play failed", e);
+            alert("音楽の再生に失敗しました。ブラウザの設定を確認してください。");
+        });
     } else {
         bgm.pause();
         btnAudio.innerText = "🔇";
+        console.log("Audio paused");
     }
 }
 
 if (btnAudio) {
     btnAudio.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent vote triggering if overlapping
+        e.stopPropagation();
         toggleAudio();
     });
 }
@@ -266,43 +273,48 @@ if (btnAudio) {
 // Attempt to start audio on first interaction
 function startAudioOnInteraction() {
     if (audioStarted) return;
-    bgm.volume = 0.5; // Set volume to 50%
+    if (!bgm) return;
+
+    bgm.volume = 0.5;
     bgm.play().then(() => {
         btnAudio.innerText = "🔊";
         audioStarted = true;
-        // Remove listeners once started
+        // Remove listeners
         document.removeEventListener('click', startAudioOnInteraction);
         document.removeEventListener('keydown', startAudioOnInteraction);
+
+        // Remove toast if exists
+        const t = document.getElementById('music-toast');
+        if (t) t.remove();
+
     }).catch(e => {
-        console.log("Autoplay prevented, waiting for interaction");
-        // Optional: Show a "Click to Start Music" toast or just wait
-        const toast = document.createElement('div');
-        toast.innerText = "🎵 クリックして音楽を再生";
-        toast.style.position = "fixed";
-        toast.style.bottom = "20px";
-        toast.style.right = "20px";
-        toast.style.background = "rgba(0,0,0,0.7)";
-        toast.style.color = "white";
-        toast.style.padding = "10px";
-        toast.style.borderRadius = "5px";
-        toast.style.zIndex = "1000";
-        toast.style.cursor = "pointer";
-        toast.id = "music-toast";
+        console.log("Autoplay prevented, showing manual play button");
 
-        document.body.appendChild(toast);
+        if (!document.getElementById('music-toast')) {
+            const toast = document.createElement('div');
+            toast.innerText = "🎵 クリックして音楽を再生";
+            toast.id = "music-toast";
+            toast.style.position = "fixed";
+            toast.style.bottom = "20px";
+            toast.style.right = "20px";
+            toast.style.background = "rgba(0,0,0,0.8)";
+            toast.style.color = "white";
+            toast.style.padding = "15px";
+            toast.style.borderRadius = "30px";
+            toast.style.zIndex = "9999";
+            toast.style.cursor = "pointer";
+            toast.style.boxShadow = "0 0 10px rgba(255,255,0,0.5)";
+            toast.style.border = "1px solid white";
+            toast.style.fontWeight = "bold";
 
-        toast.addEventListener('click', () => {
-            toggleAudio();
-            toast.remove();
-        });
+            document.body.appendChild(toast);
 
-        // Also remove toast on any other interaction that starts audio
-        document.addEventListener('click', () => {
-            if (audioStarted) {
-                const t = document.getElementById('music-toast');
-                if (t) t.remove();
-            }
-        }, { once: true });
+            toast.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleAudio();
+                toast.remove();
+            });
+        }
     });
 }
 
@@ -310,6 +322,6 @@ document.addEventListener('click', startAudioOnInteraction);
 document.addEventListener('keydown', startAudioOnInteraction);
 
 // Init
-console.log("Kinotae Seisen Script Loaded");
+console.log("Kinotae Seisen Script Loaded v3");
 fetchState();
 setInterval(fetchState, 3000);

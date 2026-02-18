@@ -344,3 +344,13 @@ h1 {
     cursor: default;
     z-index: 5;
 }
+
+/* Hidden Cheat Input */
+.input-area {
+    display: none;
+    /* Hidden by default */
+    margin-top: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 10px;
+}
