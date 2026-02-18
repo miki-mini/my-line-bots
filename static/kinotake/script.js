@@ -214,7 +214,13 @@ if (hiddenTrigger) {
     hiddenTrigger.addEventListener('click', () => {
         hidden_clicks++;
         if (hidden_clicks === 5) {
-            alert("Hidden Character Found!");
+            const inputArea = document.querySelector('.input-area');
+            if (inputArea) {
+                inputArea.style.display = inputArea.style.display === 'block' ? 'none' : 'block';
+                if (inputArea.style.display === 'block') {
+                    alert("Hidden Command Input Unlocked!");
+                }
+            }
             hidden_clicks = 0;
         }
     });
@@ -231,6 +237,49 @@ function triggerExplosion() {
     document.body.classList.add('shake-screen');
     setTimeout(() => document.body.classList.remove('shake-screen'), 500);
 }
+
+// BGM Logic
+const bgm = document.getElementById('bgm');
+const btnAudio = document.getElementById('btn-audio');
+let audioStarted = false;
+
+function toggleAudio() {
+    if (!bgm) return;
+    if (bgm.paused) {
+        bgm.play().then(() => {
+            btnAudio.innerText = "🔊";
+            audioStarted = true;
+        }).catch(e => console.log("Audio play failed", e));
+    } else {
+        bgm.pause();
+        btnAudio.innerText = "🔇";
+    }
+}
+
+if (btnAudio) {
+    btnAudio.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent vote triggering if overlapping
+        toggleAudio();
+    });
+}
+
+// Attempt to start audio on first interaction
+function startAudioOnInteraction() {
+    if (audioStarted) return;
+    bgm.volume = 0.5; // Set volume to 50%
+    bgm.play().then(() => {
+        btnAudio.innerText = "🔊";
+        audioStarted = true;
+        // Remove listeners once started
+        document.removeEventListener('click', startAudioOnInteraction);
+        document.removeEventListener('keydown', startAudioOnInteraction);
+    }).catch(e => {
+        console.log("Autoplay prevented, waiting for interaction");
+    });
+}
+
+document.addEventListener('click', startAudioOnInteraction);
+document.addEventListener('keydown', startAudioOnInteraction);
 
 // Init
 console.log("Kinotae Seisen Script Loaded");

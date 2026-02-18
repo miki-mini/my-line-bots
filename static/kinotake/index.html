@@ -27,6 +27,12 @@
                 <div id="referee-placeholder" style="font-size: 100px; display:none;">🐼</div>
                 <div class="speech-bubble" id="referee-speech">やんのかコラ！<br>(威嚇)</div>
             </div>
+            <!-- BGM Controls -->
+            <div class="audio-controls" style="position: absolute; top: 10px; right: 10px; z-index: 100;">
+                <button id="btn-audio" class="mini-btn"
+                    style="font-size: 1.5rem; background: transparent; border: none;">🔇</button>
+            </div>
+            <audio id="bgm" src="/static/kinotake/kinotake.mp3" loop preload="auto"></audio>
         </header>
 
         <div class="battle-arena">
@@ -57,8 +63,7 @@
         </div>
 
         <!-- Cheat Input Area -->
-        <div class="input-area"
-            style="margin-top: 20px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 10px;">
+        <div class="input-area">
             <input type="text" id="cheat-input" placeholder="隠しコマンド入力..."
                 style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; width: 60%; color: #333;">
             <button id="btn-cheat" class="mini-btn" style="padding: 10px 20px;">送信</button>
