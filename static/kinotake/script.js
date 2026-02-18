@@ -21,6 +21,7 @@ const refereeSpeech = document.getElementById('referee-speech');
 async function fetchState() {
     try {
         const res = await fetch(`${apiBase}/state`);
+        if (!res.ok) return;
         const data = await res.json();
         updateUI(data);
     } catch (e) {
@@ -29,6 +30,10 @@ async function fetchState() {
 }
 
 async function sendVote(team, count, cheat = null, helper = null) {
+    // Optimistic UI update (simple increment) - creates responsive feel
+    if (!cheat && team === 'bamboo') bambooScoreEl.innerText = parseInt(bambooScoreEl.innerText) + count;
+    if (!cheat && team === 'mushroom') mushroomScoreEl.innerText = parseInt(mushroomScoreEl.innerText) + count;
+
     try {
         const res = await fetch(`${apiBase}/vote`, {
             method: 'POST',
@@ -51,17 +56,17 @@ async function sendVote(team, count, cheat = null, helper = null) {
 function updateUI(data) {
     bambooVotes = data.bamboo || 0;
     mushroomVotes = data.mushroom || 0;
+    document.getElementById('prettier-score').innerText = data.prettier || 0;
 
     bambooScoreEl.innerText = bambooVotes;
     mushroomScoreEl.innerText = mushroomVotes;
 
     // Bar Logic (Visual Exaggeration)
-    const total = Math.max(bambooVotes + mushroomVotes, 1); // Avoid div by 0
-    // Normalize to 100% then apply potential exaggeration if winning hard
+    const total = Math.max(bambooVotes + mushroomVotes, 1);
     let bHeight = (bambooVotes / total) * 100;
     let mHeight = (mushroomVotes / total) * 100;
 
-    // Safety clamp for normal display, but allow "limit break" via class later
+    // Safety clamp
     bambooBar.style.height = `${bHeight}%`;
     mushroomBar.style.height = `${mHeight}%`;
 
@@ -73,22 +78,49 @@ function updateUI(data) {
             li.innerText = log;
             logList.appendChild(li);
         });
+        logList.scrollTop = 0;
     }
 }
 
 // Event Listeners
-document.getElementById('btn-bamboo').addEventListener('click', () => sendVote('bamboo', 1));
-document.getElementById('btn-mushroom').addEventListener('click', () => sendVote('mushroom', 1));
+document.getElementById('btn-bamboo').addEventListener('click', () => {
+    sendVote('bamboo', 1);
+});
+document.getElementById('btn-mushroom').addEventListener('click', () => {
+    sendVote('mushroom', 1);
+});
 document.getElementById('btn-prettier').addEventListener('click', () => sendVote('prettier', 1));
 
-// Long Press Logic (for both buttons)
+// Cheat Input Listener
+const cheatInput = document.getElementById('cheat-input');
+const cheatBtn = document.getElementById('btn-cheat');
+
+if (cheatBtn && cheatInput) {
+    cheatBtn.addEventListener('click', () => {
+        const code = cheatInput.value.trim();
+        if (code) {
+            // Simple manual override for cheats if typed directly
+            if (code === "上上下下左右左右BA" || code.toLowerCase() === "uuddlrlrba") {
+                sendVote('bamboo', 100, "上上下下左右左右BA", "手入力ハッカー");
+                alert("Konami Code Applied!");
+            } else if (code === "Kamehameha" || code === "かめはめ波") {
+                sendVote('mushroom', 500, "かめはめ波", "手入力ハッカー");
+                triggerExplosion();
+            } else {
+                alert("無効なコマンドです");
+            }
+            cheatInput.value = "";
+        }
+    });
+}
+
+// Long Press Logic
 const btns = document.querySelectorAll('.vote-btn');
 btns.forEach(btn => {
     btn.addEventListener('mousedown', () => {
         pressing = true;
         pressStartTime = Date.now();
         btn.classList.add('pressing');
-        // Add visual charge effect here
     });
 
     btn.addEventListener('mouseup', () => {
@@ -98,7 +130,6 @@ btns.forEach(btn => {
         pressing = false;
 
         if (duration > 3000) {
-            // 3s Long press
             const team = btn.id === 'btn-bamboo' ? 'bamboo' : 'mushroom';
             sendVote(team, 100, "3秒チャージ", "チャージマン");
             triggerExplosion();
@@ -119,7 +150,7 @@ document.addEventListener('keydown', (e) => {
     if (e.key === konamiCode[konamiIndex]) {
         konamiIndex++;
         if (konamiIndex === konamiCode.length) {
-            sendVote('bamboo', 100, "上上下下左右左右BA", "高橋名人"); // Default to Bamboo for Konami? Or random?
+            sendVote('bamboo', 100, "上上下下左右左右BA", "高橋名人");
             alert("Konami Code Activated! +100 Bamboo");
             konamiIndex = 0;
         }
@@ -130,7 +161,7 @@ document.addEventListener('keydown', (e) => {
     // KMH
     keysPressed[e.key.toUpperCase()] = true;
     if (keysPressed['K'] && keysPressed['M'] && keysPressed['H']) {
-        document.body.style.boxShadow = "inset 0 0 50px blue"; // Blue Aura
+        document.body.style.boxShadow = "inset 0 0 50px blue";
     }
 
     if (e.key === 'Enter' && keysPressed['K'] && keysPressed['M'] && keysPressed['H']) {
@@ -148,12 +179,11 @@ document.addEventListener('keyup', (e) => {
 });
 
 // Hidden Trigger (Background 5 clicks)
-let hidden clicks = 0;
+let hidden_clicks = 0;
 document.getElementById('hidden-trigger').addEventListener('click', () => {
     hidden_clicks++;
     if (hidden_clicks === 5) {
         alert("Hidden Character Found!");
-        // Reveal hidden character logic
         hidden_clicks = 0;
     }
 });
@@ -163,7 +193,6 @@ const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.get('gadget') === 'anywhere-door') {
     document.body.style.filter = "invert(1)";
     refereeSpeech.innerText = "どこでもドアだと！？\n票を奪う気か！";
-    // Logic to steal votes could go here
 }
 
 function triggerExplosion() {
@@ -173,4 +202,4 @@ function triggerExplosion() {
 
 // Init
 fetchState();
-setInterval(fetchState, 2000); // Polling
+setInterval(fetchState, 3000); // Polling slower to save bandwidth

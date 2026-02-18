@@ -19,8 +19,11 @@
         <header>
             <h1>きのたけ聖戦<span class="subtitle">〜改行バトルの審判〜</span></h1>
             <div class="referee-area">
-                <!-- Placeholder for Red Panda, or use a text emoji if image fails -->
-                <div id="referee-placeholder" style="font-size: 100px;">🐼</div>
+                <!-- If image exists it will show, otherwise alt text/placeholder -->
+                <img src="/static/kinotake/kinokotakenoko.png" id="referee-img" alt="Lesser Panda Referee"
+                    class="referee"
+                    onerror="this.style.display='none'; document.getElementById('referee-placeholder').style.display='block';">
+                <div id="referee-placeholder" style="font-size: 100px; display:none;">🐼</div>
                 <div class="speech-bubble" id="referee-speech">やんのかコラ！<br>(威嚇)</div>
             </div>
         </header>
@@ -52,7 +55,16 @@
             <span id="prettier-score">0</span>
         </div>
 
-        <div class="log-area">
+        <!-- Cheat Input Area -->
+        <div class="input-area"
+            style="margin-top: 20px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 10px;">
+            <input type="text" id="cheat-input" placeholder="隠しコマンド入力..."
+                style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; width: 60%; color: #333;">
+            <button id="btn-cheat" class="mini-btn" style="padding: 10px 20px;">送信</button>
+            <p style="font-size: 0.8rem; color: #888; margin-bottom: 0;">※ キーボード入力も有効です (例: 上上下下...)</p>
+        </div>
+
+        <div class="log-area" style="margin-top: 20px;">
             <h3>📜 最近の聖戦履歴</h3>
             <ul id="log-list">
                 <!-- Logs will be injected here -->
@@ -64,8 +76,6 @@
     </div>
 
     <!-- Assets -->
-    <img src="/static/kinotake/kinokotakenoko.png" style="display:none;" id="asset-kinotake">
-
     <script src="/static/kinotake/script.js"></script>
 </body>
 
