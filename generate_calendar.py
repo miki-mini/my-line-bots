@@ -3,8 +3,10 @@ import calendar
 import datetime
 import os
 import jpholiday
+import PIL
 
 def create_calendar(year, month, logo_path, output_path):
+    print(f"--- Generating calendar for {year}-{month} ---")
     # Colors
     WHITE = (255, 255, 255)
     BLACK = (30, 30, 30) # Softer black
@@ -21,7 +23,8 @@ def create_calendar(year, month, logo_path, output_path):
 
     # Load Logo
     if not os.path.exists(logo_path):
-        raise FileNotFoundError(f"Logo file not found at {logo_path}")
+        print(f"Error: Logo file not found at {os.path.abspath(logo_path)}")
+        return
 
     try:
         logo = Image.open(logo_path)
@@ -36,18 +39,30 @@ def create_calendar(year, month, logo_path, output_path):
         logo_y = 200
         img.paste(logo, (logo_x, logo_y), logo if logo.mode == 'RGBA' else None)
     except Exception as e:
-        raise RuntimeError(f"Error loading logo: {e}")
+        print(f"Error loading logo: {e}")
+        return
 
     # Fonts
     try:
         # Smaller, cleaner fonts
         font_header = ImageFont.truetype("arial.ttf", 60) # Smaller header
         font_sub_header = ImageFont.truetype("arial.ttf", 30) # Year
-        font_month_name = ImageFont.truetype("arial.ttf", 40) # Slightly larger month name
+
+        # Try to load font_month_name with size 40
+        try:
+            font_month_name = ImageFont.truetype("arial.ttf", 40)
+        except IOError:
+             font_month_name = ImageFont.load_default()
+
         font_days = ImageFont.truetype("arial.ttf", 30)
         font_dates = ImageFont.truetype("arial.ttf", 45) # Smaller dates
-    except IOError:
-        raise IOError("arial.ttf not found. Please install the required font.")
+    except IOError as e:
+        print(f"Warning: Font loading error ({e}). Using default font.")
+        font_header = ImageFont.load_default()
+        font_sub_header = ImageFont.load_default()
+        font_month_name = ImageFont.load_default()
+        font_days = ImageFont.load_default()
+        font_dates = ImageFont.load_default()
 
     # Draw Header Information
     year_text = f"{year}"
@@ -55,12 +70,17 @@ def create_calendar(year, month, logo_path, output_path):
     month_num_text = f"{month}"
 
     # Calculate text sizes
-    bbox_year = draw.textbbox((0, 0), year_text, font=font_sub_header)
-    year_width = bbox_year[2] - bbox_year[0]
-    bbox_month = draw.textbbox((0, 0), month_name, font=font_month_name)
-    month_width = bbox_month[2] - bbox_month[0]
-    bbox_num = draw.textbbox((0, 0), month_num_text, font=font_sub_header)
-    num_width = bbox_num[2] - bbox_num[0]
+    # Helper to get text size safely
+    def get_text_size(text, font):
+        if hasattr(draw, 'textbbox'):
+             bbox = draw.textbbox((0, 0), text, font=font)
+             return bbox[2] - bbox[0]
+        else:
+             return draw.textsize(text, font=font)[0]
+
+    year_width = get_text_size(year_text, font_sub_header)
+    month_width = get_text_size(month_name, font_month_name)
+    num_width = get_text_size(month_num_text, font_sub_header)
 
     # Position text
     current_y = logo_y + logo_height + 50
@@ -86,13 +106,12 @@ def create_calendar(year, month, logo_path, output_path):
 
     # Draw Headers
     for i, day in enumerate(week_days):
-        bbox = draw.textbbox((0, 0), day, font=font_days)
-        text_w = bbox[2] - bbox[0]
+        text_w = get_text_size(day, font_days)
         x = i * col_width + (col_width - text_w) // 2
 
         color = GRAY
         if i == 0: color = RED
-        elif i == 6: color = PYTHON_BLUE
+        if i == 6: color = PYTHON_BLUE
 
         draw.text((x, start_y), day, fill=color, font=font_days)
 
@@ -105,8 +124,7 @@ def create_calendar(year, month, logo_path, output_path):
         for i, day in enumerate(week):
             if day != 0:
                 day_str = str(day)
-                bbox = draw.textbbox((0, 0), day_str, font=font_dates)
-                text_w = bbox[2] - bbox[0]
+                text_w = get_text_size(day_str, font_dates)
 
                 x = i * col_width + (col_width - text_w) // 2
 
@@ -122,10 +140,14 @@ def create_calendar(year, month, logo_path, output_path):
                 draw.text((x, current_y), day_str, fill=color, font=font_dates)
         current_y += row_height
 
-    img.save(output_path)
-    print(f"Saved calendar to {output_path}")
+    abs_path = os.path.abspath(output_path)
+    img.save(abs_path)
+    print(f"Saved calendar to: {abs_path}")
 
 if __name__ == "__main__":
+    print(f"Current Working Directory: {os.getcwd()}")
+    print(f"Pillow Version: {PIL.__version__}")
+
     today = datetime.date.today()
     # Generate for current month
     create_calendar(today.year, today.month, "images/python-logo-only.png", f"python_calendar_{today.year}_{today.month:02d}.png")
@@ -139,3 +161,4 @@ if __name__ == "__main__":
         next_year = today.year
 
     create_calendar(next_year, next_month, "images/python-logo-only.png", f"python_calendar_{next_year}_{next_month:02d}.png")
+    print("All tasks completed.")

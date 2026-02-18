@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>きのたけ聖戦 - 改行バトルの審判</title>
+    <link rel="stylesheet" href="/static/kinotake/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Zen+Maru+Gothic:wght@700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="background-effects">
+        <div id="sparkles"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>きのたけ聖戦<span class="subtitle">〜改行バトルの審判〜</span></h1>
+            <div class="referee-area">
+                <!-- Placeholder for Red Panda, or use a text emoji if image fails -->
+                <div id="referee-placeholder" style="font-size: 100px;">🐼</div>
+                <div class="speech-bubble" id="referee-speech">やんのかコラ！<br>(威嚇)</div>
+            </div>
+        </header>
+
+        <div class="battle-arena">
+            <div class="team bamboo">
+                <h2>たけのこ派<br><span class="small">(1文改行)</span></h2>
+                <div class="score" id="bamboo-score">0</div>
+                <div class="bar-container">
+                    <div class="bar" id="bamboo-bar"></div>
+                </div>
+                <button id="btn-bamboo" class="vote-btn">連打ァ！</button>
+            </div>
+
+            <div class="vs">VS</div>
+
+            <div class="team mushroom">
+                <h2>きのこ派<br><span class="small">(改行なし)</span></h2>
+                <div class="score" id="mushroom-score">0</div>
+                <div class="bar-container">
+                    <div class="bar" id="mushroom-bar"></div>
+                </div>
+                <button id="btn-mushroom" class="vote-btn">連打ァ！</button>
+            </div>
+        </div>
+
+        <div class="prettier-zone">
+            <button id="btn-prettier" class="mini-btn">Prettierに任せる</button>
+            <span id="prettier-score">0</span>
+        </div>
+
+        <div class="log-area">
+            <h3>📜 最近の聖戦履歴</h3>
+            <ul id="log-list">
+                <!-- Logs will be injected here -->
+            </ul>
+        </div>
+
+        <!-- Hidden trigger area in background -->
+        <div id="hidden-trigger"></div>
+    </div>
+
+    <!-- Assets -->
+    <img src="/static/kinotake/kinokotakenoko.png" style="display:none;" id="asset-kinotake">
+
+    <script src="/static/kinotake/script.js"></script>
+</body>
+
+</html>

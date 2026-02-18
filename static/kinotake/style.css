@@ -1,0 +1,277 @@
+:root {
+    --bamboo-color: #f7d54e;
+    --bamboo-bg: #8cba51;
+    --mushroom-color: #644129;
+    --mushroom-bg: #ff8c69;
+    --bg-dark: #1a1a2e;
+    --text-light: #ffffff;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Zen Maru Gothic', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    overflow-x: hidden; /* For bar exaggeration */
+    user-select: none;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+    z-index: 10;
+}
+
+header {
+    margin-bottom: 2rem;
+}
+
+h1 {
+    font-family: 'Mochiy Pop One', sans-serif;
+    font-size: 2.5rem;
+    color: #ffcc00;
+    text-shadow: 2px 2px 0px #ff0000;
+}
+
+.subtitle {
+    display: block;
+    font-size: 1rem;
+    color: #ccc;
+    margin-top: 0.5rem;
+}
+
+/* Referee */
+.referee-area {
+    position: relative;
+    height: 200px;
+    margin: 1rem 0;
+}
+
+.referee {
+    height: 150px;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.speech-bubble {
+    position: absolute;
+    top: 0;
+    right: 50%;
+    transform: translateX(120%);
+    background: white;
+    color: black;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    border: 3px solid black;
+}
+
+.speech-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: 10px;
+    left: -10px;
+    border-width: 10px 10px 10px 0;
+    border-style: solid;
+    border-color: transparent white transparent transparent;
+}
+
+/* Battle Arena */
+.battle-arena {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    margin-bottom: 3rem;
+    height: 400px; /* Space for bars to grow */
+    padding-bottom: 50px;
+}
+
+.team {
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2;
+}
+
+.vs {
+    font-size: 3rem;
+    font-family: 'Mochiy Pop One', sans-serif;
+    color: red;
+    z-index: 2;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.score {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.bar-container {
+    width: 30px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    position: relative;
+    overflow: visible; /* Allow bar to explode out */
+    margin-bottom: 10px;
+}
+
+.bar {
+    width: 100%;
+    height: 0%; /* Dynamic */
+    position: absolute;
+    bottom: 0;
+    transition: height 0.2s ease-out;
+    border-radius: 15px;
+}
+
+#bamboo-bar {
+    background: linear-gradient(to top, var(--bamboo-bg), #d4fc79);
+    box-shadow: 0 0 10px var(--bamboo-bg);
+}
+
+#mushroom-bar {
+    background: linear-gradient(to top, var(--mushroom-bg), #ffafbd);
+    box-shadow: 0 0 10px var(--mushroom-bg);
+}
+
+.vote-btn {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: none;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.5);
+    transition: all 0.1s;
+    background: white;
+    color: black;
+    position: relative;
+}
+
+.vote-btn:active {
+    transform: translateY(5px);
+    box-shadow: 0 0 0 rgba(0,0,0,0.5);
+}
+
+.vote-btn.pressing {
+    animation: shake 0.1s infinite;
+    background: #ffff00;
+}
+
+#btn-bamboo { border: 5px solid var(--bamboo-bg); }
+#btn-mushroom { border: 5px solid var(--mushroom-bg); }
+
+/* Electric Aura for Long Press */
+.aura {
+    position: absolute;
+    top: -10px; left: -10px; right: -10px; bottom: -10px;
+    border-radius: 50%;
+    border: 2px solid cyan;
+    animation: spin 1s linear infinite;
+    opacity: 0;
+}
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* Prettier Zone */
+.prettier-zone {
+    margin: 2rem 0;
+    opacity: 0.7;
+}
+
+.mini-btn {
+    background: #333;
+    color: white;
+    border: 1px solid #555;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+/* Log Area */
+.log-area {
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    padding: 10px;
+    text-align: left;
+    max-height: 150px;
+    overflow-y: hidden; /* Hide scrollbar, just show recent */
+    font-family: monospace;
+}
+
+.log-area h3 {
+    margin: 0 0 10px 0;
+    font-size: 1rem;
+    border-bottom: 1px solid #555;
+    padding-bottom: 5px;
+}
+
+#log-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#log-list li {
+    font-size: 0.85rem;
+    margin-bottom: 3px;
+    color: #aaa;
+    border-bottom: 1px dotted #333;
+}
+
+/* Visual Exaggerations */
+.bar.limit-break {
+    position: fixed;
+    bottom: 0;
+    z-index: 100;
+    width: 50px; /* Wider when breaking */
+    border: 2px solid white;
+}
+
+.shake-screen {
+    animation: shake 0.5s;
+}
+
+@keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+/* Hidden Trigger */
+#hidden-trigger {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 20px;
+    height: 20px;
+    /* background: red; /* Debug */
+    cursor: default;
+    z-index: 5;
+}
