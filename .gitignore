@@ -44,3 +44,4 @@ build/
 dist/
 *.egg-info/
 .claude/settings.local.json
+static/kinotake/kakusi/
