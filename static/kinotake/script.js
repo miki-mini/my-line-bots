@@ -275,6 +275,34 @@ function startAudioOnInteraction() {
         document.removeEventListener('keydown', startAudioOnInteraction);
     }).catch(e => {
         console.log("Autoplay prevented, waiting for interaction");
+        // Optional: Show a "Click to Start Music" toast or just wait
+        const toast = document.createElement('div');
+        toast.innerText = "🎵 クリックして音楽を再生";
+        toast.style.position = "fixed";
+        toast.style.bottom = "20px";
+        toast.style.right = "20px";
+        toast.style.background = "rgba(0,0,0,0.7)";
+        toast.style.color = "white";
+        toast.style.padding = "10px";
+        toast.style.borderRadius = "5px";
+        toast.style.zIndex = "1000";
+        toast.style.cursor = "pointer";
+        toast.id = "music-toast";
+
+        document.body.appendChild(toast);
+
+        toast.addEventListener('click', () => {
+            toggleAudio();
+            toast.remove();
+        });
+
+        // Also remove toast on any other interaction that starts audio
+        document.addEventListener('click', () => {
+            if (audioStarted) {
+                const t = document.getElementById('music-toast');
+                if (t) t.remove();
+            }
+        }, { once: true });
     });
 }
 
