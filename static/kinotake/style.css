@@ -11,9 +11,14 @@ body {
     margin: 0;
     padding: 0;
     font-family: 'Zen Maru Gothic', sans-serif;
-    background-color: var(--bg-dark);
+    /* Use background image with a dark overlay for readability */
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/static/kinotake/kinotakehaikei.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
     color: var(--text-light);
-    overflow-x: hidden; /* For bar exaggeration */
+    overflow-x: hidden;
+    /* For bar exaggeration */
     user-select: none;
 }
 
@@ -57,8 +62,15 @@ h1 {
 }
 
 @keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
 }
 
 .speech-bubble {
@@ -90,7 +102,8 @@ h1 {
     justify-content: space-around;
     align-items: flex-end;
     margin-bottom: 3rem;
-    height: 400px; /* Space for bars to grow */
+    height: 400px;
+    /* Space for bars to grow */
     padding-bottom: 50px;
 }
 
@@ -111,9 +124,17 @@ h1 {
 }
 
 @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 .score {
@@ -128,13 +149,15 @@ h1 {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 15px;
     position: relative;
-    overflow: visible; /* Allow bar to explode out */
+    overflow: visible;
+    /* Allow bar to explode out */
     margin-bottom: 10px;
 }
 
 .bar {
     width: 100%;
-    height: 0%; /* Dynamic */
+    height: 0%;
+    /* Dynamic */
     position: absolute;
     bottom: 0;
     transition: height 0.2s ease-out;
@@ -159,7 +182,7 @@ h1 {
     font-size: 1.2rem;
     font-weight: bold;
     cursor: pointer;
-    box-shadow: 0 5px 0 rgba(0,0,0,0.5);
+    box-shadow: 0 5px 0 rgba(0, 0, 0, 0.5);
     transition: all 0.1s;
     background: white;
     color: black;
@@ -168,7 +191,7 @@ h1 {
 
 .vote-btn:active {
     transform: translateY(5px);
-    box-shadow: 0 0 0 rgba(0,0,0,0.5);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0.5);
 }
 
 .vote-btn.pressing {
@@ -176,20 +199,32 @@ h1 {
     background: #ffff00;
 }
 
-#btn-bamboo { border: 5px solid var(--bamboo-bg); }
-#btn-mushroom { border: 5px solid var(--mushroom-bg); }
+#btn-bamboo {
+    border: 5px solid var(--bamboo-bg);
+}
+
+#btn-mushroom {
+    border: 5px solid var(--mushroom-bg);
+}
 
 /* Electric Aura for Long Press */
 .aura {
     position: absolute;
-    top: -10px; left: -10px; right: -10px; bottom: -10px;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
     border-radius: 50%;
     border: 2px solid cyan;
     animation: spin 1s linear infinite;
     opacity: 0;
 }
 
-@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
 
 /* Prettier Zone */
 .prettier-zone {
@@ -213,7 +248,8 @@ h1 {
     padding: 10px;
     text-align: left;
     max-height: 150px;
-    overflow-y: hidden; /* Hide scrollbar, just show recent */
+    overflow-y: hidden;
+    /* Hide scrollbar, just show recent */
     font-family: monospace;
 }
 
@@ -242,7 +278,8 @@ h1 {
     position: fixed;
     bottom: 0;
     z-index: 100;
-    width: 50px; /* Wider when breaking */
+    width: 50px;
+    /* Wider when breaking */
     border: 2px solid white;
 }
 
@@ -251,17 +288,49 @@ h1 {
 }
 
 @keyframes shake {
-    0% { transform: translate(1px, 1px) rotate(0deg); }
-    10% { transform: translate(-1px, -2px) rotate(-1deg); }
-    20% { transform: translate(-3px, 0px) rotate(1deg); }
-    30% { transform: translate(3px, 2px) rotate(0deg); }
-    40% { transform: translate(1px, -1px) rotate(1deg); }
-    50% { transform: translate(-1px, 2px) rotate(-1deg); }
-    60% { transform: translate(-3px, 1px) rotate(0deg); }
-    70% { transform: translate(3px, 1px) rotate(-1deg); }
-    80% { transform: translate(-1px, -1px) rotate(1deg); }
-    90% { transform: translate(1px, 2px) rotate(0deg); }
-    100% { transform: translate(1px, -2px) rotate(-1deg); }
+    0% {
+        transform: translate(1px, 1px) rotate(0deg);
+    }
+
+    10% {
+        transform: translate(-1px, -2px) rotate(-1deg);
+    }
+
+    20% {
+        transform: translate(-3px, 0px) rotate(1deg);
+    }
+
+    30% {
+        transform: translate(3px, 2px) rotate(0deg);
+    }
+
+    40% {
+        transform: translate(1px, -1px) rotate(1deg);
+    }
+
+    50% {
+        transform: translate(-1px, 2px) rotate(-1deg);
+    }
+
+    60% {
+        transform: translate(-3px, 1px) rotate(0deg);
+    }
+
+    70% {
+        transform: translate(3px, 1px) rotate(-1deg);
+    }
+
+    80% {
+        transform: translate(-1px, -1px) rotate(1deg);
+    }
+
+    90% {
+        transform: translate(1px, 2px) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(1px, -2px) rotate(-1deg);
+    }
 }
 
 /* Hidden Trigger */
