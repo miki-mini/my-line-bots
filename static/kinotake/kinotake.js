@@ -122,14 +122,21 @@ let vimQteProgress = 0; // 0, 1, 2
 let vimQteCount = 0; // 0 to 5
 let vimQteTimer = null;
 
+let vimAudio = null;
+
 function activateVimMode() {
     document.body.classList.add('vim-mode');
 
-    // Play audio slowly if possible
-    if (bgm) {
-        bgm.playbackRate = 0.5;
-        if (bgm.paused) toggleAudio();
+    // Stop Main BGM
+    if (bgm) bgm.pause();
+
+    // Play Vim Dungeon BGM
+    if (!vimAudio) {
+        vimAudio = new Audio('/static/kinotake/kakusi/derarenai.mp3');
+        vimAudio.loop = true;
+        vimAudio.volume = 1.0;
     }
+    vimAudio.play().catch(e => console.log("Vim audio play blocked", e));
 
     // Show Overlay
     const overlay = document.getElementById('vim-overlay');
@@ -233,11 +240,25 @@ function winQTE() {
         shatter.classList.add('shatter-anim');
     }
 
-    // Sound FX (Fast)
-    if (bgm) {
-        bgm.playbackRate = 2.0;
-        setTimeout(() => { bgm.pause(); bgm.playbackRate = 1.0; }, 500);
+    // Stop Vim Audio
+    if (vimAudio) {
+        vimAudio.pause();
+        vimAudio.currentTime = 0;
     }
+
+    // Play Shatter Sound (pari-n.mp3 exists? If not, we rely on visual or existing logic)
+    // User mentioned pari-n.mp3 earlier but I don't think I code for it specifically yet besides generic.
+    // Let's check listing... yes pari-n.mp3 exists.
+    const shatterAudio = new Audio('/static/kinotake/kakusi/pari-n.mp3');
+    shatterAudio.play().catch(e => console.log("Shatter audio blocked", e));
+
+    // Resume Main BGM after short delay
+    setTimeout(() => {
+        if (bgm && audioStarted) {
+            bgm.playbackRate = 1.0;
+            bgm.play();
+        }
+    }, 2000);
 
     setTimeout(() => {
         // Restore
@@ -251,7 +272,8 @@ function winQTE() {
         }
 
         // Success Message
-        alert("脱出成功！\n変更は保存されました (嘘)");
+        // Success Message
+        showCertificateEntry();
 
     }, 500);
 }
@@ -489,3 +511,71 @@ document.addEventListener('keydown', startAudioOnInteraction);
 console.log("Kinotae Seisen Script Loaded v6");
 fetchState();
 setInterval(fetchState, 3000);
+
+// Victory Certificate Logic
+function showCertificateEntry() {
+    const modal = document.getElementById('certificate-modal');
+    if (modal) modal.style.display = 'flex';
+    // Load image early to cache
+    const img = new Image();
+    img.src = '/static/kinotake/kakusi/kuria.jpg';
+}
+
+function generateCertificate() {
+    const nameInput = document.getElementById('cert-name-input');
+    const name = nameInput.value.trim() || "名無しの勇者";
+
+    const canvas = document.getElementById('cert-canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = '/static/kinotake/kakusi/kuria.jpg';
+
+    img.onload = () => {
+        // Draw Image
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        // Draw Text
+        ctx.font = 'bold 80px "Zen Maru Gothic", sans-serif';
+        ctx.fillStyle = '#333';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // Coordinates: Center horizontal, slightly below center vertical
+        ctx.fillText(name, canvas.width / 2, canvas.height / 2 + 180);
+
+        // Show Preview
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        const preview = document.getElementById('certificate-preview');
+        preview.src = dataUrl;
+        preview.style.display = 'block';
+
+        // Show Controls
+        document.getElementById('input-controls').style.display = 'none';
+        document.getElementById('cert-instruction').innerText = "証明書発行完了！";
+        document.getElementById('download-controls').style.display = 'flex';
+
+        // Play Victory Sound
+        const audio = new Audio('/static/kinotake/kakusi/kuria.mp3');
+        audio.volume = 0.5;
+        audio.play().catch(e => console.log("Audio play blocked", e));
+    };
+
+    img.onerror = () => {
+        alert("画像の読み込みに失敗しました");
+    };
+}
+
+function downloadCertificate() {
+    const canvas = document.getElementById('cert-canvas');
+    const link = document.createElement('a');
+    link.download = 'kinotake_victory.jpg';
+    link.href = canvas.toDataURL('image/jpeg', 0.9);
+    link.click();
+}
+
+function shareOnX() {
+    const text = "『きのたけ聖戦』で VIM DUNGEON を制覇しました！\n強制終了の壁を打ち砕き、脱出に成功！\n#きのたけ聖戦 #VimDungeon";
+    const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text);
+    window.open(url, '_blank');
+}

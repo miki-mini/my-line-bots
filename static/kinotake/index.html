@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>きのたけ聖戦 - 改行バトルの審判</title>
     <!-- Renamed CSS to force cache clear -->
-    <link rel="stylesheet" href="/static/kinotake/kinotake.css?v=8">
+    <link rel="stylesheet" href="/static/kinotake/kinotake.css?v=18">
     <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Zen+Maru+Gothic:wght@700&display=swap"
         rel="stylesheet">
     <link rel="icon" href="/static/kinotake/kinokotakenoko.png">
@@ -97,10 +97,28 @@
 
         <!-- Shatter Screen -->
         <div id="shatter-screen"></div>
+
+        <!-- Victory Certificate Modal -->
+        <div id="certificate-modal">
+            <h2 id="cert-instruction">VIM DUNGEON 制覇！<br>名前を刻め！</h2>
+            <div class="cert-controls" id="input-controls">
+                <input type="text" id="cert-name-input" placeholder="あなたの名前 (8文字以内)" maxlength="8">
+                <button id="btn-generate" class="cert-btn" onclick="generateCertificate()">証明書発行</button>
+            </div>
+
+            <img id="certificate-preview" src="" alt="Certificate Preview" style="display:none;">
+            <canvas id="cert-canvas" width="1200" height="675" style="display:none;"></canvas>
+
+            <div class="cert-controls" id="download-controls" style="display:none;">
+                <button id="btn-download" class="cert-btn" onclick="downloadCertificate()">💾 画像保存</button>
+                <button id="btn-share" class="cert-btn" onclick="shareOnX()">𝕏 で自慢する</button>
+                <button class="cert-btn" onclick="location.reload()" style="background:#555;">戻る</button>
+            </div>
+        </div>
     </div>
 
     <!-- Assets: Renamed JS force cache clear -->
-    <script src="/static/kinotake/kinotake.js?v=7"></script>
+    <script src="/static/kinotake/kinotake.js?v=16"></script>
 </body>
 
 </html>

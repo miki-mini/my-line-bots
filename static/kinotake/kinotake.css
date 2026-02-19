@@ -348,7 +348,8 @@ h1 {
 
 /* VIM DUNGEON MODE */
 body.vim-mode {
-    background: black !important;
+    background: url('/static/kinotake/kakusi/derarenai.png') no-repeat center center fixed !important;
+    background-size: cover !important;
     animation: glitch 0.5s infinite;
     overflow: hidden;
 }
@@ -522,4 +523,79 @@ body.vim-mode .container {
     font-weight: bold;
     display: none;
     margin-top: 10px;
+}
+
+/* Certificate Modal */
+#certificate-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10001;
+    text-align: center;
+    color: white;
+}
+
+#certificate-preview {
+    max-width: 90%;
+    max-height: 60vh;
+    border: 5px solid gold;
+    box-shadow: 0 0 20px gold;
+    margin: 20px 0;
+}
+
+#input-controls,
+#download-controls {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+    justify-content: center;
+    align-items: center;
+}
+
+.cert-btn {
+    padding: 10px 25px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    font-family: 'Mochiy Pop One', sans-serif;
+    color: white;
+}
+
+#btn-generate {
+    background: #FF5722;
+}
+
+#btn-download {
+    background: #4CAF50;
+}
+
+#btn-share {
+    background: #000;
+    border: 1px solid #333;
+}
+
+#btn-back {
+    background: #555;
+}
+
+#cert-name-input {
+    padding: 15px;
+    font-size: 1.5rem;
+    border-radius: 5px;
+    width: 300px;
+    text-align: center;
+}
+
+#cert-instruction {
+    font-size: 2rem;
+    color: gold;
+    text-shadow: 0 0 10px orange;
 }
