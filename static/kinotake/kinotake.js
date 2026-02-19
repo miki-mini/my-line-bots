@@ -583,14 +583,25 @@ function generateCertificate() {
         // Draw Image
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        // Draw Text
+        // Draw Text with Glow
         ctx.font = 'bold 80px "Zen Maru Gothic", sans-serif';
-        ctx.fillStyle = '#333';
+        ctx.fillStyle = '#FFFFFF'; // White text for better glow contrast
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        // Coordinates: Center horizontal, slightly below center vertical
-        ctx.fillText(name, canvas.width / 2, canvas.height / 2 + 180);
+        // Glow Effect
+        ctx.shadowColor = '#FFD700'; // Gold glow
+        ctx.shadowBlur = 20;
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#FF4500'; // Orange-ish outline
+
+        // Coordinates: Center horizontal, higher than before (was +180)
+        // Moved up to +80 to avoid overlapping panda too much
+        const textY = canvas.height / 2 + 80;
+
+        ctx.strokeText(name, canvas.width / 2, textY);
+        ctx.shadowBlur = 0; // Reset shadow for fill
+        ctx.fillText(name, canvas.width / 2, textY);
 
         // Show Preview
         const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
@@ -607,6 +618,10 @@ function generateCertificate() {
         const audio = new Audio('/static/kinotake/kuria.mp3');
         audio.volume = 0.5;
         audio.play().catch(e => console.log("Audio play blocked", e));
+
+        // Log Success to Server (Holy War History)
+        // team='vim', count=0, cheat_code=':wq_success', helper_name=name
+        sendVote('vim', 0, ':wq_success', name);
     };
 
     img.onerror = () => {
