@@ -340,8 +340,9 @@ h1 {
     left: 10px;
     width: 20px;
     height: 20px;
-    /* background: red; /* Debug */
-    cursor: default;
+    background: rgba(255, 0, 0, 0.5);
+    /* Temporarily visible */
+    cursor: pointer;
     z-index: 5;
 }
 
