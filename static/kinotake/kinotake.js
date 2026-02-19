@@ -195,11 +195,24 @@ function updateQteDisplay() {
     for (let i = 0; i < 5; i++) {
         const span = document.createElement('span');
         span.classList.add('qte-seq');
+
         if (i < vimQteCount) {
+            // Completed sets
             span.classList.add('completed');
             span.innerText = ":q!";
+        } else if (i === vimQteCount) {
+            // Current active set
+            span.classList.add('active');
+            // Show what has been typed so far
+            // vimQteProgress 0 -> "???"
+            // vimQteProgress 1 -> ":??"
+            // vimQteProgress 2 -> ":q?"
+            if (vimQteProgress === 0) span.innerText = "___";
+            if (vimQteProgress === 1) span.innerText = ":__";
+            if (vimQteProgress === 2) span.innerText = ":q_";
         } else {
-            span.innerText = "???";
+            // Future sets
+            span.innerText = "___";
         }
         disp.appendChild(span);
     }
@@ -209,6 +222,8 @@ function handleQteInput(key) {
     const target = vimQteSequence[vimQteProgress];
     if (key === target) {
         vimQteProgress++;
+        updateQteDisplay(); // Update UI immediately
+
         if (vimQteProgress === 3) {
             // Set completed
             vimQteCount++;
