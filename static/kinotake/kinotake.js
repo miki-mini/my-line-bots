@@ -170,7 +170,7 @@ if (cheatBtn && cheatInput) {
         const code = cheatInput.value.trim();
         if (code) {
             // SECURE: Send raw code to server. No local check.
-            sendVote(null, 0, code, "手入力ハッカー");
+            sendVote('none', 0, code, "手入力ハッカー");
             cheatInput.value = "";
         }
     });
