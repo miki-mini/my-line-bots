@@ -33,14 +33,24 @@ async function fetchState() {
     }
 }
 
-async function sendVote(team, count, cheat = null, helper = null) {
-    console.log(`Sending vote: Team=${team}, Count=${count}, Cheat=${cheat}`);
+async function sendVote(team, count, cheatCode = null, helperName = null) {
+    console.log(`Sending vote: Team=${team}, Count=${count}, Cheat=${cheatCode}`);
+
+    if (vimQteActive) return; // No voting during boss battle
+
+    // Shonbori Logic
+    if (team === 'prettier') {
+        prettierClickCount += count;
+        if (prettierClickCount >= 32 && !document.body.classList.contains('shonbori-mode')) {
+            activateShonboriMode();
+        }
+    }
 
     // Optimistic UI update for standard votes
-    if (!cheat && team === 'bamboo' && bambooScoreEl) {
+    if (!cheatCode && team === 'bamboo' && bambooScoreEl) {
         bambooScoreEl.innerText = parseInt(bambooScoreEl.innerText || "0") + count;
     }
-    if (!cheat && team === 'mushroom' && mushroomScoreEl) {
+    if (!cheatCode && team === 'mushroom' && mushroomScoreEl) {
         mushroomScoreEl.innerText = parseInt(mushroomScoreEl.innerText || "0") + count;
     }
 
@@ -123,6 +133,21 @@ let vimQteCount = 0; // 0 to 5
 let vimQteTimer = null;
 
 let vimAudio = null;
+
+function activateShonboriMode() {
+    document.body.classList.add('shonbori-mode');
+
+    // Stop Main BGM
+    if (bgm) bgm.pause();
+
+    // Play Shonbori BGM
+    if (!shonboriAudio) {
+        shonboriAudio = new Audio('/static/kinotake/shonbori.mp3');
+        shonboriAudio.loop = true;
+        shonboriAudio.volume = 1.0;
+    }
+    shonboriAudio.play().catch(e => console.log("Shonbori audio blocked", e));
+}
 
 function activateVimMode() {
     document.body.classList.add('vim-mode');

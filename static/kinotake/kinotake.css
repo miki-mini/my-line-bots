@@ -354,6 +354,14 @@ body.vim-mode {
     overflow: hidden;
 }
 
+/* SHONBORI MODE (Prettier x32) */
+body.shonbori-mode {
+    background: url('/static/kinotake/shonbori.png') no-repeat center center fixed !important;
+    background-size: cover !important;
+    filter: grayscale(100%);
+    transition: filter 2s ease, background 1s ease;
+}
+
 body.vim-mode .container {
     filter: invert(1) hue-rotate(180deg) blur(1px);
     transition: filter 2s;
