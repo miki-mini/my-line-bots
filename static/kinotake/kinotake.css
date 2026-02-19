@@ -11,13 +11,24 @@ body {
     margin: 0;
     padding: 0;
     font-family: 'Zen Maru Gothic', sans-serif;
-    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/static/kinotake/kinotakehaikei.png');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
     color: var(--text-light);
     overflow-x: hidden;
     user-select: none;
+    min-height: 100vh;
+    position: relative;
+}
+
+#bg-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/static/kinotake/kinotakehaikei.png');
+    background-size: cover;
+    background-position: center;
+    transition: background 0.5s ease, filter 0.5s ease;
 }
 
 .container {
@@ -347,27 +358,33 @@ h1 {
 }
 
 /* VIM DUNGEON MODE */
+/* VIM MODE */
 body.vim-mode {
-    background: url('/static/kinotake/derarenai.png') no-repeat center center fixed !important;
+    overflow: hidden;
+}
+
+body.vim-mode #bg-layer {
+    background: url('/static/kinotake/derarenai.png') no-repeat center center !important;
     background-size: cover !important;
     animation: glitch 0.5s infinite;
-    overflow: hidden;
 }
 
 /* SHONBORI MODE (Prettier x32) */
 body.shonbori-mode {
-    background: url('/static/kinotake/shonbori.png') no-repeat center center fixed !important;
-    background-size: cover !important;
     filter: grayscale(100%);
-    transition: filter 2s ease, background 1s ease;
+    transition: filter 2s ease;
+}
+
+body.shonbori-mode #bg-layer {
+    background: url('/static/kinotake/shonbori.png') no-repeat center center !important;
+    background-size: cover !important;
 }
 
 /* OTOKO MODE (Festival) */
-body.otoko-mode {
-    background: url('/static/kinotake/otoko.png') no-repeat center center fixed !important;
+body.otoko-mode #bg-layer {
+    background: url('/static/kinotake/otoko.png') no-repeat center center !important;
     background-size: cover !important;
     animation: pulse-bg 0.5s infinite;
-    /* Energetic pulse */
 }
 
 @keyframes pulse-bg {
@@ -385,8 +402,8 @@ body.otoko-mode {
 }
 
 /* KAGYOHA MODE */
-body.kagyoha-mode {
-    background: url('/static/kinotake/kagyoha.png') no-repeat center center fixed !important;
+body.kagyoha-mode #bg-layer {
+    background: url('/static/kinotake/kagyoha.png') no-repeat center center !important;
     background-size: cover !important;
     animation: wobble-bg 2s infinite ease-in-out;
 }

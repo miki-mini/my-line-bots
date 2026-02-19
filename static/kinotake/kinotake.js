@@ -79,7 +79,7 @@ async function sendVote(team, count, cheatCode = null, helperName = null) {
         const res = await fetch(`${apiBase}/vote`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ team, count, cheat_code: cheat, helper_name: helper })
+            body: JSON.stringify({ team, count, cheat_code: cheatCode, helper_name: helperName })
         });
 
         if (!res.ok) {
