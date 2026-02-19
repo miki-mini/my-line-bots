@@ -11,6 +11,8 @@ const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft',
 
 // Shonbori State
 let prettierClickCount = 0;
+let shonboriRecoveryKinoko = 0;
+let shonboriRecoveryTakenoko = 0;
 let shonboriAudio = null;
 let otokoAudio = null;
 let kagyohaAudio = null;
@@ -49,6 +51,16 @@ async function sendVote(team, count, cheatCode = null, helperName = null) {
         prettierClickCount += count;
         if (prettierClickCount >= 32 && !document.body.classList.contains('shonbori-mode')) {
             activateShonboriMode();
+        }
+    }
+
+    // Shonbori Recovery Logic
+    if (document.body.classList.contains('shonbori-mode')) {
+        if (team === 'mushroom') shonboriRecoveryKinoko += count;
+        if (team === 'bamboo') shonboriRecoveryTakenoko += count;
+
+        if (shonboriRecoveryKinoko >= 32 && shonboriRecoveryTakenoko >= 32) {
+            deactivateShonboriMode();
         }
     }
 
@@ -160,6 +172,28 @@ function activateShonboriMode() {
         shonboriAudio.volume = 1.0;
     }
     shonboriAudio.play().catch(e => console.log("Shonbori audio blocked", e));
+
+    // Reset Recovery Counters
+    shonboriRecoveryKinoko = 0;
+    shonboriRecoveryTakenoko = 0;
+}
+
+function deactivateShonboriMode() {
+    document.body.classList.remove('shonbori-mode');
+
+    // Stop Shonbori BGM
+    if (shonboriAudio) {
+        shonboriAudio.pause();
+        shonboriAudio.currentTime = 0;
+    }
+
+    // Resume Main BGM
+    if (bgm && !isMuted) {
+        bgm.play().catch(e => console.log("BGM resume failed", e));
+    }
+
+    // Reset Prettier Count so it can be triggered again
+    prettierClickCount = 0;
 }
 
 function activateOtokoMode() {
