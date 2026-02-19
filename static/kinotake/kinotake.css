@@ -11,14 +11,12 @@ body {
     margin: 0;
     padding: 0;
     font-family: 'Zen Maru Gothic', sans-serif;
-    /* Use background image with a dark overlay for readability */
     background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/static/kinotake/kinotakehaikei.png');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
     color: var(--text-light);
     overflow-x: hidden;
-    /* For bar exaggeration */
     user-select: none;
 }
 
@@ -103,7 +101,6 @@ h1 {
     align-items: flex-end;
     margin-bottom: 3rem;
     height: 400px;
-    /* Space for bars to grow */
     padding-bottom: 50px;
 }
 
@@ -150,14 +147,12 @@ h1 {
     border-radius: 15px;
     position: relative;
     overflow: visible;
-    /* Allow bar to explode out */
     margin-bottom: 10px;
 }
 
 .bar {
     width: 100%;
     height: 0%;
-    /* Dynamic */
     position: absolute;
     bottom: 0;
     transition: height 0.2s ease-out;
@@ -249,7 +244,6 @@ h1 {
     text-align: left;
     max-height: 150px;
     overflow-y: hidden;
-    /* Hide scrollbar, just show recent */
     font-family: monospace;
 }
 
@@ -279,7 +273,6 @@ h1 {
     bottom: 0;
     z-index: 100;
     width: 50px;
-    /* Wider when breaking */
     border: 2px solid white;
 }
 
@@ -340,7 +333,6 @@ h1 {
     left: 10px;
     width: 20px;
     height: 20px;
-    /* background: red; /* Debug */
     cursor: default;
     z-index: 5;
 }
@@ -348,7 +340,6 @@ h1 {
 /* Hidden Cheat Input */
 .input-area {
     display: none;
-    /* Hidden by default */
     margin-top: 20px;
     background: rgba(255, 255, 255, 0.1);
     padding: 10px;
@@ -437,4 +428,98 @@ body.vim-mode .container {
 .vim-option:hover {
     background: #0f0;
     color: black;
+}
+
+/* VIM BOSS */
+#vim-boss {
+    font-size: 5rem;
+    color: red;
+    font-weight: bold;
+    text-shadow: 0 0 20px red;
+    display: none;
+    /* Hidden by default */
+    animation: boss-breath 2s infinite;
+    margin: 20px 0;
+}
+
+@keyframes boss-breath {
+
+    0%,
+    100% {
+        transform: scale(1);
+        text-shadow: 0 0 20px red;
+    }
+
+    50% {
+        transform: scale(1.1);
+        text-shadow: 0 0 40px red;
+    }
+}
+
+/* QTE Display */
+#qte-display {
+    font-size: 2rem;
+    color: #0f0;
+    margin-top: 20px;
+    display: none;
+    font-family: monospace;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.qte-seq {
+    display: inline-block;
+    padding: 0 10px;
+    border: 1px solid #0f0;
+    margin: 0 10px;
+    opacity: 0.3;
+}
+
+.qte-seq.completed {
+    opacity: 1;
+    background: #0f0;
+    color: black;
+    box-shadow: 0 0 10px #0f0;
+}
+
+/* Shatter Effect */
+#shatter-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    z-index: 10000;
+    opacity: 0;
+    pointer-events: none;
+    display: none;
+}
+
+.shatter-anim {
+    animation: shatter-flash 0.5s ease-out;
+}
+
+@keyframes shatter-flash {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+/* Panda Intense Mode */
+.referee.intense {
+    filter: sepia(1) hue-rotate(-50deg) saturate(5) invert(1);
+    /* Red/Angry/Evil */
+    animation: bounce 0.05s infinite !important;
+}
+
+#vim-msg {
+    color: red;
+    font-weight: bold;
+    display: none;
+    margin-top: 10px;
 }

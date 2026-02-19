@@ -78,8 +78,6 @@ async function sendVote(team, count, cheat = null, helper = null) {
             alert(data.message);
             if (refereeSpeech) refereeSpeech.innerText = "API制限だ！\n落ち着け！";
         } else if (data.error === 'INVALID_CODE') {
-            // Quietly fail or show small toast, or alert if user expects feedback
-            // Because they clicked "Submit", they expect feedback.
             alert("無効なコマンドです");
         }
     } catch (e) {
@@ -118,6 +116,12 @@ function updateUI(data) {
 }
 
 // VIM DUNGEON LOGIC
+let vimQteActive = false;
+let vimQteSequence = [':', 'q', '!'];
+let vimQteProgress = 0; // 0, 1, 2
+let vimQteCount = 0; // 0 to 5
+let vimQteTimer = null;
+
 function activateVimMode() {
     document.body.classList.add('vim-mode');
 
@@ -129,20 +133,137 @@ function activateVimMode() {
 
     // Show Overlay
     const overlay = document.getElementById('vim-overlay');
-    if (overlay) overlay.style.display = 'flex';
+    if (overlay) {
+        overlay.style.display = 'flex';
+        // Reset boss UI
+        document.getElementById('vim-boss').style.display = 'none';
+        document.getElementById('qte-display').style.display = 'none';
+        document.getElementById('vim-options').style.display = 'block';
+        document.getElementById('vim-msg').style.display = 'none';
+        document.querySelector('#vim-overlay h1').innerText = "VIM DUNGEON";
+        document.querySelector('#vim-overlay p').innerHTML = "レッサーパンダは混乱している！<br>「出られないようだ....」";
+    }
 }
 
 function vimAction(action) {
     if (action === 'fight') {
-        alert("キーボードで :q! を連打してください (効果なし)");
-        triggerExplosion();
+        startQTE();
     } else if (action === 'escape') {
         alert("閉じようとしたが、出られない！ (ブラウザが拒否しました)");
-        // window.close() usually fails in modern browsers scripts unless opened by logic
     } else if (action === 'master') {
         alert("手動改行の極意を悟った... (リセットします)");
         location.reload();
     }
+}
+
+function startQTE() {
+    // UI Updates
+    document.getElementById('vim-options').style.display = 'none';
+    const boss = document.getElementById('vim-boss');
+    boss.style.display = 'block';
+    boss.innerText = ":q!";
+
+    document.querySelector('#vim-overlay h1').innerText = "BOSS: 強制終了の壁";
+    document.querySelector('#vim-overlay p').innerText = "コマンドを叩き込め！ (: q !)";
+
+    // Panda Intense
+    const panda = document.getElementById('referee-img');
+    if (panda) panda.classList.add('intense');
+
+    // QTE Init
+    vimQteActive = true;
+    vimQteProgress = 0;
+    vimQteCount = 0;
+    updateQteDisplay();
+    document.getElementById('qte-display').style.display = 'flex';
+
+    // Timer (10s)
+    vimQteTimer = setTimeout(failQTE, 10000);
+}
+
+function updateQteDisplay() {
+    const disp = document.getElementById('qte-display');
+    disp.innerHTML = '';
+
+    for (let i = 0; i < 5; i++) {
+        const span = document.createElement('span');
+        span.classList.add('qte-seq');
+        if (i < vimQteCount) {
+            span.classList.add('completed');
+            span.innerText = ":q!";
+        } else {
+            span.innerText = "???";
+        }
+        disp.appendChild(span);
+    }
+}
+
+function handleQteInput(key) {
+    const target = vimQteSequence[vimQteProgress];
+    if (key === target) {
+        vimQteProgress++;
+        if (vimQteProgress === 3) {
+            // Set completed
+            vimQteCount++;
+            vimQteProgress = 0;
+            updateQteDisplay();
+
+            // Effect
+            triggerExplosion();
+
+            if (vimQteCount === 5) {
+                winQTE();
+            }
+        }
+    } else {
+        // Reset progress on wrong key? Or just ignore?
+        // User said "Fast", so mistakes are costly. Reset current triplet.
+        vimQteProgress = 0;
+    }
+}
+
+function winQTE() {
+    vimQteActive = false;
+    clearTimeout(vimQteTimer);
+
+    // Shatter Effect
+    const shatter = document.getElementById('shatter-screen');
+    if (shatter) {
+        shatter.style.display = 'block';
+        shatter.classList.add('shatter-anim');
+    }
+
+    // Sound FX (Fast)
+    if (bgm) {
+        bgm.playbackRate = 2.0;
+        setTimeout(() => { bgm.pause(); bgm.playbackRate = 1.0; }, 500);
+    }
+
+    setTimeout(() => {
+        // Restore
+        document.body.classList.remove('vim-mode');
+        document.getElementById('vim-overlay').style.display = 'none';
+        const panda = document.getElementById('referee-img');
+        if (panda) panda.classList.remove('intense');
+        if (shatter) {
+            shatter.style.display = 'none';
+            shatter.classList.remove('shatter-anim');
+        }
+
+        // Success Message
+        alert("脱出成功！\n変更は保存されました (嘘)");
+
+    }, 500);
+}
+
+function failQTE() {
+    vimQteActive = false;
+    document.getElementById('vim-msg').innerText = "保存されていない変更があります...";
+    document.getElementById('vim-msg').style.display = 'block';
+    setTimeout(() => {
+        alert("GAMEOVER\n迷宮の入り口に戻ります");
+        activateVimMode(); // Reset to start of vim
+    }, 1000);
 }
 
 // Event Listeners
@@ -208,6 +329,11 @@ btns.forEach(btn => {
 
 // Cheats
 document.addEventListener('keydown', (e) => {
+    if (vimQteActive) {
+        handleQteInput(e.key);
+        return; // Block other cheats
+    }
+
     // Konami
     if (e.key === konamiCode[konamiIndex]) {
         konamiIndex++;
@@ -360,6 +486,6 @@ document.addEventListener('click', startAudioOnInteraction);
 document.addEventListener('keydown', startAudioOnInteraction);
 
 // Init
-console.log("Kinotae Seisen Script Loaded v5");
+console.log("Kinotae Seisen Script Loaded v6");
 fetchState();
 setInterval(fetchState, 3000);

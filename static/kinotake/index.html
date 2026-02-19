@@ -85,12 +85,18 @@
         <div id="vim-overlay">
             <h1>VIM DUNGEON</h1>
             <p>レッサーパンダは混乱している！<br>「出られないようだ....」</p>
+            <div id="vim-boss"></div>
+            <div id="qte-display"></div>
+            <div id="vim-msg"></div>
             <div id="vim-options">
                 <div class="vim-option" onclick="vimAction('fight')">▶︎ たたかう (:q! 連打)</div>
                 <div class="vim-option" onclick="vimAction('escape')">▶︎ にげる (ブラウザを閉じる)</div>
                 <div class="vim-option" onclick="vimAction('master')">▶︎ 手動改行を極める</div>
             </div>
         </div>
+
+        <!-- Shatter Screen -->
+        <div id="shatter-screen"></div>
     </div>
 
     <!-- Assets: Renamed JS force cache clear -->
