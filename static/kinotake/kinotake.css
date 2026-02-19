@@ -341,7 +341,7 @@ h1 {
     width: 20px;
     height: 20px;
     background: rgba(255, 0, 0, 0.5);
-    /* Temporarily visible */
+    /* Visible again! */
     cursor: pointer;
     z-index: 5;
 }
