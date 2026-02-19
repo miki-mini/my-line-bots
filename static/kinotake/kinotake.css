@@ -348,7 +348,7 @@ h1 {
 
 /* VIM DUNGEON MODE */
 body.vim-mode {
-    background: url('/static/kinotake/kakusi/derarenai.png') no-repeat center center fixed !important;
+    background: url('/static/kinotake/derarenai.png') no-repeat center center fixed !important;
     background-size: cover !important;
     animation: glitch 0.5s infinite;
     overflow: hidden;

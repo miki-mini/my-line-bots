@@ -132,7 +132,7 @@ function activateVimMode() {
 
     // Play Vim Dungeon BGM
     if (!vimAudio) {
-        vimAudio = new Audio('/static/kinotake/kakusi/derarenai.mp3');
+        vimAudio = new Audio('/static/kinotake/derarenai.mp3');
         vimAudio.loop = true;
         vimAudio.volume = 1.0;
     }
@@ -246,10 +246,8 @@ function winQTE() {
         vimAudio.currentTime = 0;
     }
 
-    // Play Shatter Sound (pari-n.mp3 exists? If not, we rely on visual or existing logic)
-    // User mentioned pari-n.mp3 earlier but I don't think I code for it specifically yet besides generic.
-    // Let's check listing... yes pari-n.mp3 exists.
-    const shatterAudio = new Audio('/static/kinotake/kakusi/pari-n.mp3');
+    // Play Shatter Sound
+    const shatterAudio = new Audio('/static/kinotake/pari-n.mp3');
     shatterAudio.play().catch(e => console.log("Shatter audio blocked", e));
 
     // Resume Main BGM after short delay
@@ -518,7 +516,7 @@ function showCertificateEntry() {
     if (modal) modal.style.display = 'flex';
     // Load image early to cache
     const img = new Image();
-    img.src = '/static/kinotake/kakusi/kuria.jpg';
+    img.src = '/static/kinotake/kuria.jpg';
 }
 
 function generateCertificate() {
@@ -529,7 +527,7 @@ function generateCertificate() {
     const ctx = canvas.getContext('2d');
     const img = new Image();
     img.crossOrigin = "anonymous";
-    img.src = '/static/kinotake/kakusi/kuria.jpg';
+    img.src = '/static/kinotake/kuria.jpg';
 
     img.onload = () => {
         // Draw Image
@@ -556,7 +554,7 @@ function generateCertificate() {
         document.getElementById('download-controls').style.display = 'flex';
 
         // Play Victory Sound
-        const audio = new Audio('/static/kinotake/kakusi/kuria.mp3');
+        const audio = new Audio('/static/kinotake/kuria.mp3');
         audio.volume = 0.5;
         audio.play().catch(e => console.log("Audio play blocked", e));
     };
