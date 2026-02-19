@@ -9,6 +9,10 @@ let keysPressed = {};
 let konamiIndex = 0;
 const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
 
+// Shonbori State
+let prettierClickCount = 0;
+let shonboriAudio = null;
+
 // Elements
 const bambooScoreEl = document.getElementById('bamboo-score');
 const mushroomScoreEl = document.getElementById('mushroom-score');
@@ -52,6 +56,9 @@ async function sendVote(team, count, cheatCode = null, helperName = null) {
     }
     if (!cheatCode && team === 'mushroom' && mushroomScoreEl) {
         mushroomScoreEl.innerText = parseInt(mushroomScoreEl.innerText || "0") + count;
+    }
+    if (!cheatCode && team === 'prettier' && prettierScoreEl) {
+        prettierScoreEl.innerText = parseInt(prettierScoreEl.innerText || "0") + count;
     }
 
     try {
