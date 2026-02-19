@@ -12,6 +12,7 @@ const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft',
 // Shonbori State
 let prettierClickCount = 0;
 let shonboriAudio = null;
+let otokoAudio = null;
 
 // Elements
 const bambooScoreEl = document.getElementById('bamboo-score');
@@ -83,6 +84,8 @@ async function sendVote(team, count, cheatCode = null, helperName = null) {
             // Handle Server-Side Cheat Responses
             if (data.message === 'VIM_DUNGEON_MODE') {
                 activateVimMode();
+            } else if (data.message === 'OTOKO_FESTIVAL_MODE') {
+                activateOtokoMode();
             } else if (data.message && data.message.includes("Cheat Activated")) {
                 if (data.message.includes("かめはめ波") || data.message.includes("kamehameha")) {
                     triggerExplosion();
@@ -507,25 +510,33 @@ function triggerExplosion() {
 const bgm = document.getElementById('bgm');
 const btnAudio = document.getElementById('btn-audio');
 let audioStarted = false;
+let isMuted = true; // Start assumed muted until interaction
 
 function toggleAudio() {
-    if (!bgm) {
-        console.error("BGM Element not found!");
-        return;
-    }
-    if (bgm.paused) {
-        bgm.play().then(() => {
-            btnAudio.innerText = "🔊";
-            audioStarted = true;
-            console.log("Audio playing");
-        }).catch(e => {
-            console.log("Audio play failed", e);
-            alert("音楽の再生に失敗しました。ブラウザの設定を確認してください。");
-        });
+    const audios = [bgm, vimAudio, shonboriAudio, otokoAudio];
+
+    if (isMuted) {
+        // Unmute
+        isMuted = false;
+        btnAudio.innerText = "🔊";
+
+        // Resume appropriate BGM based on mode
+        if (document.body.classList.contains('otoko-mode')) {
+            if (otokoAudio) otokoAudio.play();
+        } else if (document.body.classList.contains('shonbori-mode')) {
+            if (shonboriAudio) shonboriAudio.play();
+        } else if (document.body.classList.contains('vim-mode')) {
+            if (vimAudio) vimAudio.play();
+        } else {
+            if (bgm) bgm.play().catch(e => console.log("BGM play failed", e));
+        }
+        console.log("Audio unmuted");
     } else {
-        bgm.pause();
+        // Mute
+        isMuted = true;
         btnAudio.innerText = "🔇";
-        console.log("Audio paused");
+        audios.forEach(a => { if (a) a.pause(); });
+        console.log("Audio muted");
     }
 }
 
@@ -539,66 +550,87 @@ if (btnAudio) {
 // Attempt to start audio on first interaction
 function startAudioOnInteraction() {
     if (audioStarted) return;
-    if (!bgm) return;
 
-    bgm.volume = 0.5;
-    bgm.play().then(() => {
-        btnAudio.innerText = "🔊";
-        audioStarted = true;
-        // Remove listeners
-        document.removeEventListener('click', startAudioOnInteraction);
-        document.removeEventListener('keydown', startAudioOnInteraction);
+    // Auto-start logic implies unmuting
+    isMuted = false;
+    btnAudio.innerText = "🔊";
+    audioStarted = true;
 
-        // Remove toast if exists
-        const t = document.getElementById('music-toast');
-        if (t) t.remove();
+    if (bgm) {
+        bgm.volume = 0.5;
+        bgm.play().catch(e => {
+            console.log("Autoplay prevented");
+            // If failed, revert to muted state visual
+            isMuted = true;
+            btnAudio.innerText = "🔇";
 
-    }).catch(e => {
-        console.log("Autoplay prevented, showing manual play button");
+            // Show toast if failed
+            console.log("Autoplay prevented, showing manual play button");
+            if (!document.getElementById('music-toast')) {
+                const toast = document.createElement('div');
+                toast.innerText = "🎵 クリックして音楽を再生";
+                toast.id = "music-toast";
+                toast.style.position = "fixed";
+                toast.style.bottom = "20px";
+                toast.style.right = "20px";
+                toast.style.background = "rgba(0,0,0,0.8)";
+                toast.style.color = "white";
+                toast.style.padding = "15px";
+                toast.style.borderRadius = "30px";
+                toast.style.zIndex = "9999";
+                toast.style.cursor = "pointer";
+                toast.style.boxShadow = "0 0 10px rgba(255,255,0,0.5)";
+                toast.style.border = "1px solid white";
+                toast.style.fontWeight = "bold";
 
-        if (!document.getElementById('music-toast')) {
-            const toast = document.createElement('div');
-            toast.innerText = "🎵 クリックして音楽を再生";
-            toast.id = "music-toast";
-            toast.style.position = "fixed";
-            toast.style.bottom = "20px";
-            toast.style.right = "20px";
-            toast.style.background = "rgba(0,0,0,0.8)";
-            toast.style.color = "white";
-            toast.style.padding = "15px";
-            toast.style.borderRadius = "30px";
-            toast.style.zIndex = "9999";
-            toast.style.cursor = "pointer";
-            toast.style.boxShadow = "0 0 10px rgba(255,255,0,0.5)";
-            toast.style.border = "1px solid white";
-            toast.style.fontWeight = "bold";
+                document.body.appendChild(toast);
 
-            document.body.appendChild(toast);
+                toast.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleAudio();
+                    toast.remove();
+                });
+            }
+        });
+    }
 
-            toast.addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleAudio();
-                toast.remove();
-            });
-        }
-    });
+    // Remove listeners
+    document.removeEventListener('click', startAudioOnInteraction);
+    document.removeEventListener('keydown', startAudioOnInteraction);
+    toast.style.fontWeight = "bold";
+
+    // Remove toast
+    const t = document.getElementById('music-toast');
+    if (t) t.remove();
 }
 
+console.log("Kinotae Seisen Script Loaded v6");
 document.addEventListener('click', startAudioOnInteraction);
 document.addEventListener('keydown', startAudioOnInteraction);
 
 // Init
-console.log("Kinotae Seisen Script Loaded v6");
 fetchState();
 setInterval(fetchState, 3000);
 
 // Victory Certificate Logic
-function showCertificateEntry() {
+let certificateMode = 'vim'; // 'vim' or 'otoko'
+
+function showCertificateEntry(mode = 'vim') {
+    certificateMode = mode;
     const modal = document.getElementById('certificate-modal');
     if (modal) modal.style.display = 'flex';
+
+    // Update instruction text based on mode
+    const instruction = document.getElementById('cert-instruction');
+    if (certificateMode === 'otoko') {
+        instruction.innerHTML = "男祭り開催中！<br>漢(おとこ)の名を刻め！";
+    } else {
+        instruction.innerHTML = "VIM DUNGEON 制覇！<br>名前を刻め！";
+    }
+
     // Load image early to cache
     const img = new Image();
-    img.src = '/static/kinotake/kuria.jpg';
+    img.src = certificateMode === 'otoko' ? '/static/kinotake/otoko2.png' : '/static/kinotake/kuria.jpg';
 }
 
 function generateCertificate() {
@@ -609,7 +641,7 @@ function generateCertificate() {
     const ctx = canvas.getContext('2d');
     const img = new Image();
     img.crossOrigin = "anonymous";
-    img.src = '/static/kinotake/kuria.jpg';
+    img.src = certificateMode === 'otoko' ? '/static/kinotake/otoko2.png' : '/static/kinotake/kuria.jpg';
 
     img.onload = () => {
         // Draw Image
@@ -629,6 +661,7 @@ function generateCertificate() {
 
         // Coordinates: Center horizontal, higher than before (was +180)
         // Moved up to +80 to avoid overlapping panda too much
+        // For Otoko mode, adjustments might be needed? assume same for now
         const textY = canvas.height / 2 + 80;
 
         ctx.strokeText(name, canvas.width / 2, textY);
@@ -670,7 +703,12 @@ function downloadCertificate() {
 }
 
 function shareOnX() {
-    const text = "『きのたけ聖戦』で VIM DUNGEON を制覇しました！\n強制終了の壁を打ち砕き、脱出に成功！\n#きのたけ聖戦 #VimDungeon";
+    let text = "";
+    if (certificateMode === 'otoko') {
+        text = "『きのたけ聖戦』で 男祭り に参加しました！\n漢（おとこ）は黙ってきのこたけのこ！\n#きのたけ聖戦 #男祭り";
+    } else {
+        text = "『きのたけ聖戦』で VIM DUNGEON を制覇しました！\n強制終了の壁を打ち砕き、脱出に成功！\n#きのたけ聖戦 #VimDungeon";
+    }
     const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text);
     window.open(url, '_blank');
 }

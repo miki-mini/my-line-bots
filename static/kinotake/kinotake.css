@@ -362,6 +362,28 @@ body.shonbori-mode {
     transition: filter 2s ease, background 1s ease;
 }
 
+/* OTOKO MODE (Festival) */
+body.otoko-mode {
+    background: url('/static/kinotake/otoko.png') no-repeat center center fixed !important;
+    background-size: cover !important;
+    animation: pulse-bg 0.5s infinite;
+    /* Energetic pulse */
+}
+
+@keyframes pulse-bg {
+    0% {
+        transform: scale(1.0);
+    }
+
+    50% {
+        transform: scale(1.02);
+    }
+
+    100% {
+        transform: scale(1.0);
+    }
+}
+
 body.vim-mode .container {
     filter: invert(1) hue-rotate(180deg) blur(1px);
     transition: filter 2s;
