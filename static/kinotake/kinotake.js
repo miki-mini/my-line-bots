@@ -13,6 +13,7 @@ const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft',
 let prettierClickCount = 0;
 let shonboriAudio = null;
 let otokoAudio = null;
+let kagyohaAudio = null;
 
 // Elements
 const bambooScoreEl = document.getElementById('bamboo-score');
@@ -86,6 +87,8 @@ async function sendVote(team, count, cheatCode = null, helperName = null) {
                 activateVimMode();
             } else if (data.message === 'OTOKO_FESTIVAL_MODE') {
                 activateOtokoMode();
+            } else if (data.message === 'KAGYOHA_MODE') {
+                activateKagyohaMode();
             } else if (data.message && data.message.includes("Cheat Activated")) {
                 if (data.message.includes("かめはめ波") || data.message.includes("kamehameha")) {
                     triggerExplosion();
@@ -247,6 +250,120 @@ function showOtokoVoteDialog() {
     btnContainer.appendChild(btnKinoko);
     btnContainer.appendChild(btnTakenoko);
     modal.appendChild(title);
+    modal.appendChild(btnContainer);
+
+    document.body.appendChild(modal);
+}
+
+function activateKagyohaMode() {
+    document.body.classList.add('kagyoha-mode');
+
+    // Stop Main BGM
+    if (bgm) bgm.pause();
+
+    // Play Kagyoha BGM
+    if (!kagyohaAudio) {
+        kagyohaAudio = new Audio('/static/kinotake/kaigyoha.mp3');
+        kagyohaAudio.loop = true;
+        kagyohaAudio.volume = 1.0;
+    }
+    kagyohaAudio.play().catch(e => console.log("Kagyoha audio blocked", e));
+
+    // Show Vote Choice Dialog
+    setTimeout(() => {
+        showKagyohaVoteDialog();
+    }, 1000);
+}
+
+function showKagyohaVoteDialog() {
+    // Create simple modal for voting
+    const modal = document.createElement('div');
+    modal.id = 'kagyoha-vote-modal';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0,0,0,0.9)'; // Darker
+    modal.style.display = 'flex';
+    modal.style.flexDirection = 'column';
+    modal.style.justifyContent = 'center';
+    modal.style.alignItems = 'center';
+    modal.style.zIndex = '10000';
+    modal.style.color = '#fff';
+
+    const title = document.createElement('h1');
+    title.innerText = "改行波（ニューライン・ウェーブ）充填完了！";
+    title.style.marginBottom = '20px';
+    title.style.fontFamily = '"Zen Maru Gothic", sans-serif';
+    title.style.textShadow = '0 0 20px #00BFFF'; // Cyan glow
+
+    const subtitle = document.createElement('p');
+    subtitle.innerText = "このエネルギーをどこへ放ちますか？";
+    subtitle.style.marginBottom = '50px';
+    subtitle.style.fontSize = '20px';
+
+    const btnContainer = document.createElement('div');
+    btnContainer.style.display = 'flex';
+    btnContainer.style.gap = '40px';
+
+    const btnKinoko = document.createElement('button');
+    btnKinoko.innerText = "きのこ\n(+9001点)";
+    btnKinoko.style.padding = '30px 50px';
+    btnKinoko.style.fontSize = '28px';
+    btnKinoko.style.fontWeight = 'bold';
+    btnKinoko.style.cursor = 'pointer';
+    btnKinoko.style.backgroundColor = '#d32f2f'; // Kinoko Red
+    btnKinoko.style.color = 'white';
+    btnKinoko.style.border = '4px solid white';
+    btnKinoko.style.borderRadius = '50%'; // Round like a wave orb?
+    btnKinoko.style.boxShadow = '0 0 30px #d32f2f';
+    btnKinoko.style.width = '250px';
+    btnKinoko.style.height = '250px';
+
+    const btnTakenoko = document.createElement('button');
+    btnTakenoko.innerText = "たけのこ\n(+9001点)";
+    btnTakenoko.style.padding = '30px 50px';
+    btnTakenoko.style.fontSize = '28px';
+    btnTakenoko.style.fontWeight = 'bold';
+    btnTakenoko.style.cursor = 'pointer';
+    btnTakenoko.style.backgroundColor = '#388e3c'; // Takenoko Green
+    btnTakenoko.style.color = 'white';
+    btnTakenoko.style.border = '4px solid white';
+    btnTakenoko.style.borderRadius = '50%';
+    btnTakenoko.style.boxShadow = '0 0 30px #388e3c';
+    btnTakenoko.style.width = '250px';
+    btnTakenoko.style.height = '250px';
+
+    const handleVote = async (team) => {
+        // Animation
+        modal.innerHTML = '<h1 style="color:white; font-size:60px; text-shadow: 0 0 30px cyan;">波ーーー！！！</h1>';
+
+        await sendVote(team, 9001, null, "改行波");
+        setTimeout(() => {
+            modal.remove();
+            // Go to certificate or just close?
+            // The request didn't specify certificate, but let's show standard victory or otoko one?
+            // User just said "9001点獲得".
+            // Let's show the standard certificate entry for now, as it's a "win".
+            showCertificateEntry('vim'); // Reuse standard or maybe 'kagyoha' later?
+            // Logic says reuse standard for now or just close.
+            // Let's reuse standard but change text?
+            // Actually, let's just create a new simple alert or reuse showCertificateEntry with a new mode 'kagyoha' later if needed.
+            // For now, let's just close as requested "9,001点獲得" is the main goal.
+            // But showing certificate is a nice touch.
+            // Let's leave it as just point addition visualization for now.
+            alert("改行波が着弾しました！ (+9001点)");
+        }, 2000);
+    };
+
+    btnKinoko.onclick = () => handleVote('mushroom');
+    btnTakenoko.onclick = () => handleVote('bamboo');
+
+    btnContainer.appendChild(btnKinoko);
+    btnContainer.appendChild(btnTakenoko);
+    modal.appendChild(title);
+    modal.appendChild(subtitle);
     modal.appendChild(btnContainer);
 
     document.body.appendChild(modal);
@@ -606,7 +723,7 @@ let audioStarted = false;
 let isMuted = true; // Start assumed muted until interaction
 
 function toggleAudio() {
-    const audios = [bgm, vimAudio, shonboriAudio, otokoAudio];
+    const audios = [bgm, vimAudio, shonboriAudio, otokoAudio, kagyohaAudio];
 
     if (isMuted) {
         // Unmute
@@ -616,6 +733,8 @@ function toggleAudio() {
         // Resume appropriate BGM based on mode
         if (document.body.classList.contains('otoko-mode')) {
             if (otokoAudio) otokoAudio.play();
+        } else if (document.body.classList.contains('kagyoha-mode')) {
+            if (kagyohaAudio) kagyohaAudio.play();
         } else if (document.body.classList.contains('shonbori-mode')) {
             if (shonboriAudio) shonboriAudio.play();
         } else if (document.body.classList.contains('vim-mode')) {
@@ -628,7 +747,9 @@ function toggleAudio() {
         // Mute
         isMuted = true;
         btnAudio.innerText = "🔇";
-        audios.forEach(a => { if (a) a.pause(); });
+        audios.forEach(a => {
+            if (a) a.pause();
+        });
         console.log("Audio muted");
     }
 }

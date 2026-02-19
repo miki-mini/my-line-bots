@@ -384,6 +384,31 @@ body.otoko-mode {
     }
 }
 
+/* KAGYOHA MODE */
+body.kagyoha-mode {
+    background: url('/static/kinotake/kagyoha.png') no-repeat center center fixed !important;
+    background-size: cover !important;
+    animation: wobble-bg 2s infinite ease-in-out;
+}
+
+@keyframes wobble-bg {
+    0% {
+        transform: rotate(0deg) scale(1.0);
+    }
+
+    25% {
+        transform: rotate(1deg) scale(1.05);
+    }
+
+    75% {
+        transform: rotate(-1deg) scale(1.05);
+    }
+
+    100% {
+        transform: rotate(0deg) scale(1.0);
+    }
+}
+
 body.vim-mode .container {
     filter: invert(1) hue-rotate(180deg) blur(1px);
     transition: filter 2s;
