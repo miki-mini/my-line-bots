@@ -36,7 +36,7 @@ async function fetchState() {
 async function sendVote(team, count, cheat = null, helper = null) {
     console.log(`Sending vote: Team=${team}, Count=${count}, Cheat=${cheat}`);
 
-    // Optimistic UI update
+    // Optimistic UI update for standard votes
     if (!cheat && team === 'bamboo' && bambooScoreEl) {
         bambooScoreEl.innerText = parseInt(bambooScoreEl.innerText || "0") + count;
     }
@@ -62,9 +62,25 @@ async function sendVote(team, count, cheat = null, helper = null) {
 
         if (data.success) {
             updateUI(data.state);
+
+            // Handle Server-Side Cheat Responses
+            if (data.message === 'VIM_DUNGEON_MODE') {
+                activateVimMode();
+            } else if (data.message && data.message.includes("Cheat Activated")) {
+                if (data.message.includes("かめはめ波") || data.message.includes("kamehameha")) {
+                    triggerExplosion();
+                } else if (data.message.includes("BA")) {
+                    alert("Konami Code Activated! (Server)");
+                }
+            }
+
         } else if (data.error === 'API_LIMIT_EXCEEDED') {
             alert(data.message);
             if (refereeSpeech) refereeSpeech.innerText = "API制限だ！\n落ち着け！";
+        } else if (data.error === 'INVALID_CODE') {
+            // Quietly fail or show small toast, or alert if user expects feedback
+            // Because they clicked "Submit", they expect feedback.
+            alert("無効なコマンドです");
         }
     } catch (e) {
         console.error("Vote request exception", e);
@@ -101,6 +117,34 @@ function updateUI(data) {
     }
 }
 
+// VIM DUNGEON LOGIC
+function activateVimMode() {
+    document.body.classList.add('vim-mode');
+
+    // Play audio slowly if possible
+    if (bgm) {
+        bgm.playbackRate = 0.5;
+        if (bgm.paused) toggleAudio();
+    }
+
+    // Show Overlay
+    const overlay = document.getElementById('vim-overlay');
+    if (overlay) overlay.style.display = 'flex';
+}
+
+function vimAction(action) {
+    if (action === 'fight') {
+        alert("キーボードで :q! を連打してください (効果なし)");
+        triggerExplosion();
+    } else if (action === 'escape') {
+        alert("閉じようとしたが、出られない！ (ブラウザが拒否しました)");
+        // window.close() usually fails in modern browsers scripts unless opened by logic
+    } else if (action === 'master') {
+        alert("手動改行の極意を悟った... (リセットします)");
+        location.reload();
+    }
+}
+
 // Event Listeners
 const btnBamboo = document.getElementById('btn-bamboo');
 if (btnBamboo) {
@@ -125,15 +169,8 @@ if (cheatBtn && cheatInput) {
     cheatBtn.addEventListener('click', () => {
         const code = cheatInput.value.trim();
         if (code) {
-            if (code === "上上下下左右左右BA" || code.toLowerCase() === "uuddlrlrba") {
-                sendVote('bamboo', 100, "上上下下左右左右BA", "手入力ハッカー");
-                alert("Konami Code Applied!");
-            } else if (code === "Kamehameha" || code === "かめはめ波") {
-                sendVote('mushroom', 500, "かめはめ波", "手入力ハッカー");
-                triggerExplosion();
-            } else {
-                alert("無効なコマンドです");
-            }
+            // SECURE: Send raw code to server. No local check.
+            sendVote(null, 0, code, "手入力ハッカー");
             cheatInput.value = "";
         }
     });
@@ -175,8 +212,8 @@ document.addEventListener('keydown', (e) => {
     if (e.key === konamiCode[konamiIndex]) {
         konamiIndex++;
         if (konamiIndex === konamiCode.length) {
-            sendVote('bamboo', 100, "上上下下左右左右BA", "高橋名人");
-            alert("Konami Code Activated! +100 Bamboo");
+            // For Konami, we can just send the code string
+            sendVote('bamboo', 100, "uuddlrlrba", "高橋名人");
             konamiIndex = 0;
         }
     } else {
@@ -190,7 +227,8 @@ document.addEventListener('keydown', (e) => {
     }
 
     if (e.key === 'Enter' && keysPressed['K'] && keysPressed['M'] && keysPressed['H']) {
-        sendVote('mushroom', 500, "かめはめ波", "孫悟空");
+        // Send raw string
+        sendVote('mushroom', 500, "kamehameha", "孫悟空");
         document.body.style.boxShadow = "none";
         triggerExplosion();
     }
@@ -217,7 +255,7 @@ if (hiddenTrigger) {
                 inputArea.style.display = currentDisplay === 'none' ? 'block' : 'none';
 
                 if (inputArea.style.display === 'block') {
-                    alert("Hidden Command Input Unlocked!");
+                    console.log("Hidden Command Input Unlocked!");
                 }
             }
             hidden_clicks = 0;
@@ -322,6 +360,6 @@ document.addEventListener('click', startAudioOnInteraction);
 document.addEventListener('keydown', startAudioOnInteraction);
 
 // Init
-console.log("Kinotae Seisen Script Loaded v3");
+console.log("Kinotae Seisen Script Loaded v5");
 fetchState();
 setInterval(fetchState, 3000);

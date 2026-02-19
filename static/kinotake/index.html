@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>きのたけ聖戦 - 改行バトルの審判</title>
     <!-- Renamed CSS to force cache clear -->
-    <link rel="stylesheet" href="/static/kinotake/kinotake.css?v=4">
+    <link rel="stylesheet" href="/static/kinotake/kinotake.css?v=8">
     <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Zen+Maru+Gothic:wght@700&display=swap"
         rel="stylesheet">
     <link rel="icon" href="/static/kinotake/kinokotakenoko.png">
@@ -80,10 +80,21 @@
 
         <!-- Hidden trigger area in background -->
         <div id="hidden-trigger"></div>
+
+        <!-- VIM DUNGEON OVERLAY -->
+        <div id="vim-overlay">
+            <h1>VIM DUNGEON</h1>
+            <p>レッサーパンダは混乱している！<br>「出られないようだ....」</p>
+            <div id="vim-options">
+                <div class="vim-option" onclick="vimAction('fight')">▶︎ たたかう (:q! 連打)</div>
+                <div class="vim-option" onclick="vimAction('escape')">▶︎ にげる (ブラウザを閉じる)</div>
+                <div class="vim-option" onclick="vimAction('master')">▶︎ 手動改行を極める</div>
+            </div>
+        </div>
     </div>
 
     <!-- Assets: Renamed JS force cache clear -->
-    <script src="/static/kinotake/kinotake.js"></script>
+    <script src="/static/kinotake/kinotake.js?v=6"></script>
 </body>
 
 </html>
