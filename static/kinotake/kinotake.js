@@ -159,6 +159,99 @@ function activateShonboriMode() {
     shonboriAudio.play().catch(e => console.log("Shonbori audio blocked", e));
 }
 
+function activateOtokoMode() {
+    document.body.classList.add('otoko-mode');
+
+    // Stop Main BGM
+    if (bgm) bgm.pause();
+
+    // Play Otoko BGM
+    if (!otokoAudio) {
+        otokoAudio = new Audio('/static/kinotake/otoko.mp3');
+        otokoAudio.loop = true;
+        otokoAudio.volume = 1.0;
+    }
+    otokoAudio.play().catch(e => console.log("Otoko audio blocked", e));
+
+    // Show Vote Choice Dialog
+    setTimeout(() => {
+        showOtokoVoteDialog();
+    }, 1000);
+}
+
+function showOtokoVoteDialog() {
+    // Create simple modal for voting
+    const modal = document.createElement('div');
+    modal.id = 'otoko-vote-modal';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0,0,0,0.9)';
+    modal.style.display = 'flex';
+    modal.style.flexDirection = 'column';
+    modal.style.justifyContent = 'center';
+    modal.style.alignItems = 'center';
+    modal.style.zIndex = '10000';
+    modal.style.color = '#fff';
+
+    const title = document.createElement('h1');
+    title.innerText = "漢（おとこ）の一撃をどこに捧げる？";
+    title.style.marginBottom = '50px';
+    title.style.fontFamily = '"Zen Maru Gothic", sans-serif';
+    title.style.textShadow = '0 0 20px #FF4500';
+
+    const btnContainer = document.createElement('div');
+    btnContainer.style.display = 'flex';
+    btnContainer.style.gap = '40px';
+
+    const btnKinoko = document.createElement('button');
+    btnKinoko.innerText = "きのこ\n(+65535点)";
+    btnKinoko.style.padding = '30px 50px';
+    btnKinoko.style.fontSize = '28px';
+    btnKinoko.style.fontWeight = 'bold';
+    btnKinoko.style.cursor = 'pointer';
+    btnKinoko.style.backgroundColor = '#d32f2f'; // Kinoko Red
+    btnKinoko.style.color = 'white';
+    btnKinoko.style.border = '4px solid white';
+    btnKinoko.style.borderRadius = '20px';
+    btnKinoko.style.boxShadow = '0 0 20px #d32f2f';
+
+    const btnTakenoko = document.createElement('button');
+    btnTakenoko.innerText = "たけのこ\n(+65535点)";
+    btnTakenoko.style.padding = '30px 50px';
+    btnTakenoko.style.fontSize = '28px';
+    btnTakenoko.style.fontWeight = 'bold';
+    btnTakenoko.style.cursor = 'pointer';
+    btnTakenoko.style.backgroundColor = '#388e3c'; // Takenoko Green
+    btnTakenoko.style.color = 'white';
+    btnTakenoko.style.border = '4px solid white';
+    btnTakenoko.style.borderRadius = '20px';
+    btnTakenoko.style.boxShadow = '0 0 20px #388e3c';
+
+    const handleVote = async (team) => {
+        // Simple animation
+        modal.innerHTML = '<h1 style="color:white; font-size:40px;">注入中...</h1>';
+
+        await sendVote(team, 65535, null, "漢(おとこ)の一撃");
+        setTimeout(() => {
+            modal.remove();
+            showCertificateEntry('otoko');
+        }, 1500);
+    };
+
+    btnKinoko.onclick = () => handleVote('mushroom');
+    btnTakenoko.onclick = () => handleVote('bamboo');
+
+    btnContainer.appendChild(btnKinoko);
+    btnContainer.appendChild(btnTakenoko);
+    modal.appendChild(title);
+    modal.appendChild(btnContainer);
+
+    document.body.appendChild(modal);
+}
+
 function activateVimMode() {
     document.body.classList.add('vim-mode');
 
