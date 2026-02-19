@@ -184,8 +184,8 @@ function startQTE() {
     updateQteDisplay();
     document.getElementById('qte-display').style.display = 'flex';
 
-    // Timer (10s)
-    vimQteTimer = setTimeout(failQTE, 10000);
+    // Timer (20s)
+    vimQteTimer = setTimeout(failQTE, 20000);
 }
 
 function updateQteDisplay() {
