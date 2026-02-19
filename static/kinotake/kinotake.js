@@ -219,8 +219,31 @@ function updateQteDisplay() {
 }
 
 function handleQteInput(key) {
+    console.log("QTE Input:", key, " Target:", vimQteSequence[vimQteProgress]);
+
+    // Unix/VIM checks are case-sensitive but for this game let's be lenient
+    // Also handle Full-width characters (ZenKAKU) for Japanese users
+    let normalized = key;
+
+    // Map Full-width to Half-width
+    const map = {
+        '：': ':',
+        'ｑ': 'q',
+        'Ｑ': 'q',
+        '！': '!',
+        'Q': 'q'
+    };
+
+    if (map[normalized]) {
+        normalized = map[normalized];
+    }
+
+    // Ensure standard '!' works even if Shift is weirdly handled
+    // (Usually e.key is '!')
+
     const target = vimQteSequence[vimQteProgress];
-    if (key === target) {
+
+    if (normalized === target) {
         vimQteProgress++;
         updateQteDisplay(); // Update UI immediately
 
@@ -238,9 +261,14 @@ function handleQteInput(key) {
             }
         }
     } else {
-        // Reset progress on wrong key? Or just ignore?
-        // User said "Fast", so mistakes are costly. Reset current triplet.
-        vimQteProgress = 0;
+        // Punishing mistakes is too hard for browser based QTE
+        // Just ignore wrong keys so they can mash/correct themselves
+        // vimQteProgress = 0;
+        // updateQteDisplay();
+
+        // Optional: Feedback for wrong key?
+        // document.body.classList.add('shake-small');
+        // setTimeout(() => document.body.classList.remove('shake-small'), 100);
     }
 }
 
