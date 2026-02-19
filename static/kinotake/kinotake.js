@@ -315,6 +315,13 @@ if (cheatBtn && cheatInput) {
             cheatInput.value = "";
         }
     });
+
+    // Add Enter key support
+    cheatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            cheatBtn.click();
+        }
+    });
 }
 
 // Long Press Logic
