@@ -1133,6 +1133,12 @@ function activateFreezaMode() {
                 resetModes(); // Stop other modes/audio
                 activateGameClearMode();
                 return;
+            } else if (text.includes('53万')) {
+                // Osii Mode (Freeza triggered without Time Slip)
+                modal.remove();
+                resetModes();
+                activateOsiiMode();
+                return;
             }
 
             // Apply Graph Break Visuals
@@ -1429,4 +1435,26 @@ function generateTeiouCertificate() {
         document.getElementById('download-controls').style.display = 'flex';
         document.getElementById('cert-instruction').innerText = "証明書が完成しました！";
     };
+}
+
+function activateOsiiMode() {
+    document.body.style.backgroundImage = "url('/static/kinotake/osii.png')";
+
+    // Stop audio
+    if (bgm) bgm.pause();
+
+    // Send Vote (3141 points)
+    // Team can be bamboo or mushroom? Or maybe match the button clicked?
+    // But this function is generic.
+    // The user clicked one of the buttons.
+    // Let's just default to bamboo or maybe pass the team?
+    // User request didn't specify team. 3141 points to "bamboo" (Takenoko) seems fine as a default or penalty.
+    // Or maybe just "none" if backend allowed it?
+    // Backend requires valid team "bamboo", "mushroom", "prettier".
+    // I will use "bamboo" as it's the "Takenoko" side (often the winner side in memes).
+    sendVote("bamboo", 3141, "osii", "惜しい人");
+
+    setTimeout(() => {
+        alert("おしい！このコマンドの前にもう一つコマンドが必要！\n(3,141点が加算されました)");
+    }, 500);
 }
