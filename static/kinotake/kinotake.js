@@ -1126,6 +1126,15 @@ function activateFreezaMode() {
         btn.onmouseout = () => btn.style.transform = 'scale(1.0)';
 
         btn.onclick = async () => {
+            // Check for Game Clear Condition (Time Slip active + Freeza Mode)
+            if (document.body.classList.contains('time-slip-mode') && text.includes('53万')) {
+                // Game Clear Sequence!
+                modal.remove(); // Close vote modal
+                resetModes(); // Stop other modes/audio
+                activateGameClearMode();
+                return;
+            }
+
             // Apply Graph Break Visuals
             document.body.classList.add('graph-break');
 
@@ -1135,10 +1144,6 @@ function activateFreezaMode() {
             modal.innerHTML = '<h1 style="font-size:100px; color:white; text-shadow:0 0 50px magenta;">キエエエエエ！！！</h1>';
 
             // Send Vote
-            // Use 0x81650 logic but send specific large number allowed by backend logic?
-            // Wait, backend logic allows 530000 ONLY if normal vote check passes OR if cheat code is valid.
-            // But vote checks cheat code separately.
-            // Let's send 530000 with cheat code "0x81650" (which is valid).
             await sendVote(team, 530000, "0x81650", "宇宙の帝王");
 
             // Explosion/Destruction layout
@@ -1349,4 +1354,79 @@ function deactivateNotFoundMode() {
 
     // Resume BGM
     if (bgm && !isMuted) bgm.play();
+}
+
+function activateGameClearMode() {
+    // 1. Meiji Escape Phase
+    document.body.style.backgroundImage = "url('/static/kinotake/meijiesc.png')";
+
+    // Stop all audio
+    if (bgm) bgm.pause();
+    if (timeSlipAudio) timeSlipAudio.pause();
+
+    // Play some impact sound if available? Or silence.
+    // For now, silence.
+
+    // 2. Teiou Phase after delay
+    setTimeout(() => {
+        document.body.style.backgroundImage = "url('/static/kinotake/teiou.png')";
+
+        // Send Game Clear Vote/Log?
+        sendVote("bamboo", 530000, "game_clear", "宇宙の帝王");
+
+        // Show Certificate
+        showGameClearCertificate();
+    }, 3000);
+}
+
+function showGameClearCertificate() {
+    const modal = document.getElementById('certificate-modal');
+    if (!modal) return;
+
+    modal.style.display = 'flex';
+
+    // Customize for Teiou
+    const title = modal.querySelector('h2');
+    if (title) title.innerHTML = "GAME CLEAR!<br>宇宙の帝王の称号";
+
+    const input = document.getElementById('cert-name-input');
+    if (input) input.placeholder = "帝王の名前を刻め";
+
+    // Hook generate button to use teioushougou.png
+    const btnGen = document.getElementById('btn-generate');
+    // Save original onclick to restore later if needed, or just overwrite
+    btnGen.onclick = () => generateTeiouCertificate();
+}
+
+function generateTeiouCertificate() {
+    const nameInput = document.getElementById('cert-name-input');
+    const name = nameInput.value || "名無しの帝王";
+
+    const canvas = document.getElementById('cert-canvas');
+    const ctx = canvas.getContext('2d');
+
+    const img = new Image();
+    img.src = "/static/kinotake/teioushougou.png";
+    img.onload = () => {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        // Draw Name
+        ctx.fillStyle = "black"; // Or gold?
+        ctx.font = "bold 60px 'Mochiy Pop One', sans-serif";
+        ctx.textAlign = "center";
+
+        // Adjust position based on image layout (Guessing center/bottom)
+        // Let's assume similar to VIM cert for now: Center
+        ctx.fillText(name, canvas.width / 2, 400); // Adjust Y as needed
+
+        // Show Preview
+        const preview = document.getElementById('certificate-preview');
+        preview.src = canvas.toDataURL();
+        preview.style.display = 'block';
+
+        // Show download controls
+        document.getElementById('input-controls').style.display = 'none';
+        document.getElementById('download-controls').style.display = 'flex';
+        document.getElementById('cert-instruction').innerText = "証明書が完成しました！";
+    };
 }
