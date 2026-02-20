@@ -1097,7 +1097,9 @@ function activateFreezaMode() {
             // Apply Graph Break Visuals
             document.body.classList.add('graph-break');
 
-            // UI Feedback
+            // UI Feedback: Make background transparent to show destruction
+            modal.style.transition = 'background-color 0.5s';
+            modal.style.backgroundColor = 'rgba(75, 0, 130, 0.0)';
             modal.innerHTML = '<h1 style="font-size:100px; color:white; text-shadow:0 0 50px magenta;">キエエエエエ！！！</h1>';
 
             // Send Vote
@@ -1111,7 +1113,7 @@ function activateFreezaMode() {
             setTimeout(() => {
                 modal.remove();
                 alert("モニターが耐えきれません！\n(53万点が加算されました)");
-            }, 2500);
+            }, 3000); // Give a bit more time to enjoy the destruction
         };
         return btn;
     };
