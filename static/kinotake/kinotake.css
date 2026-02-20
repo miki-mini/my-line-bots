@@ -226,6 +226,15 @@ h1 {
     opacity: 0;
 }
 
+.real-panda {
+    position: absolute;
+    cursor: pointer;
+    z-index: 10001;
+    pointer-events: auto;
+    filter: drop-shadow(0 0 5px lime);
+    animation: glitch-anim 0.2s infinite;
+}
+
 .nise-panda {
     position: absolute;
     width: 80px;
