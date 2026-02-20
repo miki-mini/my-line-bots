@@ -1189,3 +1189,105 @@ function activateTimeSlipMode() {
         refereeSpeech.innerText = "ここはどこだ...\nきのこ...たけのこ...";
     }
 }
+
+// Not Found Mode Logic
+let notFoundActive = false;
+let notFoundClicks = 0;
+let notFoundTimer = null;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    const btnCheat = document.getElementById('btn-cheat');
+    if (btnCheat) {
+        btnCheat.addEventListener('click', () => {
+            // If input is empty, track clicks
+            const input = document.getElementById('cheat-input');
+            if (input && input.value.trim() === "") {
+                notFoundClicks++;
+                clearTimeout(notFoundTimer);
+                notFoundTimer = setTimeout(() => {
+                    notFoundClicks = 0;
+                }, 2000); // 2 seconds to click 4 times
+
+                if (notFoundClicks >= 4) {
+                    notFoundClicks = 0;
+                    activateNotFoundMode();
+                }
+            }
+        });
+    }
+});
+
+function activateNotFoundMode() {
+    if (notFoundActive) return;
+    notFoundActive = true;
+
+    // Send Penalty
+    sendVote("none", 0, "404_mode", "NotFoundUser");
+
+    // Add Class
+    document.body.classList.add('not-found-mode');
+
+    // Create Overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'not-found-overlay';
+
+    const msg = document.createElement('div');
+    msg.id = 'not-found-msg';
+    msg.innerText = "404 Not Found";
+    overlay.appendChild(msg);
+
+    document.body.appendChild(overlay);
+
+    // Audio Impact (Stop BGM)
+    if (bgm) bgm.pause();
+
+    // Spawn Pandas
+    spawnPandas();
+}
+
+function spawnPandas() {
+    const count = 50; // Many fakes
+    const overlay = document.getElementById('not-found-overlay');
+    if (!overlay) return;
+
+    // Fakes
+    for (let i = 0; i < count; i++) {
+        const img = document.createElement('img');
+        img.src = "/static/kinotake/kinokotakenoko.png"; // Use existing as base
+        img.className = 'nise-panda';
+        img.style.left = Math.random() * 90 + 'vw';
+        img.style.top = Math.random() * 90 + 'vh';
+
+        // Random drift (simple CSS animation handles glitch, but here we set pos)
+
+        img.onclick = () => {
+            // Error sound / shake
+            alert("404 Error: これは偽物です");
+        };
+        overlay.appendChild(img);
+    }
+
+    // Real One
+    const real = document.createElement('img');
+    real.src = "/static/kinotake/kinokotakenoko.png"; // Use existing
+    real.className = 'real-panda';
+    real.style.left = Math.random() * 90 + 'vw';
+    real.style.top = Math.random() * 90 + 'vh';
+
+    real.onclick = () => {
+        alert("200 OK: 本物を見つけました！");
+        deactivateNotFoundMode();
+    };
+    overlay.appendChild(real);
+}
+
+function deactivateNotFoundMode() {
+    notFoundActive = false;
+    document.body.classList.remove('not-found-mode');
+    const overlay = document.getElementById('not-found-overlay');
+    if (overlay) overlay.remove();
+
+    // Resume BGM
+    if (bgm && !isMuted) bgm.play();
+}
