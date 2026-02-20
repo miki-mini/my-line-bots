@@ -593,7 +593,33 @@ function winQTE() {
 
         // Success Message
         // Success Message
-        showCertificateEntry();
+        let certificateMode = 'vim'; // 'vim', 'otoko', 'kagyoha'
+
+        function showCertificateEntry(mode = 'vim') {
+            certificateMode = mode;
+            const modal = document.getElementById('certificate-modal');
+            if (modal) modal.style.display = 'flex';
+
+            // Update instruction text based on mode
+            const instruction = document.getElementById('cert-instruction');
+            if (certificateMode === 'otoko') {
+                instruction.innerHTML = "男祭り開催中！<br>漢(おとこ)の名を刻め！";
+            } else if (certificateMode === 'kagyoha') {
+                instruction.innerHTML = "改行波充填完了！<br>その名を歴史に刻め！";
+            } else {
+                instruction.innerHTML = "VIM DUNGEON 制覇！<br>名前を刻め！";
+            }
+
+            // Load image early to cache
+            const img = new Image();
+            if (certificateMode === 'otoko') {
+                img.src = '/static/kinotake/otoko2.png';
+            } else if (certificateMode === 'kagyoha') {
+                img.src = '/static/kinotake/kagyoha2.png';
+            } else {
+                img.src = '/static/kinotake/kuria.jpg';
+            }
+        }
 
     }, 500);
 }
@@ -889,7 +915,15 @@ function generateCertificate() {
     const ctx = canvas.getContext('2d');
     const img = new Image();
     img.crossOrigin = "anonymous";
-    img.src = certificateMode === 'otoko' ? '/static/kinotake/otoko2.png' : '/static/kinotake/kuria.jpg';
+
+    // Select Background Image
+    if (certificateMode === 'otoko') {
+        img.src = '/static/kinotake/otoko2.png';
+    } else if (certificateMode === 'kagyoha') {
+        img.src = '/static/kinotake/kagyoha2.png';
+    } else {
+        img.src = '/static/kinotake/kuria.jpg';
+    }
 
     img.onload = () => {
         // Draw Image
@@ -907,9 +941,7 @@ function generateCertificate() {
         ctx.lineWidth = 3;
         ctx.strokeStyle = '#FF4500'; // Orange-ish outline
 
-        // Coordinates: Center horizontal, higher than before (was +180)
-        // Moved up to +80 to avoid overlapping panda too much
-        // For Otoko mode, adjustments might be needed? assume same for now
+        // Coordinates: Center horizontal
         const textY = canvas.height / 2 + 80;
 
         ctx.strokeText(name, canvas.width / 2, textY);
@@ -933,8 +965,13 @@ function generateCertificate() {
         audio.play().catch(e => console.log("Audio play blocked", e));
 
         // Log Success to Server (Holy War History)
-        // team='vim', count=0, cheat_code=':wq_success', helper_name=name
-        sendVote('vim', 0, ':wq_success', name);
+        if (certificateMode === 'otoko') {
+            sendVote('otoko', 0, 'otoko_cert', name);
+        } else if (certificateMode === 'kagyoha') {
+            sendVote('kagyoha', 0, 'kagyoha_cert', name);
+        } else {
+            sendVote('vim', 0, ':wq_success', name);
+        }
     };
 
     img.onerror = () => {
