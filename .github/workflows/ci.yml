@@ -52,6 +52,11 @@ jobs:
           workload_identity_provider: '${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}'
           service_account: '${{ secrets.GCP_SERVICE_ACCOUNT }}'
 
+      - name: Download kinotake assets from GCS
+        run: |
+          mkdir -p static/kinotake
+          gcloud storage cp "gs://rabbit-bot-images/kinotake/*" static/kinotake/
+
       - name: Deploy to Cloud Run
         id: deploy
         uses: google-github-actions/deploy-cloudrun@v2

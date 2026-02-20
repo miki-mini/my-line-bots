@@ -45,3 +45,6 @@ dist/
 *.egg-info/
 .claude/settings.local.json
 static/kinotake/kakusi/
+static/kinotake/*.png
+static/kinotake/*.jpg
+static/kinotake/*.mp3
