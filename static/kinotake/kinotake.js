@@ -1238,7 +1238,7 @@ function activateNotFoundMode() {
 
     const msg = document.createElement('div');
     msg.id = 'not-found-msg';
-    msg.innerText = "404 Not Found";
+    msg.innerHTML = "404 Not Found<br><span style='font-size: 3rem; color: white;'>本物を探せ！</span>";
     overlay.appendChild(msg);
 
     document.body.appendChild(overlay);
