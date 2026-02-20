@@ -150,6 +150,14 @@ function updateUI(data) {
         });
         logList.scrollTop = 0;
     }
+
+    // Discovery Counter
+    if (data.discovered_count !== undefined && data.total_cheats !== undefined) {
+        const discEl = document.getElementById('discovery-counter');
+        if (discEl) {
+            discEl.innerText = `隠しコマンド発見数: ${data.discovered_count} / ${data.total_cheats}`;
+        }
+    }
 }
 
 // VIM DUNGEON LOGIC
@@ -709,9 +717,9 @@ btns.forEach(btn => {
         btn.classList.remove('pressing');
         pressing = false;
 
-        if (duration > 3000) {
+        if (duration > 16000) {
             const team = btn.id === 'btn-bamboo' ? 'bamboo' : 'mushroom';
-            sendVote(team, 100, "3秒チャージ", "チャージマン");
+            sendVote(team, 160, "16秒チャージ", "チャージマン");
             triggerExplosion();
         }
     });
