@@ -437,10 +437,6 @@ body.kagyoha-mode #bg-layer {
     100% {
         transform: rotate(0deg) scale(1.0);
     }
-
-    100% {
-        transform: rotate(0deg) scale(1.0);
-    }
 }
 
 /* TIME SLIP MODE (Meiji) */
@@ -537,14 +533,14 @@ body.vim-mode .container {
     transition: filter 2s;
 }
 
-/* Freeza Mode */
-body.freeza-mode #bg-layer {
+/* Teiou Mode */
+body.teiou-mode #bg-layer {
     background: linear-gradient(135deg, #1a0033, #4b0082) !important;
     /* Deep Space Purple */
     filter: contrast(1.5) brightness(0.8);
 }
 
-body.freeza-mode .bar {
+body.teiou-mode .bar {
     transition: height 3s cubic-bezier(0.68, -0.6, 0.32, 1.6);
     /* Elastic explosion */
 }
@@ -564,7 +560,7 @@ body.graph-break .bar {
 }
 
 body.graph-break #referee-img {
-    animation: spin 1s infinite linear;
+    animation: spin-chaos 1s infinite linear;
     /* Panda spins in chaos */
 }
 
@@ -590,7 +586,7 @@ body.graph-break #referee-img {
     }
 }
 
-@keyframes spin {
+@keyframes spin-chaos {
     0% {
         transform: rotate(0deg) scale(1.5);
     }
