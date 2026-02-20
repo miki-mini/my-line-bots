@@ -101,6 +101,8 @@ async function sendVote(team, count, cheatCode = null, helperName = null) {
                 activateOtokoMode();
             } else if (data.message === 'KAGYOHA_MODE') {
                 activateKagyohaMode();
+            } else if (data.message === 'FREEZA_MODE') {
+                activateFreezaMode();
             } else if (data.message && data.message.includes("Cheat Activated")) {
                 if (data.message.includes("かめはめ波") || data.message.includes("kamehameha")) {
                     triggerExplosion();
@@ -1022,4 +1024,101 @@ function shareOnX() {
     }
     const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text);
     window.open(url, '_blank');
+}
+
+function activateFreezaMode() {
+    document.body.classList.add('freeza-mode');
+
+    // Audio
+    if (bgm) bgm.pause();
+    // Reuse vim audio as placeholder for ominous sound if not playing
+    if (!vimAudio) {
+        vimAudio = new Audio('/static/kinotake/derarenai.mp3');
+        vimAudio.loop = true;
+    }
+    vimAudio.play().catch(e => console.log("Freeza audio blocked", e));
+
+    // Dialog Construction
+    const modal = document.createElement('div');
+    modal.id = 'freeza-modal';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(75, 0, 130, 0.95)'; // Deep Purple
+    modal.style.display = 'flex';
+    modal.style.flexDirection = 'column';
+    modal.style.justifyContent = 'center';
+    modal.style.alignItems = 'center';
+    modal.style.zIndex = '10000';
+    modal.style.color = 'white';
+    modal.style.fontFamily = '"Mochiy Pop One", sans-serif';
+
+    const title = document.createElement('h1');
+    title.innerText = "私の戦闘力は530000です...";
+    title.style.fontSize = '40px';
+    title.style.marginBottom = '20px';
+    title.style.textShadow = '0 0 20px #FFF';
+    title.style.textAlign = 'center';
+
+    const subtitle = document.createElement('p');
+    subtitle.innerText = "どちらの陣営に加担しましょうか？";
+    subtitle.style.fontSize = '24px';
+    subtitle.style.marginBottom = '60px';
+
+    const btnContainer = document.createElement('div');
+    btnContainer.style.display = 'flex';
+    btnContainer.style.gap = '30px';
+    btnContainer.style.flexWrap = 'wrap';
+    btnContainer.style.justifyContent = 'center';
+
+    const createBtn = (text, color, team) => {
+        const btn = document.createElement('button');
+        btn.innerText = text;
+        btn.style.padding = '30px 50px';
+        btn.style.fontSize = '24px';
+        btn.style.fontWeight = 'bold';
+        btn.style.backgroundColor = color;
+        btn.style.color = 'white';
+        btn.style.border = '4px solid white';
+        btn.style.borderRadius = '50px';
+        btn.style.cursor = 'pointer';
+        btn.style.transition = 'transform 0.2s';
+        btn.style.boxShadow = `0 0 40px ${color}`;
+
+        btn.onmouseover = () => btn.style.transform = 'scale(1.1)';
+        btn.onmouseout = () => btn.style.transform = 'scale(1.0)';
+
+        btn.onclick = async () => {
+            // Apply Graph Break Visuals
+            document.body.classList.add('graph-break');
+
+            // UI Feedback
+            modal.innerHTML = '<h1 style="font-size:100px; color:white; text-shadow:0 0 50px magenta;">キエエエエエ！！！</h1>';
+
+            // Send Vote
+            // Use 0x81650 logic but send specific large number allowed by backend logic?
+            // Wait, backend logic allows 530000 ONLY if normal vote check passes OR if cheat code is valid.
+            // But vote checks cheat code separately.
+            // Let's send 530000 with cheat code "0x81650" (which is valid).
+            await sendVote(team, 530000, "0x81650", "宇宙の帝王");
+
+            // Explosion/Destruction layout
+            setTimeout(() => {
+                modal.remove();
+                alert("モニターが耐えきれません！\n(53万点が加算されました)");
+            }, 2500);
+        };
+        return btn;
+    };
+
+    btnContainer.appendChild(createBtn("きのこ軍 (+53万)", "#d32f2f", "mushroom"));
+    btnContainer.appendChild(createBtn("たけのこ軍 (+53万)", "#388e3c", "bamboo"));
+
+    modal.appendChild(title);
+    modal.appendChild(subtitle);
+    modal.appendChild(btnContainer);
+
+    document.body.appendChild(modal);
 }

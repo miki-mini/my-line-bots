@@ -431,6 +431,69 @@ body.vim-mode .container {
     transition: filter 2s;
 }
 
+/* Freeza Mode */
+body.freeza-mode #bg-layer {
+    background: linear-gradient(135deg, #1a0033, #4b0082) !important;
+    /* Deep Space Purple */
+    filter: contrast(1.5) brightness(0.8);
+}
+
+body.freeza-mode .bar {
+    transition: height 3s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+    /* Elastic explosion */
+}
+
+/* Graph Break Effect */
+body.graph-break .bar-container {
+    overflow: visible !important;
+    /* Allow bars to stick out */
+}
+
+body.graph-break .bar {
+    height: 53000% !important;
+    /* Force massive height */
+    box-shadow: 0 0 100px 20px cyan;
+    /* Energy aura */
+    animation: shake-hard 0.5s infinite;
+}
+
+body.graph-break #referee-img {
+    animation: spin 1s infinite linear;
+    /* Panda spins in chaos */
+}
+
+@keyframes shake-hard {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+
+    25% {
+        transform: translate(10px, 10px) rotate(5deg);
+    }
+
+    50% {
+        transform: translate(-10px, -10px) rotate(-5deg);
+    }
+
+    75% {
+        transform: translate(10px, -10px) rotate(5deg);
+    }
+
+    100% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg) scale(1.5);
+    }
+
+    100% {
+        transform: rotate(360deg) scale(1.5);
+    }
+}
+
 @keyframes glitch {
     0% {
         transform: translate(0)
