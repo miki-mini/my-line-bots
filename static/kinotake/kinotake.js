@@ -1363,7 +1363,7 @@ function updateUI(data) {
 
     function activateGameClearMode() {
         // 1. Meiji Escape Phase
-        document.body.style.backgroundImage = "url('/static/kinotake/meijiesc.png')";
+        document.getElementById('bg-layer').style.background = "url('/static/kinotake/meijiesc.png') no-repeat center center / cover";
 
         // Stop all audio
         if (bgm) bgm.pause();
@@ -1374,7 +1374,7 @@ function updateUI(data) {
 
         // 2. Teiou Phase after delay
         setTimeout(() => {
-            document.body.style.backgroundImage = "url('/static/kinotake/teiou.png')";
+            document.getElementById('bg-layer').style.background = "url('/static/kinotake/teiou.png') no-repeat center center / cover";
 
             // Send Game Clear Vote/Log?
             sendVote("bamboo", 530000, "game_clear", "宇宙の帝王");
@@ -1437,7 +1437,7 @@ function updateUI(data) {
     }
 
     function activateOsiiMode() {
-        document.body.style.backgroundImage = "url('/static/kinotake/osii.png')";
+        document.getElementById('bg-layer').style.background = "url('/static/kinotake/osii.png') no-repeat center center / cover";
 
         // Stop audio
         if (bgm) bgm.pause();
