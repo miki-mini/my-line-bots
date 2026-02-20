@@ -1236,10 +1236,19 @@ function activateNotFoundMode() {
     const overlay = document.createElement('div');
     overlay.id = 'not-found-overlay';
 
-    const msg = document.createElement('div');
-    msg.id = 'not-found-msg';
-    msg.innerHTML = "404 Not Found<br><span style='font-size: 3rem; color: white;'>本物を探せ！</span>";
-    overlay.appendChild(msg);
+    // Update Referee Speech instead of overlay message
+    const speech = document.getElementById('referee-speech');
+    if (speech) {
+        speech.innerHTML = "404 Not Found<br><span style='font-size: 1.5rem; color: red; font-weight:bold;'>本物を探せ！</span>";
+        speech.style.zIndex = "10003";
+        speech.style.position = "relative";
+
+        const refereeArea = document.querySelector('.referee-area');
+        if (refereeArea) {
+            refereeArea.style.zIndex = "10003";
+            refereeArea.style.position = "relative";
+        }
+    }
 
     document.body.appendChild(overlay);
 
@@ -1318,8 +1327,25 @@ function spawnPandas() {
 function deactivateNotFoundMode() {
     notFoundActive = false;
     document.body.classList.remove('not-found-mode');
+
+    // Remove Overlay (Pandas)
     const overlay = document.getElementById('not-found-overlay');
     if (overlay) overlay.remove();
+
+    // Reset Speech Bubble
+    const speech = document.getElementById('referee-speech');
+    if (speech) {
+        speech.innerHTML = "やんのかコラ！<br>(可愛い威嚇)";
+        speech.style.zIndex = "";
+        speech.style.position = "";
+    }
+
+    // Reset Referee Area Z-Index
+    const refereeArea = document.querySelector('.referee-area');
+    if (refereeArea) {
+        refereeArea.style.zIndex = "";
+        refereeArea.style.position = "";
+    }
 
     // Resume BGM
     if (bgm && !isMuted) bgm.play();
