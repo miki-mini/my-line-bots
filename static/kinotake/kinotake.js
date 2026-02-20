@@ -380,7 +380,7 @@ function showKagyohaVoteDialog() {
             // The request didn't specify certificate, but let's show standard victory or otoko one?
             // User just said "9001点獲得".
             // Let's show the standard certificate entry for now, as it's a "win".
-            showCertificateEntry('vim'); // Reuse standard or maybe 'kagyoha' later?
+            showCertificateEntry('kagyoha'); // Reuse standard or maybe 'kagyoha' later?
             // Logic says reuse standard for now or just close.
             // Let's reuse standard but change text?
             // Actually, let's just create a new simple alert or reuse showCertificateEntry with a new mode 'kagyoha' later if needed.
@@ -898,13 +898,21 @@ function showCertificateEntry(mode = 'vim') {
     const instruction = document.getElementById('cert-instruction');
     if (certificateMode === 'otoko') {
         instruction.innerHTML = "男祭り開催中！<br>漢(おとこ)の名を刻め！";
+    } else if (certificateMode === 'kagyoha') {
+        instruction.innerHTML = "改行波充填完了！<br>その名を歴史に刻め！";
     } else {
         instruction.innerHTML = "VIM DUNGEON 制覇！<br>名前を刻め！";
     }
 
     // Load image early to cache
     const img = new Image();
-    img.src = certificateMode === 'otoko' ? '/static/kinotake/otoko2.png' : '/static/kinotake/kuria.jpg';
+    if (certificateMode === 'otoko') {
+        img.src = '/static/kinotake/otoko2.png';
+    } else if (certificateMode === 'kagyoha') {
+        img.src = '/static/kinotake/kagyoha2.png';
+    } else {
+        img.src = '/static/kinotake/kuria.jpg';
+    }
 }
 
 function generateCertificate() {
