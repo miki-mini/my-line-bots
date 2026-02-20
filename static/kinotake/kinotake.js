@@ -1261,7 +1261,7 @@ function spawnPandas() {
     // Fakes
     for (let i = 0; i < count; i++) {
         const img = document.createElement('img');
-        img.src = `/static/kinotake/kakusi/nise.png?v=${ts}`; // Fix: Add cache buster
+        img.src = `/static/kinotake/nise.png?v=${ts}`; // Flattened path
         img.className = 'nise-panda';
         img.style.left = Math.random() * 90 + 'vw';
         img.style.top = Math.random() * 90 + 'vh';
@@ -1280,7 +1280,7 @@ function spawnPandas() {
 
     // Real One
     const real = document.createElement('img');
-    real.src = `/static/kinotake/kakusi/panda.png?v=${ts}`; // Fix: Add cache buster
+    real.src = `/static/kinotake/panda.png?v=${ts}`; // Flattened path
     real.className = 'real-panda';
     real.style.left = Math.random() * 90 + 'vw';
     real.style.top = Math.random() * 90 + 'vh';
