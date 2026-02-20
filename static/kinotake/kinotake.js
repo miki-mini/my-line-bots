@@ -1,5 +1,23 @@
 const apiBase = '/api/kinotake';
 
+// Custom modal to replace alert() (hides URL from dialog)
+function showModal(message, onClose) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;justify-content:center;align-items:center;z-index:99999;';
+    const box = document.createElement('div');
+    box.style.cssText = 'background:#222;color:white;padding:30px 40px;border-radius:15px;text-align:center;max-width:80%;font-size:1.2rem;border:2px solid #555;box-shadow:0 0 30px rgba(0,0,0,0.5);';
+    box.innerHTML = message.replace(/\n/g, '<br>');
+    const btn = document.createElement('button');
+    btn.innerText = 'OK';
+    btn.style.cssText = 'margin-top:20px;padding:10px 40px;font-size:1rem;cursor:pointer;border:none;border-radius:8px;background:#ff6600;color:white;font-weight:bold;';
+    btn.onclick = () => { overlay.remove(); if (onClose) onClose(); };
+    box.appendChild(document.createElement('br'));
+    box.appendChild(btn);
+    overlay.appendChild(box);
+    overlay.onclick = (e) => { if (e.target === overlay) { overlay.remove(); if (onClose) onClose(); } };
+    document.body.appendChild(overlay);
+}
+
 // State
 let bambooVotes = 0;
 let mushroomVotes = 0;
@@ -110,7 +128,7 @@ async function sendVote(team, count, cheatCode = null, helperName = null) {
                 activateNotFoundMode();
             }
             if (data.message && data.message.includes("BA")) {
-                alert("Konami Code Activated! (Server)");
+                showModal("Konami Code Activated! (Server)");
             }
         }
     } catch (e) {
@@ -411,7 +429,7 @@ function updateUI(data) {
                 // For now, let's just close as requested "9,001点獲得" is the main goal.
                 // But showing certificate is a nice touch.
                 // Let's leave it as just point addition visualization for now.
-                alert("改行波が着弾しました！ (+9001点)");
+                showModal("改行波が着弾しました！ (+9001点)");
             }, 2000);
         };
 
@@ -460,10 +478,9 @@ function updateUI(data) {
         if (action === 'fight') {
             startQTE();
         } else if (action === 'escape') {
-            alert("閉じようとしたが、出られない！ (ブラウザが拒否しました)");
+            showModal("閉じようとしたが、出られない！ (ブラウザが拒否しました)");
         } else if (action === 'master') {
-            alert("手動改行の極意を悟った... (リセットします)");
-            location.reload();
+            showModal("手動改行の極意を悟った... (リセットします)", () => location.reload());
         }
     }
 
@@ -627,8 +644,7 @@ function updateUI(data) {
         document.getElementById('vim-msg').innerText = "保存されていない変更があります...";
         document.getElementById('vim-msg').style.display = 'block';
         setTimeout(() => {
-            alert("GAMEOVER\n迷宮の入り口に戻ります");
-            activateVimMode(); // Reset to start of vim
+            showModal("GAMEOVER\n迷宮の入り口に戻ります", () => activateVimMode()); // Reset to start of vim
         }, 1000);
     }
 
@@ -1003,7 +1019,7 @@ function updateUI(data) {
         };
 
         img.onerror = () => {
-            alert("画像の読み込みに失敗しました");
+            showModal("画像の読み込みに失敗しました");
         };
     }
 
@@ -1124,7 +1140,7 @@ function updateUI(data) {
                 // Explosion/Destruction layout
                 setTimeout(() => {
                     modal.remove();
-                    alert("モニターが耐えきれません！\n(53万点が加算されました)");
+                    showModal("モニターが耐えきれません！\n(53万点が加算されました)");
                 }, 3000); // Give a bit more time to enjoy the destruction
             };
             return btn;
@@ -1273,7 +1289,7 @@ function updateUI(data) {
                 // Shake effect
                 img.style.transform = `translate(${Math.random() * 10 - 5}px, ${Math.random() * 10 - 5}px)`;
                 setTimeout(() => img.style.transform = 'none', 100);
-                alert("404 Error: これは偽物です");
+                showModal("404 Error: これは偽物です");
             };
             overlay.appendChild(img);
         }
@@ -1298,7 +1314,7 @@ function updateUI(data) {
         };
 
         real.onclick = () => {
-            alert("200 OK: 本物を見つけました！");
+            showModal("200 OK: 本物を見つけました！");
             deactivateNotFoundMode();
         };
         overlay.appendChild(real);
@@ -1424,6 +1440,6 @@ function updateUI(data) {
         sendVote("bamboo", 3141, "osii", "惜しい人");
 
         setTimeout(() => {
-            alert("おしい！このコマンドの前にもう一つコマンドが必要！\n(3,141点が加算されました)");
+            showModal("おしい！このコマンドの前にもう一つコマンドが必要！\n(3,141点が加算されました)");
         }, 500);
     }
