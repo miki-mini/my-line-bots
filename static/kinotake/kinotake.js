@@ -222,6 +222,7 @@ function resetModes() {
     if (otokoAudio) { otokoAudio.pause(); otokoAudio.currentTime = 0; }
     if (kagyohaAudio) { kagyohaAudio.pause(); kagyohaAudio.currentTime = 0; }
     if (timeSlipAudio) { timeSlipAudio.pause(); timeSlipAudio.currentTime = 0; }
+    if (shonboriAudio) { shonboriAudio.pause(); shonboriAudio.currentTime = 0; }
 }
 
 function activateOtokoMode() {
@@ -1221,6 +1222,9 @@ document.addEventListener('DOMContentLoaded', () => {
 function activateNotFoundMode() {
     if (notFoundActive) return;
     notFoundActive = true;
+
+    // Reset other modes first
+    resetModes();
 
     // Send Penalty
     sendVote("none", 0, "404_mode", "NotFoundUser");
