@@ -893,7 +893,6 @@ function startAudioOnInteraction() {
     // Remove listeners
     document.removeEventListener('click', startAudioOnInteraction);
     document.removeEventListener('keydown', startAudioOnInteraction);
-    toast.style.fontWeight = "bold";
 
     // Remove toast
     const t = document.getElementById('music-toast');
@@ -1149,4 +1148,35 @@ function activateFreezaMode() {
     modal.appendChild(btnContainer);
 
     document.body.appendChild(modal);
+}
+
+let timeSlipAudio = null;
+
+function activateTimeSlipMode() {
+    resetModes();
+    document.body.classList.add('time-slip-mode');
+
+    // Audio
+    if (bgm) bgm.pause();
+    if (!timeSlipAudio) {
+        timeSlipAudio = new Audio('/static/kinotake/meiji.mp3');
+        timeSlipAudio.loop = true;
+    }
+    timeSlipAudio.play().catch(e => console.log("TimeSlip audio blocked", e));
+
+    // Date Overlay "1901年12月13日"
+    let dateOverlay = document.getElementById('time-slip-date');
+    if (!dateOverlay) {
+        dateOverlay = document.createElement('div');
+        dateOverlay.id = 'time-slip-date';
+        dateOverlay.innerText = "1901年12月13日";
+        document.body.appendChild(dateOverlay);
+    }
+    dateOverlay.style.display = 'block';
+
+    // Troubled Panda (Referee)
+    if (refereeImg) {
+        refereeImg.classList.add('troubled-panda');
+        refereeSpeech.innerText = "ここはどこだ...\nきのこ...たけのこ...";
+    }
 }
