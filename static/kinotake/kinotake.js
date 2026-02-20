@@ -194,9 +194,20 @@ function deactivateShonboriMode() {
 
     // Reset Prettier Count so it can be triggered again
     prettierClickCount = 0;
+    // Reset Prettier Count so it can be triggered again
+    prettierClickCount = 0;
+}
+
+function resetModes() {
+    document.body.classList.remove('vim-mode', 'shonbori-mode', 'otoko-mode', 'kagyoha-mode', 'freeza-mode', 'graph-break');
+    // Stop special audios if playing
+    if (vimAudio) { vimAudio.pause(); vimAudio.currentTime = 0; }
+    if (otokoAudio) { otokoAudio.pause(); otokoAudio.currentTime = 0; }
+    if (kagyohaAudio) { kagyohaAudio.pause(); kagyohaAudio.currentTime = 0; }
 }
 
 function activateOtokoMode() {
+    resetModes();
     document.body.classList.add('otoko-mode');
 
     // Stop Main BGM
@@ -290,6 +301,7 @@ function showOtokoVoteDialog() {
 }
 
 function activateKagyohaMode() {
+    resetModes();
     document.body.classList.add('kagyoha-mode');
 
     // Stop Main BGM
@@ -404,6 +416,7 @@ function showKagyohaVoteDialog() {
 }
 
 function activateVimMode() {
+    resetModes();
     document.body.classList.add('vim-mode');
 
     // Stop Main BGM
@@ -1030,6 +1043,7 @@ function shareOnX() {
 }
 
 function activateFreezaMode() {
+    resetModes();
     document.body.classList.add('freeza-mode');
 
     // Audio
