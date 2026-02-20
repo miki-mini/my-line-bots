@@ -104,9 +104,7 @@ async function sendVote(team, count, cheatCode = null, helperName = null) {
             } else if (data.message === 'FREEZA_MODE') {
                 activateFreezaMode();
             } else if (data.message && data.message.includes("Cheat Activated")) {
-                if (data.message.includes("かめはめ波") || data.message.includes("kamehameha")) {
-                    triggerExplosion();
-                } else if (data.message.includes("BA")) {
+                if (data.message.includes("BA")) {
                     alert("Konami Code Activated! (Server)");
                 }
             }
@@ -911,7 +909,7 @@ function showCertificateEntry(mode = 'vim') {
     if (certificateMode === 'otoko') {
         img.src = '/static/kinotake/otoko2.png';
     } else if (certificateMode === 'kagyoha') {
-        img.src = '/static/kinotake/kagyoha.png';
+        img.src = '/static/kinotake/kagyoha2.png';
     } else {
         img.src = '/static/kinotake/kuria.jpg';
     }
@@ -930,7 +928,7 @@ function generateCertificate() {
     if (certificateMode === 'otoko') {
         img.src = '/static/kinotake/otoko2.png';
     } else if (certificateMode === 'kagyoha') {
-        img.src = '/static/kinotake/kagyoha.png';
+        img.src = '/static/kinotake/kagyoha2.png';
     } else {
         img.src = '/static/kinotake/kuria.jpg';
     }
@@ -943,18 +941,23 @@ function generateCertificate() {
         ctx.textAlign = 'center';
         ctx.fillStyle = '#fff';
 
-        // Restore Title Logic
-        let titleText = "VIM DUNGEON 制覇";
+        // Title Logic (Only for modes without baked-in text)
+        let titleText = "";
+        if (certificateMode === 'vim') titleText = "VIM DUNGEON 制覇";
         if (certificateMode === 'otoko') titleText = "漢(おとこ)の証明";
-        if (certificateMode === 'kagyoha') titleText = "伝説の改行波免許";
+        // Kagyoha has baked-in text in kagyoha2.png, so no title text needed
 
-        // Title
-        ctx.font = 'bold 60px "Mochiy Pop One", sans-serif';
-        ctx.shadowColor = "black";
-        ctx.shadowBlur = 10;
-        ctx.lineWidth = 5;
-        ctx.strokeText(titleText, canvas.width / 2, 150);
-        ctx.fillText(titleText, canvas.width / 2, 150);
+        if (titleText) {
+            // Title
+            ctx.font = 'bold 60px "Mochiy Pop One", sans-serif';
+            ctx.shadowColor = "black";
+            ctx.shadowBlur = 10;
+            ctx.lineWidth = 5;
+            ctx.strokeText(titleText, canvas.width / 2, 150);
+            ctx.fillText(titleText, canvas.width / 2, 150);
+        }
+
+        // Name
 
         // Name
         ctx.font = 'bold 80px "Zen Maru Gothic", sans-serif';
