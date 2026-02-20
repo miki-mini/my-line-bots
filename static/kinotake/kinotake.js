@@ -25,6 +25,7 @@ const bambooBar = document.getElementById('bamboo-bar');
 const mushroomBar = document.getElementById('mushroom-bar');
 const logList = document.getElementById('log-list');
 const refereeSpeech = document.getElementById('referee-speech');
+const refereeImg = document.getElementById('referee-img');
 
 // Functions
 async function fetchState() {
