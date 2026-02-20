@@ -909,7 +909,7 @@ function showCertificateEntry(mode = 'vim') {
     if (certificateMode === 'otoko') {
         img.src = '/static/kinotake/otoko2.png';
     } else if (certificateMode === 'kagyoha') {
-        img.src = '/static/kinotake/kagyoha2.png';
+        img.src = '/static/kinotake/kagyoha.png';
     } else {
         img.src = '/static/kinotake/kuria.jpg';
     }
@@ -928,7 +928,7 @@ function generateCertificate() {
     if (certificateMode === 'otoko') {
         img.src = '/static/kinotake/otoko2.png';
     } else if (certificateMode === 'kagyoha') {
-        img.src = '/static/kinotake/kagyoha2.png';
+        img.src = '/static/kinotake/kagyoha.png';
     } else {
         img.src = '/static/kinotake/kuria.jpg';
     }
@@ -937,10 +937,26 @@ function generateCertificate() {
         // Draw Image
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        // Draw Text with Glow
-        ctx.font = 'bold 80px "Zen Maru Gothic", sans-serif';
-        ctx.fillStyle = '#FFFFFF'; // White text for better glow contrast
+        // Text Configuration
         ctx.textAlign = 'center';
+        ctx.fillStyle = '#fff';
+
+        // Restore Title Logic
+        let titleText = "VIM DUNGEON 制覇";
+        if (certificateMode === 'otoko') titleText = "漢(おとこ)の証明";
+        if (certificateMode === 'kagyoha') titleText = "伝説の改行波免許";
+
+        // Title
+        ctx.font = 'bold 60px "Mochiy Pop One", sans-serif';
+        ctx.shadowColor = "black";
+        ctx.shadowBlur = 10;
+        ctx.lineWidth = 5;
+        ctx.strokeText(titleText, canvas.width / 2, 150);
+        ctx.fillText(titleText, canvas.width / 2, 150);
+
+        // Name
+        ctx.font = 'bold 80px "Zen Maru Gothic", sans-serif';
+        ctx.fillStyle = '#FFFFFF';
         ctx.textBaseline = 'middle';
 
         // Glow Effect
@@ -949,12 +965,14 @@ function generateCertificate() {
         ctx.lineWidth = 3;
         ctx.strokeStyle = '#FF4500'; // Orange-ish outline
 
-        // Coordinates: Center horizontal
-        const textY = canvas.height / 2 + 80;
+        // Coordinates: Bottom Right
+        const textX = canvas.width - 50;
+        const textY = canvas.height - 50;
 
-        ctx.strokeText(name, canvas.width / 2, textY);
+        ctx.textAlign = 'right';
+        ctx.strokeText(name, textX, textY);
         ctx.shadowBlur = 0; // Reset shadow for fill
-        ctx.fillText(name, canvas.width / 2, textY);
+        ctx.fillText(name, textX, textY);
 
         // Show Preview
         const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
