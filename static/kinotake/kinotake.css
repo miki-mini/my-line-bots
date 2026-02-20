@@ -231,7 +231,6 @@ h1 {
     cursor: pointer;
     z-index: 10001;
     pointer-events: auto;
-    filter: drop-shadow(0 0 5px lime);
     animation: glitch-anim 0.2s infinite;
 }
 
