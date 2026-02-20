@@ -1251,7 +1251,7 @@ function activateNotFoundMode() {
 }
 
 function spawnPandas() {
-    const count = 50; // Many fakes
+    const count = 30; // Reduce count
     const overlay = document.getElementById('not-found-overlay');
     if (!overlay) return;
 
@@ -1261,10 +1261,19 @@ function spawnPandas() {
     // Fakes
     for (let i = 0; i < count; i++) {
         const img = document.createElement('img');
-        img.src = `/static/kinotake/nise.png?v=${ts}`; // Flattened path
+        img.src = `/static/kinotake/nise.png?v=${ts}`;
         img.className = 'nise-panda';
-        img.style.left = Math.random() * 90 + 'vw';
-        img.style.top = Math.random() * 90 + 'vh';
+
+        // Force size and position (Clustered)
+        img.style.position = 'absolute';
+        img.style.width = '40px';
+        img.style.height = '40px';
+
+        // Cluster around top center (Referee area) - 50vw, 25vh
+        const offsetX = (Math.random() - 0.5) * 200; // -100px to +100px
+        const offsetY = (Math.random() - 0.5) * 200; // -100px to +100px
+        img.style.left = `calc(50vw + ${offsetX}px)`;
+        img.style.top = `calc(25vh + ${offsetY}px)`;
 
         img.onerror = (e) => {
             console.error("Failed to load nise.png", e);
@@ -1272,7 +1281,9 @@ function spawnPandas() {
         };
 
         img.onclick = () => {
-            // Error sound / shake
+            // Shake effect
+            img.style.transform = `translate(${Math.random() * 10 - 5}px, ${Math.random() * 10 - 5}px)`;
+            setTimeout(() => img.style.transform = 'none', 100);
             alert("404 Error: これは偽物です");
         };
         overlay.appendChild(img);
@@ -1280,10 +1291,18 @@ function spawnPandas() {
 
     // Real One
     const real = document.createElement('img');
-    real.src = `/static/kinotake/panda.png?v=${ts}`; // Flattened path
+    real.src = `/static/kinotake/panda.png?v=${ts}`;
     real.className = 'real-panda';
-    real.style.left = Math.random() * 90 + 'vw';
-    real.style.top = Math.random() * 90 + 'vh';
+
+    // Force size and position
+    real.style.position = 'absolute';
+    real.style.width = '40px';
+    real.style.height = '40px';
+
+    const offsetX = (Math.random() - 0.5) * 200;
+    const offsetY = (Math.random() - 0.5) * 200;
+    real.style.left = `calc(50vw + ${offsetX}px)`;
+    real.style.top = `calc(25vh + ${offsetY}px)`;
 
     real.onerror = (e) => {
         console.error("Failed to load panda.png", e);
