@@ -226,6 +226,19 @@ h1 {
     opacity: 0;
 }
 
+.nise-panda {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    cursor: pointer;
+    z-index: 10000;
+    /* filter: invert(1) hue-rotate(180deg) drop-shadow(0 0 5px red); */
+    /* Removed color filters */
+    filter: drop-shadow(0 0 5px red);
+    animation: glitch-anim 0.2s infinite;
+    pointer-events: auto;
+}
+
 @keyframes spin {
     100% {
         transform: rotate(360deg);

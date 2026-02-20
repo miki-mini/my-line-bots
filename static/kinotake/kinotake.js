@@ -1258,7 +1258,7 @@ function spawnPandas() {
     // Fakes
     for (let i = 0; i < count; i++) {
         const img = document.createElement('img');
-        img.src = "/static/kinotake/kinokotakenoko.png"; // Use existing as base
+        img.src = "/static/kinotake/kakusi/nise.png"; // Use specific fake asset
         img.className = 'nise-panda';
         img.style.left = Math.random() * 90 + 'vw';
         img.style.top = Math.random() * 90 + 'vh';
@@ -1274,7 +1274,7 @@ function spawnPandas() {
 
     // Real One
     const real = document.createElement('img');
-    real.src = "/static/kinotake/kinokotakenoko.png"; // Use existing
+    real.src = "/static/kinotake/kakusi/panda.png"; // Use specific real asset
     real.className = 'real-panda';
     real.style.left = Math.random() * 90 + 'vw';
     real.style.top = Math.random() * 90 + 'vh';
