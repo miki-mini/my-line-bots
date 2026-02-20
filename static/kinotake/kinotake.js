@@ -1255,15 +1255,21 @@ function spawnPandas() {
     const overlay = document.getElementById('not-found-overlay');
     if (!overlay) return;
 
+    // Cache buster
+    const ts = new Date().getTime();
+
     // Fakes
     for (let i = 0; i < count; i++) {
         const img = document.createElement('img');
-        img.src = "/static/kinotake/kakusi/nise.png"; // Use specific fake asset
+        img.src = `/static/kinotake/kakusi/nise.png?v=${ts}`; // Fix: Add cache buster
         img.className = 'nise-panda';
         img.style.left = Math.random() * 90 + 'vw';
         img.style.top = Math.random() * 90 + 'vh';
 
-        // Random drift (simple CSS animation handles glitch, but here we set pos)
+        img.onerror = (e) => {
+            console.error("Failed to load nise.png", e);
+            img.style.display = 'none';
+        };
 
         img.onclick = () => {
             // Error sound / shake
@@ -1274,10 +1280,14 @@ function spawnPandas() {
 
     // Real One
     const real = document.createElement('img');
-    real.src = "/static/kinotake/kakusi/panda.png"; // Use specific real asset
+    real.src = `/static/kinotake/kakusi/panda.png?v=${ts}`; // Fix: Add cache buster
     real.className = 'real-panda';
     real.style.left = Math.random() * 90 + 'vw';
     real.style.top = Math.random() * 90 + 'vh';
+
+    real.onerror = (e) => {
+        console.error("Failed to load panda.png", e);
+    };
 
     real.onclick = () => {
         alert("200 OK: 本物を見つけました！");
