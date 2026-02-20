@@ -103,6 +103,8 @@ async function sendVote(team, count, cheatCode = null, helperName = null) {
                 activateKagyohaMode();
             } else if (data.message === 'FREEZA_MODE') {
                 activateFreezaMode();
+            } else if (data.message === 'TIME_SLIP_MODE') {
+                activateTimeSlipMode();
             } else if (data.message && data.message.includes("Cheat Activated")) {
                 if (data.message.includes("BA")) {
                     alert("Konami Code Activated! (Server)");
@@ -199,11 +201,18 @@ function deactivateShonboriMode() {
 }
 
 function resetModes() {
-    document.body.classList.remove('vim-mode', 'shonbori-mode', 'otoko-mode', 'kagyoha-mode', 'freeza-mode', 'graph-break');
+    document.body.classList.remove('vim-mode', 'shonbori-mode', 'otoko-mode', 'kagyoha-mode', 'freeza-mode', 'graph-break', 'time-slip-mode');
+
+    // Cleanup overlays
+    const tsDate = document.getElementById('time-slip-date');
+    if (tsDate) tsDate.style.display = 'none';
+    if (refereeImg) refereeImg.classList.remove('troubled-panda');
+
     // Stop special audios if playing
     if (vimAudio) { vimAudio.pause(); vimAudio.currentTime = 0; }
     if (otokoAudio) { otokoAudio.pause(); otokoAudio.currentTime = 0; }
     if (kagyohaAudio) { kagyohaAudio.pause(); kagyohaAudio.currentTime = 0; }
+    if (timeSlipAudio) { timeSlipAudio.pause(); timeSlipAudio.currentTime = 0; }
 }
 
 function activateOtokoMode() {

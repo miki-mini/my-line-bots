@@ -424,6 +424,99 @@ body.kagyoha-mode #bg-layer {
     100% {
         transform: rotate(0deg) scale(1.0);
     }
+
+    100% {
+        transform: rotate(0deg) scale(1.0);
+    }
+}
+
+/* TIME SLIP MODE (Meiji) */
+body.time-slip-mode {
+    filter: sepia(1.0) contrast(1.2) brightness(0.9);
+}
+
+body.time-slip-mode #bg-layer {
+    background: url('/static/kinotake/meiji.png') no-repeat center center !important;
+    background-size: cover !important;
+}
+
+#time-slip-date {
+    display: none;
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 80px;
+    font-family: "Zen Old Mincho", serif;
+    font-weight: bold;
+    color: #3e2723;
+    text-shadow: 2px 2px 0px burlywood;
+    z-index: 10000;
+    pointer-events: none;
+    white-space: nowrap;
+    animation: fadeInSlow 3s forwards;
+}
+
+.troubled-panda {
+    animation: panic-shake 0.5s infinite;
+}
+
+@keyframes panic-shake {
+    0% {
+        transform: translate(1px, 1px) rotate(0deg);
+    }
+
+    10% {
+        transform: translate(-1px, -2px) rotate(-1deg);
+    }
+
+    20% {
+        transform: translate(-3px, 0px) rotate(1deg);
+    }
+
+    30% {
+        transform: translate(3px, 2px) rotate(0deg);
+    }
+
+    40% {
+        transform: translate(1px, -1px) rotate(1deg);
+    }
+
+    50% {
+        transform: translate(-1px, 2px) rotate(-1deg);
+    }
+
+    60% {
+        transform: translate(-3px, 1px) rotate(0deg);
+    }
+
+    70% {
+        transform: translate(3px, 1px) rotate(-1deg);
+    }
+
+    80% {
+        transform: translate(-1px, -1px) rotate(1deg);
+    }
+
+    90% {
+        transform: translate(1px, 2px) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(1px, -2px) rotate(-1deg);
+    }
+}
+
+@keyframes fadeInSlow {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
 }
 
 body.vim-mode .container {
