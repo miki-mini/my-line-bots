@@ -719,7 +719,7 @@ btns.forEach(btn => {
 
         if (duration > 16000) {
             const team = btn.id === 'btn-bamboo' ? 'bamboo' : 'mushroom';
-            sendVote(team, 160, "16秒チャージ", "チャージマン");
+            sendVote(team, 128, "チャージショット", "手入力ハッカー");
             triggerExplosion();
         }
     });
