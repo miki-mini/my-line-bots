@@ -1318,6 +1318,20 @@ function updateUI(data) {
             deactivateNotFoundMode();
         };
         overlay.appendChild(real);
+
+        // Shuffle button
+        const shuffleBtn = document.createElement('button');
+        shuffleBtn.innerText = '🔀 シャッフル';
+        shuffleBtn.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:10001;padding:12px 24px;font-size:1rem;font-weight:bold;cursor:pointer;border:2px solid white;border-radius:30px;background:rgba(0,0,0,0.7);color:white;';
+        shuffleBtn.onclick = () => {
+            overlay.querySelectorAll('.nise-panda, .real-panda').forEach(p => {
+                const ox = (Math.random() - 0.5) * 200;
+                const oy = (Math.random() - 0.5) * 200;
+                p.style.left = `calc(50vw + ${ox}px)`;
+                p.style.top = `calc(25vh + ${oy}px)`;
+            });
+        };
+        overlay.appendChild(shuffleBtn);
     }
 
     function deactivateNotFoundMode() {
