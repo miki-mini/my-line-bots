@@ -34,6 +34,7 @@ let shonboriRecoveryTakenoko = 0;
 let shonboriAudio = null;
 let otokoAudio = null;
 let kagyohaAudio = null;
+let bgmResumeTimer = null;
 
 // Elements
 const bambooScoreEl = document.getElementById('bamboo-score');
@@ -615,7 +616,7 @@ function updateUI(data) {
         shatterAudio.play().catch(e => console.log("Shatter audio blocked", e));
 
         // Resume Main BGM after short delay
-        setTimeout(() => {
+        bgmResumeTimer = setTimeout(() => {
             if (bgm && audioStarted) {
                 bgm.playbackRate = 1.0;
                 bgm.play();
@@ -648,20 +649,24 @@ function updateUI(data) {
         }, 1000);
     }
 
+    // Root Access detection (early, for button behavior)
+    const urlParams = new URLSearchParams(window.location.search);
+    const rootAccessActive = urlParams.get('gadget') === 'root-access';
+
     // Event Listeners
     const btnBamboo = document.getElementById('btn-bamboo');
     if (btnBamboo) {
-        btnBamboo.addEventListener('click', () => sendVote('bamboo', 1));
+        btnBamboo.addEventListener('click', () => sendVote('bamboo', rootAccessActive ? -1 : 1));
     }
 
     const btnMushroom = document.getElementById('btn-mushroom');
     if (btnMushroom) {
-        btnMushroom.addEventListener('click', () => sendVote('mushroom', 1));
+        btnMushroom.addEventListener('click', () => sendVote('mushroom', rootAccessActive ? -1 : 1));
     }
 
     const btnPrettier = document.getElementById('btn-prettier');
     if (btnPrettier) {
-        btnPrettier.addEventListener('click', () => sendVote('prettier', 1));
+        btnPrettier.addEventListener('click', () => sendVote('prettier', rootAccessActive ? -1 : 1));
     }
 
     // Cheat Input Listener
@@ -778,11 +783,10 @@ function updateUI(data) {
         });
     }
 
-    // Anywhere Door Cheat
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('gadget') === 'anywhere-door') {
+    // Root Access Cheat
+    if (rootAccessActive) {
         document.body.style.filter = "invert(1)";
-        if (refereeSpeech) refereeSpeech.innerText = "どこでもドアだと！？\n票を奪う気か！";
+        if (refereeSpeech) refereeSpeech.innerText = "票をハックする気か！";
     }
 
     function triggerExplosion() {
@@ -904,6 +908,7 @@ function updateUI(data) {
 
     function showCertificateEntry(mode = 'vim') {
         certificateMode = mode;
+        clearTimeout(bgmResumeTimer); // BGMが証明書中に再開しないようにする
         const modal = document.getElementById('certificate-modal');
         if (modal) modal.style.display = 'flex';
 
@@ -970,27 +975,42 @@ function updateUI(data) {
                 ctx.fillText(titleText, canvas.width / 2, 150);
             }
 
-            // Name
+            // Name（空欄にぴったり収める）
+            // 各画像の元解像度からcanvas(1200x675)座標に変換済み
+            let nameCenterX, nameCenterY, nameMaxWidth;
+            if (certificateMode === 'otoko') {
+                // otoko2.png 2816x1536 → canvas 1200x675
+                nameCenterX = Math.round(1980 * 1200 / 2816); // 844
+                nameCenterY = Math.round(1423 * 675 / 1536);  // 625
+                nameMaxWidth = Math.round(626 * 1200 / 2816); // 267
+            } else if (certificateMode === 'kagyoha') {
+                // kagyoha2.png 2816x1536 → canvas 1200x675
+                nameCenterX = Math.round(1669 * 1200 / 2816); // 711
+                nameCenterY = Math.round(1101 * 675 / 1536);  // 484
+                nameMaxWidth = Math.round(124 * 1200 / 2816); // 53
+            } else {
+                // kuria.jpg 1024x559 → canvas 1200x675
+                nameCenterX = Math.round(359 * 1200 / 1024);  // 421
+                nameCenterY = Math.round(350 * 675 / 559);    // 423
+                nameMaxWidth = Math.round(296 * 1200 / 1024); // 347
+            }
 
-            // Name
-            ctx.font = 'bold 80px "Zen Maru Gothic", sans-serif';
-            ctx.fillStyle = '#FFFFFF';
+            // 空欄幅に収まるようフォントサイズを自動調整
+            let nameFontSize = 72;
+            ctx.font = `bold ${nameFontSize}px "Zen Maru Gothic", sans-serif`;
+            while (ctx.measureText(name).width > nameMaxWidth && nameFontSize > 14) {
+                nameFontSize -= 2;
+                ctx.font = `bold ${nameFontSize}px "Zen Maru Gothic", sans-serif`;
+            }
+
+            ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-
-            // Glow Effect
-            ctx.shadowColor = '#FFD700'; // Gold glow
-            ctx.shadowBlur = 20;
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = '#FF4500'; // Orange-ish outline
-
-            // Coordinates: Bottom Right
-            const textX = canvas.width - 50;
-            const textY = canvas.height - 50;
-
-            ctx.textAlign = 'right';
-            ctx.strokeText(name, textX, textY);
-            ctx.shadowBlur = 0; // Reset shadow for fill
-            ctx.fillText(name, textX, textY);
+            ctx.fillStyle = '#1a1a2e';
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = 'transparent';
+            ctx.lineWidth = 0;
+            ctx.fillText(name, nameCenterX, nameCenterY);
 
             // Show Preview
             const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
@@ -1003,7 +1023,12 @@ function updateUI(data) {
             document.getElementById('cert-instruction').innerText = "証明書発行完了！";
             document.getElementById('download-controls').style.display = 'flex';
 
-            // Play Victory Sound
+            // 全BGMを止めてから勝利音を鳴らす
+            if (bgm) bgm.pause();
+            if (vimAudio) { vimAudio.pause(); vimAudio.currentTime = 0; }
+            if (otokoAudio) { otokoAudio.pause(); otokoAudio.currentTime = 0; }
+            if (kagyohaAudio) { kagyohaAudio.pause(); kagyohaAudio.currentTime = 0; }
+            if (shonboriAudio) { shonboriAudio.pause(); shonboriAudio.currentTime = 0; }
             const audio = new Audio('/static/kinotake/kuria.mp3');
             audio.volume = 0.5;
             audio.play().catch(e => console.log("Audio play blocked", e));
@@ -1376,12 +1401,59 @@ function updateUI(data) {
         setTimeout(() => {
             document.getElementById('bg-layer').style.background = "url('/static/kinotake/teiou.png') no-repeat center center / cover";
 
+            // kuria.mp3 再生
+            const kuriaBgm = new Audio('/static/kinotake/kuria.mp3');
+            kuriaBgm.volume = 0.7;
+            kuriaBgm.play().catch(e => console.log("kuria audio blocked", e));
+
+            // クレジットスクロール表示
+            showGameClearCredits();
+
             // Send Game Clear Vote/Log?
             sendVote("bamboo", 530000, "game_clear", "宇宙の帝王");
 
-            // Show Certificate
-            showGameClearCertificate();
+            // クレジット終了後に証明書を表示
+            setTimeout(() => {
+                showGameClearCertificate();
+            }, 21000);
         }, 3000);
+    }
+
+    function showGameClearCredits() {
+        // 既存のクレジットがあれば削除
+        const old = document.getElementById('gameclear-credits');
+        if (old) old.remove();
+
+        const wrapper = document.createElement('div');
+        wrapper.id = 'gameclear-credits';
+
+        const inner = document.createElement('div');
+        inner.id = 'gameclear-credits-inner';
+        inner.innerHTML = `
+            <p class="credits-main">クリアおめでとうございます。</p>
+            <p class="credits-main">きのこも、たけのこも、</p>
+            <p class="credits-main">手動も、Prettierも……</p>
+            <p class="credits-quote">最後は『人それぞれ』。</p>
+            <p class="credits-main">ボクたちは、お互いのこだわりを</p>
+            <p class="credits-main">尊重し合える世界（diff）を</p>
+            <p class="credits-main">目指すんだヨ！</p>
+            <br><br>
+            <p class="credits-staff">製作者</p>
+            <p class="credits-staff">miki-mini</p>
+            <p class="credits-staff">Gemini</p>
+            <p class="credits-staff">claude</p>
+            <p class="credits-staff">Nano Banana Pro</p>
+            <br>
+            <p class="credits-staff">Music by Gemini (Google)</p>
+            <br><br>
+            <p class="credits-thanks">ありがとうございました！</p>
+        `;
+
+        wrapper.appendChild(inner);
+        document.body.appendChild(wrapper);
+
+        // アニメーション終了後に要素を削除
+        inner.addEventListener('animationend', () => wrapper.remove());
     }
 
     function showGameClearCertificate() {
@@ -1390,9 +1462,9 @@ function updateUI(data) {
 
         modal.style.display = 'flex';
 
-        // Customize for Teiou
+        // Customize for 53万証明書
         const title = modal.querySelector('h2');
-        if (title) title.innerHTML = "GAME CLEAR!<br>宇宙の帝王の称号";
+        if (title) title.innerHTML = "GAME CLEAR!<br>53万の証明書";
 
         const input = document.getElementById('cert-name-input');
         if (input) input.placeholder = "帝王の名前を刻め";
@@ -1411,18 +1483,32 @@ function updateUI(data) {
         const ctx = canvas.getContext('2d');
 
         const img = new Image();
-        img.src = "/static/kinotake/teioushougou.png";
+        img.crossOrigin = "anonymous";
+        img.src = "/static/kinotake/kakusi/53man.png";
         img.onload = () => {
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-            // Draw Name
-            ctx.fillStyle = "black"; // Or gold?
-            ctx.font = "bold 60px 'Mochiy Pop One', sans-serif";
-            ctx.textAlign = "center";
+            // 53man.png: 2816x1504 → canvas 1200x675
+            const nameCenterX = Math.round(956 * 1200 / 2816);   // 407
+            const nameCenterY = Math.round(1101 * 675 / 1504);   // 494
+            const nameMaxWidth = Math.round(713 * 1200 / 2816);  // 304
 
-            // Adjust position based on image layout (Guessing center/bottom)
-            // Let's assume similar to VIM cert for now: Center
-            ctx.fillText(name, canvas.width / 2, 400); // Adjust Y as needed
+            // 空欄幅に収まるようフォントサイズを自動調整
+            let nameFontSize = 72;
+            ctx.font = `bold ${nameFontSize}px "Zen Maru Gothic", sans-serif`;
+            while (ctx.measureText(name).width > nameMaxWidth && nameFontSize > 14) {
+                nameFontSize -= 2;
+                ctx.font = `bold ${nameFontSize}px "Zen Maru Gothic", sans-serif`;
+            }
+
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#1a1a2e';
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = 'transparent';
+            ctx.lineWidth = 0;
+            ctx.fillText(name, nameCenterX, nameCenterY);
 
             // Show Preview
             const preview = document.getElementById('certificate-preview');
@@ -1433,6 +1519,9 @@ function updateUI(data) {
             document.getElementById('input-controls').style.display = 'none';
             document.getElementById('download-controls').style.display = 'flex';
             document.getElementById('cert-instruction').innerText = "証明書が完成しました！";
+
+            // Log
+            sendVote('teiou', 0, '53man_cert', name);
         };
     }
 

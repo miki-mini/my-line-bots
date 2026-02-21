@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>座標確認ツール</title>
+<style>
+  body { background: #111; color: white; font-family: monospace; text-align: center; padding: 20px; }
+  canvas { border: 2px solid #555; cursor: crosshair; max-width: 100%; }
+  #info { font-size: 1.4rem; margin: 10px; background: #222; padding: 10px; border-radius: 8px; }
+  #click-info { font-size: 1.2rem; color: #FFD700; margin: 8px; }
+  select { font-size: 1.2rem; padding: 8px; margin-bottom: 12px; background: #333; color: white; border: 1px solid #555; border-radius: 6px; }
+</style>
+</head>
+<body>
+<h2>証明書 座標確認ツール</h2>
+<select id="imgSelect">
+  <option value="/static/kinotake/kuria.jpg">kuria.jpg (VIM)</option>
+  <option value="/static/kinotake/otoko2.png">otoko2.png (男祭り)</option>
+  <option value="/static/kinotake/kagyoha2.png">kagyoha2.png (改行波)</option>
+  <option value="/static/kinotake/teioushougou.png">teioushougou.png (帝王)</option>
+  <option value="/static/kinotake/kakusi/53man.png">kakusi/53man.png (53万)</option>
+</select>
+<div id="info">マウスを乗せると座標が表示されます</div>
+<div id="click-info">クリックすると座標を記録します</div>
+<canvas id="c" width="1200" height="675"></canvas>
+<script>
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const info = document.getElementById('info');
+  const clickInfo = document.getElementById('click-info');
+  const select = document.getElementById('imgSelect');
+
+  function loadImage(src) {
+    const img = new Image();
+    img.onload = () => ctx.drawImage(img, 0, 0, 1200, 675);
+    img.src = src;
+  }
+
+  select.addEventListener('change', () => loadImage(select.value));
+  loadImage(select.value);
+
+  canvas.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = 1200 / rect.width;
+    const scaleY = 675 / rect.height;
+    const x = Math.round((e.clientX - rect.left) * scaleX);
+    const y = Math.round((e.clientY - rect.top) * scaleY);
+    info.textContent = `X: ${x}, Y: ${y}`;
+  });
+
+  canvas.addEventListener('click', e => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = 1200 / rect.width;
+    const scaleY = 675 / rect.height;
+    const x = Math.round((e.clientX - rect.left) * scaleX);
+    const y = Math.round((e.clientY - rect.top) * scaleY);
+    clickInfo.textContent = `クリック記録 → X: ${x}, Y: ${y}`;
+    console.log(`X: ${x}, Y: ${y}`);
+  });
+</script>
+</body>
+</html>
