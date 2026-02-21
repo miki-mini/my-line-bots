@@ -317,13 +317,13 @@ function updateUI(data) {
         btnTakenoko.style.boxShadow = '0 0 20px #388e3c';
 
         const handleVote = async (team) => {
-            // Simple animation
             modal.innerHTML = '<h1 style="color:white; font-size:40px;">注入中...</h1>';
 
             await sendVote(team, 65535, null, "漢(おとこ)の一撃");
+            const teamName = team === 'bamboo' ? 'たけのこ' : 'きのこ';
             setTimeout(() => {
                 modal.remove();
-                showCertificateEntry('otoko');
+                showModal(`⚡ 漢の一撃炸裂！\n${teamName} +65,535点！`, () => showCertificateEntry('otoko'));
             }, 1500);
         };
 
@@ -718,8 +718,10 @@ function updateUI(data) {
 
             if (duration > 16000) {
                 const team = btn.id === 'btn-bamboo' ? 'bamboo' : 'mushroom';
+                const teamName = team === 'bamboo' ? 'たけのこ' : 'きのこ';
                 sendVote(team, 128, "チャージショット", "手入力ハッカー");
                 triggerExplosion();
+                showModal(`💥 チャージショット発射！\n${teamName} +128点！`);
             }
         });
 
@@ -742,33 +744,19 @@ function updateUI(data) {
         if (e.key === konamiCode[konamiIndex]) {
             konamiIndex++;
             if (konamiIndex === konamiCode.length) {
-                // For Konami, we can just send the code string
                 sendVote('bamboo', 100, "uuddlrlrba", "高橋名人");
                 konamiIndex = 0;
+                showModal("🎮 コナミコード発動！\nたけのこ +100点！");
             }
         } else {
             konamiIndex = 0;
         }
 
-        // KMH
         keysPressed[e.key.toUpperCase()] = true;
-        if (keysPressed['K'] && keysPressed['M'] && keysPressed['H']) {
-            document.body.style.boxShadow = "inset 0 0 50px blue";
-        }
-
-        if (e.key === 'Enter' && keysPressed['K'] && keysPressed['M'] && keysPressed['H']) {
-            // Send raw string
-            sendVote('mushroom', 500, "kamehameha", "孫悟空");
-            document.body.style.boxShadow = "none";
-            triggerExplosion();
-        }
     });
 
     document.addEventListener('keyup', (e) => {
         delete keysPressed[e.key.toUpperCase()];
-        if (!keysPressed['K'] || !keysPressed['M'] || !keysPressed['H']) {
-            document.body.style.boxShadow = "none";
-        }
     });
 
     // Hidden Trigger (Background 5 clicks)
