@@ -984,7 +984,9 @@ function updateUI(data) {
 
     // Init
     fetchState();
-    setInterval(fetchState, 3000);
+    setInterval(() => {
+        if (!document.hidden) fetchState(); // タブ非表示中はポーリング停止
+    }, 5000);
 
     // Victory Certificate Logic
     let certificateMode = 'vim'; // 'vim' or 'otoko'

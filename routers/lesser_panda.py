@@ -36,7 +36,7 @@ DOC_REF = db.collection("games").document("kinotake") if db else None
 class StateCache:
     data = None
     last_fetched = 0
-    TTL = 1.0 # 1 second cache
+    TTL = 5.0 # 5 second cache (reduce Firestore reads)
 
     def get(self):
         if self.data and (time.time() - self.last_fetched < self.TTL):
