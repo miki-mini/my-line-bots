@@ -961,31 +961,115 @@ function updateUI(data) {
         const nameInput = document.getElementById('cert-name-input');
         const name = nameInput.value.trim() || "名無しの勇者";
 
+        let imgSrc;
+        if (certificateMode === 'otoko') {
+            imgSrc = '/static/kinotake/otoko2.png';
+        } else if (certificateMode === 'kagyoha') {
+            imgSrc = '/static/kinotake/kagyoha2.png';
+        } else {
+            imgSrc = '/static/kinotake/kuria.jpg';
+        }
+
+        document.getElementById('input-controls').style.display = 'none';
+        document.getElementById('cert-instruction').innerText = "名前をドラッグして位置を調整！";
+        const splashImg = document.getElementById('cert-splash-img');
+        if (splashImg) splashImg.style.display = 'none';
+
+        showPositioningUI(name, imgSrc);
+    }
+
+    function showPositioningUI(name, imgSrc) {
+        const modal = document.getElementById('certificate-modal');
+
+        const existing = document.getElementById('drag-ui');
+        if (existing) existing.remove();
+        const existingBtn = document.getElementById('confirm-pos-btn');
+        if (existingBtn) existingBtn.remove();
+
+        const dragUI = document.createElement('div');
+        dragUI.id = 'drag-ui';
+        dragUI.style.cssText = 'position:relative;display:inline-block;max-width:80vw;';
+
+        const bgImg = document.createElement('img');
+        bgImg.src = imgSrc;
+        bgImg.style.cssText = 'display:block;max-width:100%;max-height:45vh;object-fit:contain;border-radius:8px;';
+        bgImg.draggable = false;
+
+        const nameEl = document.createElement('div');
+        nameEl.id = 'draggable-name';
+        nameEl.innerText = name;
+        nameEl.style.cssText = 'position:absolute;left:50%;top:60%;transform:translate(-50%,-50%);cursor:grab;color:white;text-shadow:0 0 8px white, 0 0 20px cyan, 0 0 35px cyan;font-weight:bold;font-family:"Zen Maru Gothic",sans-serif;font-size:clamp(12px,2.5vw,28px);user-select:none;white-space:nowrap;padding:2px 6px;border:1px dashed rgba(255,255,255,0.6);border-radius:4px;';
+
+        let isDragging = false;
+        let startX, startY, startLeft, startTop;
+
+        const startDrag = (cx, cy) => {
+            isDragging = true;
+            nameEl.style.cursor = 'grabbing';
+            nameEl.style.transform = 'none';
+            const uiRect = dragUI.getBoundingClientRect();
+            const nameRect = nameEl.getBoundingClientRect();
+            startX = cx; startY = cy;
+            startLeft = nameRect.left - uiRect.left;
+            startTop = nameRect.top - uiRect.top;
+            nameEl.style.left = startLeft + 'px';
+            nameEl.style.top = startTop + 'px';
+        };
+        const moveDrag = (cx, cy) => {
+            if (!isDragging) return;
+            nameEl.style.left = (startLeft + cx - startX) + 'px';
+            nameEl.style.top = (startTop + cy - startY) + 'px';
+        };
+        const endDrag = () => { isDragging = false; nameEl.style.cursor = 'grab'; };
+
+        nameEl.addEventListener('mousedown', (e) => { startDrag(e.clientX, e.clientY); e.preventDefault(); });
+        document.addEventListener('mousemove', (e) => moveDrag(e.clientX, e.clientY));
+        document.addEventListener('mouseup', endDrag);
+        nameEl.addEventListener('touchstart', (e) => { startDrag(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); }, { passive: false });
+        document.addEventListener('touchmove', (e) => { if (isDragging) moveDrag(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+        document.addEventListener('touchend', endDrag);
+
+        dragUI.appendChild(bgImg);
+        dragUI.appendChild(nameEl);
+
+        const confirmBtn = document.createElement('button');
+        confirmBtn.id = 'confirm-pos-btn';
+        confirmBtn.className = 'cert-btn';
+        confirmBtn.innerText = 'この位置で確定！';
+        confirmBtn.style.marginTop = '12px';
+        confirmBtn.onclick = () => {
+            const bgRect = bgImg.getBoundingClientRect();
+            const nameRect = nameEl.getBoundingClientRect();
+            const xRatio = (nameRect.left + nameRect.width / 2 - bgRect.left) / bgRect.width;
+            const yRatio = (nameRect.top + nameRect.height / 2 - bgRect.top) / bgRect.height;
+            dragUI.remove();
+            confirmBtn.remove();
+            finalizeCertificate(name, imgSrc, xRatio, yRatio);
+        };
+
+        const downloadControls = document.getElementById('download-controls');
+        modal.insertBefore(dragUI, downloadControls);
+        modal.insertBefore(confirmBtn, downloadControls);
+    }
+
+    function finalizeCertificate(name, imgSrc, xRatio, yRatio) {
         const canvas = document.getElementById('cert-canvas');
         const ctx = canvas.getContext('2d');
         const img = new Image();
         img.crossOrigin = "anonymous";
-
-        // Select Background Image
-        if (certificateMode === 'otoko') {
-            img.src = '/static/kinotake/otoko2.png';
-        } else if (certificateMode === 'kagyoha') {
-            img.src = '/static/kinotake/kagyoha2.png';
-        } else {
-            img.src = '/static/kinotake/kuria.jpg';
-        }
+        img.src = imgSrc;
 
         img.onload = () => {
-            // Draw Image
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-            // Text Configuration
-            ctx.textAlign = 'center';
-            ctx.fillStyle = '#fff';
-
+            // Title text
+            let titleText = "";
+            if (certificateMode === 'vim') titleText = "VIM DUNGEON 制覇";
+            if (certificateMode === 'otoko') titleText = "漢(おとこ)の証明";
 
             if (titleText) {
-                // Title
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#fff';
                 ctx.font = 'bold 60px "Mochiy Pop One", sans-serif';
                 ctx.shadowColor = "black";
                 ctx.shadowBlur = 10;
@@ -994,42 +1078,29 @@ function updateUI(data) {
                 ctx.fillText(titleText, canvas.width / 2, 150);
             }
 
-            // Name（空欄にぴったり収める）
-            // 各画像の元解像度からcanvas(1200x675)座標に変換済み
-            let nameCenterX, nameCenterY, nameMaxWidth;
-            if (certificateMode === 'otoko') {
-                // otoko2.png 2816x1536 → canvas 1200x675
-                nameCenterX = Math.round(1980 * 1200 / 2816); // 844
-                nameCenterY = Math.round(1423 * 675 / 1536);  // 625
-                nameMaxWidth = Math.round(626 * 1200 / 2816); // 267
-            } else if (certificateMode === 'kagyoha') {
-                // kagyoha2.png 2816x1536 → canvas 1200x675
-                nameCenterX = Math.round(1669 * 1200 / 2816); // 711
-                nameCenterY = Math.round(1101 * 675 / 1536);  // 484
-                nameMaxWidth = Math.round(124 * 1200 / 2816); // 53
-            } else {
-                // kuria.jpg 1024x559 → canvas 1200x675
-                nameCenterX = Math.round(359 * 1200 / 1024);  // 421
-                nameCenterY = Math.round(350 * 675 / 559);    // 423
-                nameMaxWidth = Math.round(296 * 1200 / 1024); // 347
-            }
+            // Name at dragged position with glow
+            const canvasX = Math.round(xRatio * canvas.width);
+            const canvasY = Math.round(yRatio * canvas.height);
 
-            // 空欄幅に収まるようフォントサイズを自動調整
             let nameFontSize = 72;
             ctx.font = `bold ${nameFontSize}px "Zen Maru Gothic", sans-serif`;
-            while (ctx.measureText(name).width > nameMaxWidth && nameFontSize > 14) {
+            const maxWidth = canvas.width * 0.35;
+            while (ctx.measureText(name).width > maxWidth && nameFontSize > 14) {
                 nameFontSize -= 2;
                 ctx.font = `bold ${nameFontSize}px "Zen Maru Gothic", sans-serif`;
             }
 
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillStyle = '#1a1a2e';
-            ctx.shadowColor = 'transparent';
-            ctx.shadowBlur = 0;
             ctx.strokeStyle = 'transparent';
             ctx.lineWidth = 0;
-            ctx.fillText(name, nameCenterX, nameCenterY);
+            ctx.fillStyle = 'white';
+            ctx.shadowColor = 'white';
+            ctx.shadowBlur = 12;
+            ctx.fillText(name, canvasX, canvasY);
+            ctx.shadowColor = 'cyan';
+            ctx.shadowBlur = 22;
+            ctx.fillText(name, canvasX, canvasY);
 
             // Show Preview
             const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
@@ -1037,8 +1108,6 @@ function updateUI(data) {
             preview.src = dataUrl;
             preview.style.display = 'block';
 
-            // Show Controls
-            document.getElementById('input-controls').style.display = 'none';
             document.getElementById('cert-instruction').innerText = "証明書発行完了！";
             document.getElementById('download-controls').style.display = 'flex';
             const splashImg = document.getElementById('cert-splash-img');
@@ -1054,7 +1123,6 @@ function updateUI(data) {
             audio.volume = 0.5;
             audio.play().catch(e => console.log("Audio play blocked", e));
 
-            // Log Success to Server (Holy War History)
             if (certificateMode === 'otoko') {
                 sendVote('otoko', 0, 'otoko_cert', name);
             } else if (certificateMode === 'kagyoha') {
