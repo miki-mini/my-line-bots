@@ -20,7 +20,8 @@
       "Bash(git remote add:*)",
       "Bash(git commit:*)",
       "Bash(python3:*)",
-      "Bash(node --check:*)"
+      "Bash(node --check:*)",
+      "Bash(cd:*)"
     ]
   }
 }
