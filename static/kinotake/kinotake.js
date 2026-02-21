@@ -710,36 +710,44 @@ function updateUI(data) {
         });
     }
 
-    // Long Press Logic
+    // Long Press Logic (3秒チャージ)
     const btns = document.querySelectorAll('.vote-btn');
     btns.forEach(btn => {
-        btn.addEventListener('mousedown', () => {
+        const startPress = () => {
             pressing = true;
             pressStartTime = Date.now();
             btn.classList.add('pressing');
-        });
+        };
 
-        btn.addEventListener('mouseup', () => {
+        const endPress = () => {
             if (!pressing) return;
             const duration = Date.now() - pressStartTime;
             btn.classList.remove('pressing');
             pressing = false;
 
-            if (duration > 16000) {
+            if (duration > 3000) {
                 const team = btn.id === 'btn-bamboo' ? 'bamboo' : 'mushroom';
                 const teamName = team === 'bamboo' ? 'たけのこ' : 'きのこ';
                 sendVote(team, 128, "チャージショット", "手入力ハッカー");
                 triggerExplosion();
                 showModal(`💥 チャージショット発射！\n${teamName} +128点！`);
             }
-        });
+        };
 
-        btn.addEventListener('mouseleave', () => {
+        const cancelPress = () => {
             if (pressing) {
                 pressing = false;
                 btn.classList.remove('pressing');
             }
-        });
+        };
+
+        btn.addEventListener('mousedown', startPress);
+        btn.addEventListener('mouseup', endPress);
+        btn.addEventListener('mouseleave', cancelPress);
+
+        btn.addEventListener('touchstart', (e) => { startPress(); e.preventDefault(); }, { passive: false });
+        btn.addEventListener('touchend', endPress);
+        btn.addEventListener('touchcancel', cancelPress);
     });
 
     // Cheats
@@ -1157,6 +1165,7 @@ function updateUI(data) {
 
 
     function activateTeiouMode() {
+        const wasTimeSlip = document.body.classList.contains('time-slip-mode'); // resetModes前に保存
         resetModes();
         document.body.classList.add('teiou-mode');
 
@@ -1223,7 +1232,7 @@ function updateUI(data) {
 
             btn.onclick = async () => {
                 // Check for Game Clear Condition (Time Slip active + Teiou Mode)
-                if (document.body.classList.contains('time-slip-mode') && text.includes('53万')) {
+                if (wasTimeSlip && text.includes('53万')) {
                     // Game Clear Sequence!
                     modal.remove(); // Close vote modal
                     resetModes(); // Stop other modes/audio

@@ -109,7 +109,14 @@ async def vote(request: VoteRequest):
     if request.cheat_code:
         h = hashlib.sha256(request.cheat_code.encode()).hexdigest()
         if h in CHEAT_HASHES:
-            return {"success": True, "message": CHEAT_HASHES[h]}
+            mode_msg = CHEAT_HASHES[h]
+            # 発見カウント更新
+            if DOC_REF:
+                try:
+                    DOC_REF.update({"discovered_cheats": firestore.ArrayUnion([mode_msg])})
+                except Exception as e:
+                    print(f"Discovery update error: {e}")
+            return {"success": True, "message": mode_msg}
 
     # Firestore Updates
     updates = {}
@@ -131,7 +138,7 @@ async def vote(request: VoteRequest):
         if request.helper_name == "手入力ハッカー" and request.cheat_code not in SECRET_CODES:
              action_msg = f"謎のコマンド '{request.cheat_code}' を試行"
         elif request.cheat_code == "kagyoha_cert":
-             action_msg = "伝説の改行波免許 を取得！"
+             action_msg = "伝説の一撃免許 を取得！"
         elif request.cheat_code == "otoko_cert":
              action_msg = "漢(おとこ)の証明書 を取得！"
         elif request.cheat_code == ":wq_success":
