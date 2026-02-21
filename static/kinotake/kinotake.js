@@ -22,6 +22,11 @@ function showModal(message, onClose) {
 let bambooVotes = 0;
 let mushroomVotes = 0;
 let pendingVotes = { bamboo: 0, mushroom: 0, prettier: 0 };
+
+// Click batching (reduces Firestore writes)
+let clickBuffer = { bamboo: 0, mushroom: 0, prettier: 0 };
+let flushTimers = { bamboo: null, mushroom: null, prettier: null };
+const VOTE_BATCH_DELAY = 1500; // ms
 let pressing = false;
 let pressStartTime = 0;
 let keysPressed = {};
@@ -62,7 +67,30 @@ async function fetchState() {
     }
 }
 
-async function sendVote(team, count, cheatCode = null, helperName = null) {
+// Queue a regular button click — batches into one API call per 1.5s
+function queueVote(team, count) {
+    if (vimQteActive) return;
+
+    // Optimistic display immediately
+    pendingVotes[team] = (pendingVotes[team] || 0) + count;
+    const scoreEls = { bamboo: bambooScoreEl, mushroom: mushroomScoreEl, prettier: prettierScoreEl };
+    const el = scoreEls[team];
+    if (el) el.innerText = parseInt(el.innerText || "0") + count;
+
+    // Accumulate in buffer
+    clickBuffer[team] = (clickBuffer[team] || 0) + count;
+
+    // Reset debounce timer
+    if (flushTimers[team]) clearTimeout(flushTimers[team]);
+    flushTimers[team] = setTimeout(() => {
+        const batchCount = clickBuffer[team];
+        clickBuffer[team] = 0;
+        flushTimers[team] = null;
+        if (batchCount !== 0) sendVote(team, batchCount, null, null, true);
+    }, VOTE_BATCH_DELAY);
+}
+
+async function sendVote(team, count, cheatCode = null, helperName = null, skipOptimistic = false) {
     console.log(`Sending vote: Team=${team}, Count=${count}, Cheat=${cheatCode}`);
 
     if (vimQteActive) return; // No voting during boss battle
@@ -85,16 +113,16 @@ async function sendVote(team, count, cheatCode = null, helperName = null) {
         }
     }
 
-    // Optimistic UI update for standard votes
-    if (!cheatCode && team === 'bamboo' && bambooScoreEl) {
+    // Optimistic UI update for standard votes (skip if already done by queueVote)
+    if (!skipOptimistic && !cheatCode && team === 'bamboo' && bambooScoreEl) {
         pendingVotes.bamboo += count;
         bambooScoreEl.innerText = parseInt(bambooScoreEl.innerText || "0") + count;
     }
-    if (!cheatCode && team === 'mushroom' && mushroomScoreEl) {
+    if (!skipOptimistic && !cheatCode && team === 'mushroom' && mushroomScoreEl) {
         pendingVotes.mushroom += count;
         mushroomScoreEl.innerText = parseInt(mushroomScoreEl.innerText || "0") + count;
     }
-    if (!cheatCode && team === 'prettier' && prettierScoreEl) {
+    if (!skipOptimistic && !cheatCode && team === 'prettier' && prettierScoreEl) {
         pendingVotes.prettier += count;
         prettierScoreEl.innerText = parseInt(prettierScoreEl.innerText || "0") + count;
     }
@@ -715,17 +743,17 @@ function updateUI(data) {
     // Event Listeners
     const btnBamboo = document.getElementById('btn-bamboo');
     if (btnBamboo) {
-        btnBamboo.addEventListener('click', () => sendVote('bamboo', rootAccessActive ? -1 : 1));
+        btnBamboo.addEventListener('click', () => queueVote('bamboo', rootAccessActive ? -1 : 1));
     }
 
     const btnMushroom = document.getElementById('btn-mushroom');
     if (btnMushroom) {
-        btnMushroom.addEventListener('click', () => sendVote('mushroom', rootAccessActive ? -1 : 1));
+        btnMushroom.addEventListener('click', () => queueVote('mushroom', rootAccessActive ? -1 : 1));
     }
 
     const btnPrettier = document.getElementById('btn-prettier');
     if (btnPrettier) {
-        btnPrettier.addEventListener('click', () => sendVote('prettier', rootAccessActive ? -1 : 1));
+        btnPrettier.addEventListener('click', () => queueVote('prettier', rootAccessActive ? -1 : 1));
     }
 
     // Cheat Input Listener
