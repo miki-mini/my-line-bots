@@ -1114,23 +1114,6 @@ function updateUI(data) {
         img.onload = () => {
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-            // Title text
-            let titleText = "";
-            if (certificateMode === 'vim') titleText = "VIM DUNGEON 制覇";
-            if (certificateMode === 'otoko') titleText = "漢(おとこ)の証明";
-            if (certificateMode === 'teiou') titleText = "53万の帝王";
-
-            if (titleText) {
-                ctx.textAlign = 'center';
-                ctx.fillStyle = '#fff';
-                ctx.font = 'bold 60px "Mochiy Pop One", sans-serif';
-                ctx.shadowColor = "black";
-                ctx.shadowBlur = 10;
-                ctx.lineWidth = 5;
-                ctx.strokeText(titleText, canvas.width / 2, 150);
-                ctx.fillText(titleText, canvas.width / 2, 150);
-            }
-
             // Name at dragged position with glow
             const canvasX = Math.round(xRatio * canvas.width);
             const canvasY = Math.round(yRatio * canvas.height);
