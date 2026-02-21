@@ -115,13 +115,16 @@ async function sendVote(team, count, cheatCode = null, helperName = null) {
 
         const data = await res.json();
 
-        // Confirm vote: subtract from pending
-        if (!cheatCode && team in pendingVotes) {
-            pendingVotes[team] = Math.max(0, pendingVotes[team] - count);
-        }
-
         if (data.success) {
-            updateUI(data.state);
+            if (cheatCode) {
+                // Cheat codes: full server sync (big point changes, mode triggers)
+                updateUI(data.state);
+            } else {
+                // Regular votes: only sync logs, not scores
+                // Score is handled by optimistic update + periodic fetchState
+                pendingVotes[team] = Math.max(0, pendingVotes[team] - count);
+                if (data.state) updateLogsOnly(data.state);
+            }
 
             // Handle Server-Side Cheat Responses
             if (data.message === 'VIM_DUNGEON_MODE') {
@@ -186,6 +189,24 @@ function updateUI(data) {
             if (discEl) {
                 discEl.innerText = `隠しコマンド発見数: ${data.discovered_count} / ${data.total_cheats}`;
             }
+        }
+    }
+
+    // Update only logs and discovery counter (not scores)
+    function updateLogsOnly(data) {
+        if (!data) return;
+        if (data.culprits && logList) {
+            logList.innerHTML = '';
+            data.culprits.slice().reverse().forEach(log => {
+                const li = document.createElement('li');
+                li.innerText = log;
+                logList.appendChild(li);
+            });
+            logList.scrollTop = 0;
+        }
+        if (data.discovered_count !== undefined && data.total_cheats !== undefined) {
+            const discEl = document.getElementById('discovery-counter');
+            if (discEl) discEl.innerText = `隠しコマンド発見数: ${data.discovered_count} / ${data.total_cheats}`;
         }
     }
 
