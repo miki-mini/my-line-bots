@@ -1083,7 +1083,7 @@ function updateUI(data) {
         confirmBtn.id = 'confirm-pos-btn';
         confirmBtn.className = 'cert-btn';
         confirmBtn.innerText = 'この位置で確定！';
-        confirmBtn.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:99999;padding:14px 40px;font-size:1.1rem;';
+        confirmBtn.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:99999;padding:14px 40px;font-size:1.1rem;background:#e040fb;color:#fff;border:none;border-radius:8px;cursor:pointer;';
         confirmBtn.onclick = () => {
             const bgRect = bgImg.getBoundingClientRect();
             const nameRect = nameEl.getBoundingClientRect();
