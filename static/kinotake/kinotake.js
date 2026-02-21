@@ -1024,7 +1024,7 @@ function updateUI(data) {
         confirmBtn.id = 'confirm-pos-btn';
         confirmBtn.className = 'cert-btn';
         confirmBtn.innerText = 'この位置で確定！';
-        confirmBtn.style.marginTop = '12px';
+        confirmBtn.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:99999;padding:14px 40px;font-size:1.1rem;';
         confirmBtn.onclick = () => {
             const bgRect = bgImg.getBoundingClientRect();
             const nameRect = nameEl.getBoundingClientRect();
@@ -1037,7 +1037,7 @@ function updateUI(data) {
 
         const downloadControls = document.getElementById('download-controls');
         modal.insertBefore(dragUI, downloadControls);
-        modal.insertBefore(confirmBtn, downloadControls);
+        document.body.appendChild(confirmBtn);
     }
 
     function finalizeCertificate(name, imgSrc, xRatio, yRatio) {
