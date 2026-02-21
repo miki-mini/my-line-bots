@@ -117,8 +117,13 @@ async function sendVote(team, count, cheatCode = null, helperName = null) {
 
         if (data.success) {
             if (cheatCode) {
-                // Cheat codes: full server sync (big point changes, mode triggers)
-                updateUI(data.state);
+                if (data.state) {
+                    // Vote-based cheats (e.g. 404_mode) return state
+                    updateUI(data.state);
+                } else {
+                    // CHEAT_HASHES path returns no state — fetch fresh to update discovery counter
+                    fetchState();
+                }
             } else {
                 // Regular votes: only sync logs, not scores
                 // Score is handled by optimistic update + periodic fetchState
