@@ -1585,7 +1585,7 @@ function updateUI(data) {
 
         const img = new Image();
         img.crossOrigin = "anonymous";
-        img.src = "/static/kinotake/kakusi/53man.png";
+        img.src = "/static/kinotake/53man.png";
         img.onload = () => {
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
