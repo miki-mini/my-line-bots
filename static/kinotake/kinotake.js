@@ -981,6 +981,9 @@ function updateUI(data) {
         } else if (certificateMode === 'kagyoha') {
             instruction.innerHTML = "改行波充填完了！<br>その名を歴史に刻め！";
             if (splashImg) { splashImg.src = ''; splashImg.style.display = 'none'; }
+        } else if (certificateMode === 'teiou') {
+            instruction.innerHTML = "GAME CLEAR!<br>53万の証明書";
+            if (splashImg) { splashImg.src = ''; splashImg.style.display = 'none'; }
         } else {
             instruction.innerHTML = "VIM DUNGEON 制覇！<br>名前を刻め！";
             if (splashImg) { splashImg.src = '/static/kinotake/pari-n.jpg'; splashImg.style.display = 'block'; }
@@ -992,6 +995,8 @@ function updateUI(data) {
             img.src = '/static/kinotake/otoko2.png';
         } else if (certificateMode === 'kagyoha') {
             img.src = '/static/kinotake/kagyoha2.png';
+        } else if (certificateMode === 'teiou') {
+            img.src = '/static/kinotake/53man.png';
         } else {
             img.src = '/static/kinotake/kuria.jpg';
         }
@@ -1006,6 +1011,8 @@ function updateUI(data) {
             imgSrc = '/static/kinotake/otoko2.png';
         } else if (certificateMode === 'kagyoha') {
             imgSrc = '/static/kinotake/kagyoha2.png';
+        } else if (certificateMode === 'teiou') {
+            imgSrc = '/static/kinotake/53man.png';
         } else {
             imgSrc = '/static/kinotake/kuria.jpg';
         }
@@ -1106,6 +1113,7 @@ function updateUI(data) {
             let titleText = "";
             if (certificateMode === 'vim') titleText = "VIM DUNGEON 制覇";
             if (certificateMode === 'otoko') titleText = "漢(おとこ)の証明";
+            if (certificateMode === 'teiou') titleText = "53万の帝王";
 
             if (titleText) {
                 ctx.textAlign = 'center';
@@ -1167,6 +1175,8 @@ function updateUI(data) {
                 sendVote('otoko', 0, 'otoko_cert', name);
             } else if (certificateMode === 'kagyoha') {
                 sendVote('kagyoha', 0, 'kagyoha_cert', name);
+            } else if (certificateMode === 'teiou') {
+                sendVote('teiou', 0, '53man_cert', name);
             } else {
                 sendVote('vim', 0, ':wq_success', name);
             }
@@ -1544,7 +1554,7 @@ function updateUI(data) {
 
             // クレジット終了後に証明書を表示
             setTimeout(() => {
-                showGameClearCertificate();
+                showCertificateEntry('teiou');
             }, 21000);
         }, 3000);
     }
@@ -1584,81 +1594,6 @@ function updateUI(data) {
 
         // アニメーション終了後に要素を削除
         inner.addEventListener('animationend', () => wrapper.remove());
-    }
-
-    function showGameClearCertificate() {
-        const modal = document.getElementById('certificate-modal');
-        if (!modal) return;
-
-        modal.style.display = 'flex';
-
-        // 入力欄・プレビューをリセット
-        document.getElementById('input-controls').style.display = 'flex';
-        document.getElementById('download-controls').style.display = 'none';
-        const preview = document.getElementById('certificate-preview');
-        preview.src = '';
-        preview.style.display = 'none';
-        document.getElementById('cert-name-input').value = '';
-
-        // Customize for 53万証明書
-        const title = modal.querySelector('h2');
-        if (title) title.innerHTML = "GAME CLEAR!<br>53万の証明書";
-
-        const input = document.getElementById('cert-name-input');
-        if (input) input.placeholder = "帝王の名前を刻め";
-
-        const btnGen = document.getElementById('btn-generate');
-        btnGen.onclick = () => generateTeiouCertificate();
-    }
-
-    function generateTeiouCertificate() {
-        const nameInput = document.getElementById('cert-name-input');
-        const name = nameInput.value || "名無しの帝王";
-
-        const canvas = document.getElementById('cert-canvas');
-        const ctx = canvas.getContext('2d');
-
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.src = "/static/kinotake/53man.png";
-        img.onload = () => {
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-            // 53man.png: 2816x1504 → canvas 1200x675
-            const nameCenterX = Math.round(956 * 1200 / 2816);   // 407
-            const nameCenterY = Math.round(1101 * 675 / 1504);   // 494
-            const nameMaxWidth = Math.round(713 * 1200 / 2816);  // 304
-
-            // 空欄幅に収まるようフォントサイズを自動調整
-            let nameFontSize = 72;
-            ctx.font = `bold ${nameFontSize}px "Zen Maru Gothic", sans-serif`;
-            while (ctx.measureText(name).width > nameMaxWidth && nameFontSize > 14) {
-                nameFontSize -= 2;
-                ctx.font = `bold ${nameFontSize}px "Zen Maru Gothic", sans-serif`;
-            }
-
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillStyle = '#1a1a2e';
-            ctx.shadowColor = 'transparent';
-            ctx.shadowBlur = 0;
-            ctx.strokeStyle = 'transparent';
-            ctx.lineWidth = 0;
-            ctx.fillText(name, nameCenterX, nameCenterY);
-
-            // Show Preview
-            const preview = document.getElementById('certificate-preview');
-            preview.src = canvas.toDataURL();
-            preview.style.display = 'block';
-
-            // Show download controls
-            document.getElementById('input-controls').style.display = 'none';
-            document.getElementById('download-controls').style.display = 'flex';
-            document.getElementById('cert-instruction').innerText = "証明書が完成しました！";
-
-            // Log
-            sendVote('teiou', 0, '53man_cert', name);
-        };
     }
 
     function activateOsiiMode() {
