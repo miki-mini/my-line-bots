@@ -934,12 +934,16 @@ function updateUI(data) {
 
         // Update instruction text based on mode
         const instruction = document.getElementById('cert-instruction');
+        const splashImg = document.getElementById('cert-splash-img');
         if (certificateMode === 'otoko') {
             instruction.innerHTML = "男祭り開催中！<br>漢(おとこ)の名を刻め！";
+            if (splashImg) { splashImg.src = ''; splashImg.style.display = 'none'; }
         } else if (certificateMode === 'kagyoha') {
             instruction.innerHTML = "改行波充填完了！<br>その名を歴史に刻め！";
+            if (splashImg) { splashImg.src = ''; splashImg.style.display = 'none'; }
         } else {
             instruction.innerHTML = "VIM DUNGEON 制覇！<br>名前を刻め！";
+            if (splashImg) { splashImg.src = '/static/kinotake/pari-n.jpg'; splashImg.style.display = 'block'; }
         }
 
         // Load image early to cache
@@ -979,11 +983,6 @@ function updateUI(data) {
             ctx.textAlign = 'center';
             ctx.fillStyle = '#fff';
 
-            // Title Logic (Only for modes without baked-in text)
-            let titleText = "";
-            if (certificateMode === 'vim') titleText = "VIM DUNGEON 制覇";
-            if (certificateMode === 'otoko') titleText = "漢(おとこ)の証明";
-            // Kagyoha has baked-in text in kagyoha2.png, so no title text needed
 
             if (titleText) {
                 // Title
@@ -1042,6 +1041,8 @@ function updateUI(data) {
             document.getElementById('input-controls').style.display = 'none';
             document.getElementById('cert-instruction').innerText = "証明書発行完了！";
             document.getElementById('download-controls').style.display = 'flex';
+            const splashImg = document.getElementById('cert-splash-img');
+            if (splashImg) { splashImg.src = ''; splashImg.style.display = 'none'; }
 
             // 全BGMを止めてから勝利音を鳴らす
             if (bgm) bgm.pause();
