@@ -21,6 +21,7 @@ function showModal(message, onClose) {
 // State
 let bambooVotes = 0;
 let mushroomVotes = 0;
+let pendingVotes = { bamboo: 0, mushroom: 0, prettier: 0 };
 let pressing = false;
 let pressStartTime = 0;
 let keysPressed = {};
@@ -86,12 +87,15 @@ async function sendVote(team, count, cheatCode = null, helperName = null) {
 
     // Optimistic UI update for standard votes
     if (!cheatCode && team === 'bamboo' && bambooScoreEl) {
+        pendingVotes.bamboo += count;
         bambooScoreEl.innerText = parseInt(bambooScoreEl.innerText || "0") + count;
     }
     if (!cheatCode && team === 'mushroom' && mushroomScoreEl) {
+        pendingVotes.mushroom += count;
         mushroomScoreEl.innerText = parseInt(mushroomScoreEl.innerText || "0") + count;
     }
     if (!cheatCode && team === 'prettier' && prettierScoreEl) {
+        pendingVotes.prettier += count;
         prettierScoreEl.innerText = parseInt(prettierScoreEl.innerText || "0") + count;
     }
 
@@ -110,6 +114,11 @@ async function sendVote(team, count, cheatCode = null, helperName = null) {
         }
 
         const data = await res.json();
+
+        // Confirm vote: subtract from pending
+        if (!cheatCode && team in pendingVotes) {
+            pendingVotes[team] = Math.max(0, pendingVotes[team] - count);
+        }
 
         if (data.success) {
             updateUI(data.state);
@@ -142,15 +151,20 @@ function updateUI(data) {
 
         bambooVotes = data.bamboo || 0;
         mushroomVotes = data.mushroom || 0;
-        if (prettierScoreEl) prettierScoreEl.innerText = data.prettier || 0;
 
-        if (bambooScoreEl) bambooScoreEl.innerText = bambooVotes;
-        if (mushroomScoreEl) mushroomScoreEl.innerText = mushroomVotes;
+        // Add unconfirmed local clicks on top of server value
+        const effectiveBamboo = bambooVotes + pendingVotes.bamboo;
+        const effectiveMushroom = mushroomVotes + pendingVotes.mushroom;
+        const effectivePrettier = (data.prettier || 0) + pendingVotes.prettier;
 
-        // Bar Logic
-        const total = Math.max(bambooVotes + mushroomVotes, 1);
-        let bHeight = (bambooVotes / total) * 100;
-        let mHeight = (mushroomVotes / total) * 100;
+        if (bambooScoreEl) bambooScoreEl.innerText = effectiveBamboo;
+        if (mushroomScoreEl) mushroomScoreEl.innerText = effectiveMushroom;
+        if (prettierScoreEl) prettierScoreEl.innerText = effectivePrettier;
+
+        // Bar Logic using effective values
+        const total = Math.max(effectiveBamboo + effectiveMushroom, 1);
+        let bHeight = (effectiveBamboo / total) * 100;
+        let mHeight = (effectiveMushroom / total) * 100;
 
         if (bambooBar) bambooBar.style.height = `${bHeight}%`;
         if (mushroomBar) mushroomBar.style.height = `${mHeight}%`;
