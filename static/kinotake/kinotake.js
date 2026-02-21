@@ -769,11 +769,11 @@ function updateUI(data) {
             konamiIndex = 0;
         }
 
-        keysPressed[e.key.toUpperCase()] = true;
+        if (e.key) keysPressed[e.key.toUpperCase()] = true;
     });
 
     document.addEventListener('keyup', (e) => {
-        delete keysPressed[e.key.toUpperCase()];
+        if (e.key) delete keysPressed[e.key.toUpperCase()];
     });
 
     // Hidden Trigger (Background 5 clicks)
