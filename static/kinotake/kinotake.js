@@ -252,10 +252,17 @@ function updateUI(data) {
         }
         otokoAudio.play().catch(e => console.log("Otoko audio blocked", e));
 
-        // Show Vote Choice Dialog
+        // Show otoko.png in foreground
+        const splash = document.createElement('div');
+        splash.id = 'otoko-splash';
+        splash.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:url("/static/kinotake/otoko.png") no-repeat center center / cover;z-index:9998;';
+        document.body.appendChild(splash);
+
+        // Show Vote Choice Dialog after image display
         setTimeout(() => {
+            splash.remove();
             showOtokoVoteDialog();
-        }, 1000);
+        }, 1500);
     }
 
     function showOtokoVoteDialog() {
@@ -414,7 +421,10 @@ function updateUI(data) {
 
         const handleVote = async (team) => {
             // Animation
-            modal.innerHTML = '<h1 style="color:white; font-size:60px; text-shadow: 0 0 30px cyan;">波ーーー！！！</h1>';
+            modal.innerHTML = `
+                <img src="/static/kinotake/kagyoha.png" style="max-width:80vw;max-height:60vh;object-fit:contain;display:block;margin:0 auto;">
+                <h1 style="color:white; font-size:60px; text-shadow: 0 0 30px cyan; margin-top:20px;">波ーーー！！！</h1>
+            `;
 
             await sendVote(team, 9001, null, "改行波");
             setTimeout(() => {
@@ -637,7 +647,7 @@ function updateUI(data) {
             // Success Message
             showCertificateEntry('vim');
 
-        }, 500);
+        }, 1500);
     }
 
     function failQTE() {
@@ -911,6 +921,16 @@ function updateUI(data) {
         clearTimeout(bgmResumeTimer); // BGMが証明書中に再開しないようにする
         const modal = document.getElementById('certificate-modal');
         if (modal) modal.style.display = 'flex';
+
+        // 入力欄・プレビューをリセット
+        document.getElementById('input-controls').style.display = 'flex';
+        document.getElementById('download-controls').style.display = 'none';
+        const preview = document.getElementById('certificate-preview');
+        preview.src = '';
+        preview.style.display = 'none';
+        document.getElementById('cert-name-input').value = '';
+        // generateボタンを通常に戻す
+        document.getElementById('btn-generate').onclick = () => generateCertificate();
 
         // Update instruction text based on mode
         const instruction = document.getElementById('cert-instruction');
@@ -1462,6 +1482,14 @@ function updateUI(data) {
 
         modal.style.display = 'flex';
 
+        // 入力欄・プレビューをリセット
+        document.getElementById('input-controls').style.display = 'flex';
+        document.getElementById('download-controls').style.display = 'none';
+        const preview = document.getElementById('certificate-preview');
+        preview.src = '';
+        preview.style.display = 'none';
+        document.getElementById('cert-name-input').value = '';
+
         // Customize for 53万証明書
         const title = modal.querySelector('h2');
         if (title) title.innerHTML = "GAME CLEAR!<br>53万の証明書";
@@ -1469,9 +1497,7 @@ function updateUI(data) {
         const input = document.getElementById('cert-name-input');
         if (input) input.placeholder = "帝王の名前を刻め";
 
-        // Hook generate button to use teioushougou.png
         const btnGen = document.getElementById('btn-generate');
-        // Save original onclick to restore later if needed, or just overwrite
         btnGen.onclick = () => generateTeiouCertificate();
     }
 
