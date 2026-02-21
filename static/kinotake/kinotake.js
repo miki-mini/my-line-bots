@@ -255,7 +255,16 @@ function updateUI(data) {
         // Show otoko.png in foreground
         const splash = document.createElement('div');
         splash.id = 'otoko-splash';
-        splash.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:url("/static/kinotake/otoko.png") no-repeat center center / cover;z-index:9998;';
+        splash.style.position = 'fixed';
+        splash.style.top = '0';
+        splash.style.left = '0';
+        splash.style.width = '100%';
+        splash.style.height = '100%';
+        splash.style.backgroundImage = 'url("/static/kinotake/otoko.png")';
+        splash.style.backgroundSize = 'cover';
+        splash.style.backgroundPosition = 'center center';
+        splash.style.backgroundRepeat = 'no-repeat';
+        splash.style.zIndex = '9998';
         document.body.appendChild(splash);
 
         // Show Vote Choice Dialog after image display
