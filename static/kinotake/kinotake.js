@@ -787,7 +787,7 @@ function updateUI(data) {
             btn.classList.add('pressing');
         };
 
-        const endPress = () => {
+        const endPress = (isTouch = false) => {
             if (!pressing) return;
             const duration = Date.now() - pressStartTime;
             btn.classList.remove('pressing');
@@ -799,6 +799,11 @@ function updateUI(data) {
                 sendVote(team, 128, "チャージショット", "手入力ハッカー");
                 triggerExplosion();
                 showModal(`💥 チャージショット発射！\n${teamName} +128点！`);
+            } else if (isTouch) {
+                // touchstart の e.preventDefault() により click イベントが発火しないため、
+                // タッチ短押し時はここで手動投票する
+                const team = btn.id === 'btn-bamboo' ? 'bamboo' : 'mushroom';
+                queueVote(team, rootAccessActive ? -1 : 1);
             }
         };
 
@@ -810,11 +815,11 @@ function updateUI(data) {
         };
 
         btn.addEventListener('mousedown', startPress);
-        btn.addEventListener('mouseup', endPress);
+        btn.addEventListener('mouseup', () => endPress(false));
         btn.addEventListener('mouseleave', cancelPress);
 
         btn.addEventListener('touchstart', (e) => { startPress(); e.preventDefault(); }, { passive: false });
-        btn.addEventListener('touchend', endPress);
+        btn.addEventListener('touchend', () => endPress(true));
         btn.addEventListener('touchcancel', cancelPress);
     });
 
