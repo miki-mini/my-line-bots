@@ -798,7 +798,7 @@ function updateUI(data) {
             if (duration > 3000) {
                 const team = btn.id === 'btn-bamboo' ? 'bamboo' : 'mushroom';
                 const teamName = team === 'bamboo' ? 'たけのこ' : 'きのこ';
-                sendVote(team, 128, "チャージショット", "手入力ハッカー");
+                sendVote(team, 128, "チャージショット", "チャージマン");
                 triggerExplosion();
                 showModal(`💥 チャージショット発射！\n${teamName} +128点！`);
             } else if (isTouch) {
@@ -877,6 +877,8 @@ function updateUI(data) {
     if (rootAccessActive) {
         document.body.style.filter = "invert(1)";
         if (refereeSpeech) refereeSpeech.innerText = "票をハックする気か！";
+        // URLパラメータ発見を記録
+        sendVote('none', 0, 'root-access', 'URLハッカー');
     }
 
     function triggerExplosion() {

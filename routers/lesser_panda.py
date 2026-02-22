@@ -20,6 +20,13 @@ CHEAT_HASHES = {
     "15df0939948bdfc8ce7baf2139510b663179e3c43d59d04533aec2ff1a10e1d2": "TIME_SLIP_MODE",
     "cd1544c07be13937744560caccf91064cd68654cf95ffcbd15d1f100f9faf69d": "NOT_FOUND_MODE",
 }
+# 全隠し要素のセット（CHEAT_HASHES 6個 + その他 4個 = 計10個）
+ALL_DISCOVERIES = set(CHEAT_HASHES.values()) | {
+    "konami_code",    # コナミコード（キーボード入力）
+    "チャージショット",# 3秒長押しチャージ
+    "root-access",    # URLパラメータ ?gadget=root-access
+    ":wq_success",    # VIMダンジョンクリア
+}
 
 # Firestore Configuration
 # Assumes GOOGLE_APPLICATION_CREDENTIALS is set or environment is authenticated
@@ -74,13 +81,16 @@ class VoteRequest(BaseModel):
 @router.get("/api/kinotake/state")
 async def get_state():
     data = cache.get()
+    # 全10個の隠し要素のうち発見済みのものだけカウント
+    discovered_cheats = data.get("discovered_cheats", [])
+    discovered_count = len([x for x in discovered_cheats if x in ALL_DISCOVERIES])
     return {
         "bamboo": data.get("bamboo", 0),
         "mushroom": data.get("mushroom", 0),
         "prettier": data.get("prettier", 0),
-        "culprits": data.get("cultprits", [])[-20:], # Return last 20 entries
-        "discovered_count": len(data.get("discovered_cheats", [])),
-        "total_cheats": 8
+        "culprits": data.get("cultprits", [])[-20:],
+        "discovered_count": discovered_count,
+        "total_cheats": len(ALL_DISCOVERIES)  # 自動的に10
     }
 
 # Secret Codes Configuration
@@ -114,6 +124,7 @@ async def vote(request: VoteRequest):
             if DOC_REF:
                 try:
                     DOC_REF.update({"discovered_cheats": firestore.ArrayUnion([mode_msg])})
+                    cache.last_fetched = 0  # キャッシュ無効化（次の fetchState で最新値を返す）
                 except Exception as e:
                     print(f"Discovery update error: {e}")
             return {"success": True, "message": mode_msg}
