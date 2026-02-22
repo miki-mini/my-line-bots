@@ -20,12 +20,16 @@ CHEAT_HASHES = {
     "15df0939948bdfc8ce7baf2139510b663179e3c43d59d04533aec2ff1a10e1d2": "TIME_SLIP_MODE",
     "cd1544c07be13937744560caccf91064cd68654cf95ffcbd15d1f100f9faf69d": "NOT_FOUND_MODE",
 }
-# 全隠し要素のセット（CHEAT_HASHES 6個 + その他 4個 = 計10個）
-ALL_DISCOVERIES = set(CHEAT_HASHES.values()) | {
-    "konami_code",    # コナミコード（キーボード入力）
-    "チャージショット",# 3秒長押しチャージ
-    "root-access",    # URLパラメータ ?gadget=root-access
-    ":wq_success",    # VIMダンジョンクリア
+# ハッシュ化ヘルパー（コードからネタバレしないよう発見キーをすべてハッシュ化）
+def _h(s: str) -> str:
+    return hashlib.sha256(s.encode()).hexdigest()
+
+# 全隠し要素のハッシュセット（CHEAT_HASHES 6個 + その他 4個 = 計10個）
+ALL_DISCOVERY_HASHES = {_h(v) for v in CHEAT_HASHES.values()} | {
+    _h("konami_code"),      # コナミコード（キーボード入力）
+    _h("チャージショット"), # 3秒長押しチャージ
+    _h("root-access"),      # URLパラメータ ?gadget=root-access
+    _h(":wq_success"),      # VIMダンジョンクリア
 }
 
 # Firestore Configuration
@@ -81,16 +85,16 @@ class VoteRequest(BaseModel):
 @router.get("/api/kinotake/state")
 async def get_state():
     data = cache.get()
-    # 全10個の隠し要素のうち発見済みのものだけカウント
+    # 全10個の隠し要素のうち発見済みのものだけカウント（ハッシュ比較）
     discovered_cheats = data.get("discovered_cheats", [])
-    discovered_count = len([x for x in discovered_cheats if x in ALL_DISCOVERIES])
+    discovered_count = len([x for x in discovered_cheats if x in ALL_DISCOVERY_HASHES])
     return {
         "bamboo": data.get("bamboo", 0),
         "mushroom": data.get("mushroom", 0),
         "prettier": data.get("prettier", 0),
         "culprits": data.get("cultprits", [])[-20:],
         "discovered_count": discovered_count,
-        "total_cheats": len(ALL_DISCOVERIES)  # 自動的に10
+        "total_cheats": len(ALL_DISCOVERY_HASHES)  # 自動的に10
     }
 
 # Secret Codes Configuration
@@ -123,7 +127,7 @@ async def vote(request: VoteRequest):
             # 発見カウント更新
             if DOC_REF:
                 try:
-                    DOC_REF.update({"discovered_cheats": firestore.ArrayUnion([mode_msg])})
+                    DOC_REF.update({"discovered_cheats": firestore.ArrayUnion([_h(mode_msg)])})
                     cache.last_fetched = 0  # キャッシュ無効化（次の fetchState で最新値を返す）
                 except Exception as e:
                     print(f"Discovery update error: {e}")
@@ -172,7 +176,7 @@ async def vote(request: VoteRequest):
              discovery_key = "konami_code"
 
         if request.helper_name != "手入力ハッカー":
-            updates["discovered_cheats"] = firestore.ArrayUnion([discovery_key])
+            updates["discovered_cheats"] = firestore.ArrayUnion([_h(discovery_key)])
 
     # Log non-cheat votes with helper_name (e.g. otoko/kagyoha team picks)
     elif request.helper_name and request.count > 0:

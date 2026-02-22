@@ -31,7 +31,7 @@
 │  POST /api/kinotake/vote                 │
 │                                          │
 │  routers/lesser_panda.py                 │
-│   ├─ StateCache (1秒 TTL)                │
+│   ├─ StateCache (5秒 TTL)                │
 │   ├─ SHA256 チートコード検証              │
 │   └─ Firestore 読み書き                  │
 │                                         │
@@ -63,7 +63,7 @@ routers/
 
 static/kinotake/             # git管理ファイルのみ記載
 ├── index.html               # ゲーム HTML
-├── kinotake.js              # ゲームロジック (~2500行)
+├── kinotake.js              # ゲームロジック (1600行)
 ├── kinotake.css             # スタイル
 └── coord-checker.html       # 証明書座標チェック用 (開発ツール)
 
