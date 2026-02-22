@@ -26,10 +26,10 @@ def _h(s: str) -> str:
 
 # 全隠し要素のハッシュセット（CHEAT_HASHES 6個 + その他 4個 = 計10個）
 ALL_DISCOVERY_HASHES = {_h(v) for v in CHEAT_HASHES.values()} | {
-    _h("konami_code"),      # コナミコード（キーボード入力）
-    _h("チャージショット"), # 3秒長押しチャージ
-    _h("root-access"),      # URLパラメータ ?gadget=root-access
-    _h(":wq_success"),      # VIMダンジョンクリア
+    _h("konami_code"),
+    _h("チャージショット"),
+    _h("root-access"),
+    _h(":wq_success"),
 }
 
 # Firestore Configuration
