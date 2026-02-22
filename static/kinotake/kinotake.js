@@ -1222,7 +1222,8 @@ function updateUI(data) {
     function downloadCertificate() {
         const canvas = document.getElementById('cert-canvas');
         const link = document.createElement('a');
-        link.download = 'kinotake_victory.jpg';
+        const fileNames = { vim: 'kinotake_vim_clear', otoko: 'kinotake_otoko', kagyoha: 'kinotake_kagyoha', teiou: 'kinotake_teiou' };
+        link.download = (fileNames[certificateMode] || 'kinotake_victory') + '.jpg';
         link.href = canvas.toDataURL('image/jpeg', 0.9);
         link.click();
     }
