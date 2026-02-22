@@ -103,14 +103,14 @@ SECRET_CODES = {
     "↑↑↓↓←→←→BA": {"team": "bamboo", "count": 8, "helper": "とある名人"},
     "uuddlrlrba": {"team": "bamboo", "count": 8, "helper": "とある名人"},
     "uuddlrlrba": {"team": "bamboo", "count": 16, "helper": "とある名人"},
-    "3秒チャージ": {"team": "any", "count": 100, "helper": "チャージマン"}, # Special case
+    "チャージ": {"team": "any", "count": 100, "helper": "チャージマン"}, # Special case
     ":wq": {"team": "vim", "count": 0, "helper": "VimUser"}, # Special mode
     ":q!": {"team": "vim", "count": 0, "helper": "Quitter"},
     ":wq_success": {"team": "vim_win", "count": 0, "helper": "Survivor"}, # Log only
     "任侠道": {"team": "otoko", "count": 0, "helper": "MatsuriMaster"}, # Otoko Festival
     "CRLF": {"team": "kagyoha", "count": 0, "helper": "NewLineMaster"}, # Kagyoha Mode
     "53万": {"team": "teiou", "count": 0, "helper": "SpaceEmperor"}, # Universe Emperor Mode
-    "20380119": {"team": "timeslip", "count": 0, "helper": "TimeTraveler"}, # Time Slip Mode
+    "TimeTraveler": {"team": "timeslip", "count": 0, "helper": "TimeTraveler"}, # Time Slip Mode
 }
 
 @router.post("/api/kinotake/vote")
