@@ -72,6 +72,14 @@ async function fetchState() {
 function queueVote(team, count) {
     if (vimQteActive) return;
 
+    // Shonbori Logic（クリック即座に判定）
+    if (team === 'prettier') {
+        prettierClickCount += count;
+        if (prettierClickCount >= 32 && !document.body.classList.contains('shonbori-mode')) {
+            activateShonboriMode();
+        }
+    }
+
     // Optimistic display immediately
     pendingVotes[team] = (pendingVotes[team] || 0) + count;
     const scoreEls = { bamboo: bambooScoreEl, mushroom: mushroomScoreEl, prettier: prettierScoreEl };
@@ -95,14 +103,6 @@ async function sendVote(team, count, cheatCode = null, helperName = null, skipOp
     console.log(`Sending vote: Team=${team}, Count=${count}, Cheat=${cheatCode}`);
 
     if (vimQteActive) return; // No voting during boss battle
-
-    // Shonbori Logic
-    if (team === 'prettier') {
-        prettierClickCount += count;
-        if (prettierClickCount >= 32 && !document.body.classList.contains('shonbori-mode')) {
-            activateShonboriMode();
-        }
-    }
 
     // Shonbori Recovery Logic
     if (document.body.classList.contains('shonbori-mode')) {
@@ -832,8 +832,9 @@ function updateUI(data) {
             return; // Block other cheats
         }
 
-        // Konami
-        if (e.key === konamiCode[konamiIndex]) {
+        // Konami（1文字キーは小文字に正規化して比較）
+        const konamiKey = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+        if (konamiKey === konamiCode[konamiIndex]) {
             konamiIndex++;
             if (konamiIndex === konamiCode.length) {
                 sendVote('bamboo', 100, "uuddlrlrba", "高橋名人");
@@ -878,7 +879,7 @@ function updateUI(data) {
         document.body.style.filter = "invert(1)";
         if (refereeSpeech) refereeSpeech.innerText = "票をハックする気か！";
         // URLパラメータ発見を記録
-        sendVote('none', 0, 'root-access', 'URLハッカー');
+        sendVote('none', 0, 'access', 'ハッカー');
     }
 
     function triggerExplosion() {
