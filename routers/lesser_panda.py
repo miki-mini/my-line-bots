@@ -97,21 +97,6 @@ async def get_state():
         "total_cheats": len(ALL_DISCOVERY_HASHES)  # 自動的に10
     }
 
-# Secret Codes Configuration
-SECRET_CODES = {
-    "上上下下左右左右BA": {"team": "bamboo", "count": 8, "helper": "とある名人"},
-    "↑↑↓↓←→←→BA": {"team": "bamboo", "count": 8, "helper": "とある名人"},
-    "uuddlrlrba": {"team": "bamboo", "count": 8, "helper": "とある名人"},
-    "uuddlrlrba": {"team": "bamboo", "count": 16, "helper": "とある名人"},
-    "チャージ": {"team": "any", "count": 100, "helper": "チャージマン"}, # Special case
-    ":wq": {"team": "vim", "count": 0, "helper": "VimUser"}, # Special mode
-    ":q!": {"team": "vim", "count": 0, "helper": "Quitter"},
-    ":wq_success": {"team": "vim_win", "count": 0, "helper": "Survivor"}, # Log only
-    "任侠道": {"team": "otoko", "count": 0, "helper": "MatsuriMaster"}, # Otoko Festival
-    "CRLF": {"team": "kagyoha", "count": 0, "helper": "NewLineMaster"}, # Kagyoha Mode
-    "53万": {"team": "teiou", "count": 0, "helper": "SpaceEmperor"}, # Universe Emperor Mode
-    "TimeTraveler": {"team": "timeslip", "count": 0, "helper": "TimeTraveler"}, # Time Slip Mode
-}
 
 @router.post("/api/kinotake/vote")
 async def vote(request: VoteRequest):
@@ -150,9 +135,7 @@ async def vote(request: VoteRequest):
         action_msg = f"{request.cheat_code} を発動！"
 
         # Custom Messages
-        if request.helper_name == "手入力ハッカー" and request.cheat_code not in SECRET_CODES:
-             action_msg = f"謎のコマンド '{request.cheat_code}' を試行"
-        elif request.cheat_code == "kagyoha_cert":
+        if request.cheat_code == "kagyoha_cert":
              action_msg = "伝説の一撃免許 を取得！"
         elif request.cheat_code == "otoko_cert":
              action_msg = "漢(おとこ)の証明書 を取得！"
