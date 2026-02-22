@@ -9,8 +9,8 @@
 ## アーキテクチャ概要
 
 ```
-  GCS (rabbit-bot-images)
-  gs://rabbit-bot-images/kinotake/*
+  GCS (assets-bucket)
+  gs://your-bucket-name/kinotake/*
   (画像・音声ファイル / git非管理)
           │
           │ gcloud storage cp (CI/CDのみ)
@@ -49,7 +49,7 @@
 ```
 
 > **ポイント:** 画像・音声は git に含まれず GCS に保管。デプロイ時に
-> `gcloud storage cp gs://rabbit-bot-images/kinotake/*` でフラットに取得し
+> `gcloud storage cp gs://your-bucket-name/kinotake/*` でフラットに取得し
 > コンテナに焼き込む。サブディレクトリは取得されないため **ファイルはすべて
 > `kinotake/` 直下** に置くこと。
 
@@ -67,7 +67,7 @@ static/kinotake/             # git管理ファイルのみ記載
 ├── kinotake.css             # スタイル
 └── coord-checker.html       # 証明書座標チェック用 (開発ツール)
 
-# 以下は .gitignore 対象 / GCS (rabbit-bot-images) で管理
+# 以下は .gitignore 対象 / GCS (assets-bucket) で管理
 # static/kinotake/*.png  *.jpg  *.mp3
 # → デプロイ時に CI/CD が GCS からダウンロード
 ```
@@ -130,7 +130,7 @@ Firestore への読み込みを抑制するため、1秒間のインメモリキ
 
 ```python
 class StateCache:
-    TTL = 1.0  # 秒
+    TTL = 5.0  # 秒
     # TTL 内はキャッシュを返す / 期限切れで Firestore から再取得
 ```
 

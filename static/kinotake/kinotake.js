@@ -837,7 +837,7 @@ function updateUI(data) {
         if (konamiKey === konamiCode[konamiIndex]) {
             konamiIndex++;
             if (konamiIndex === konamiCode.length) {
-                sendVote('bamboo', 100, "uuddlrlrba", "高橋名人");
+                sendVote('bamboo', 100, "uuddlrlrba", "とある名人");
                 konamiIndex = 0;
                 showModal("🎮 コナミコード発動！\nたけのこ +100点！");
             }
