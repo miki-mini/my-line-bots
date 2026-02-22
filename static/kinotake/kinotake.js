@@ -41,6 +41,7 @@ let shonboriAudio = null;
 let otokoAudio = null;
 let kagyohaAudio = null;
 let bgmResumeTimer = null;
+let shatterAudio = null;
 
 // Elements
 const bambooScoreEl = document.getElementById('bamboo-score');
@@ -303,6 +304,7 @@ function updateUI(data) {
         if (kagyohaAudio) { kagyohaAudio.pause(); kagyohaAudio.currentTime = 0; }
         if (timeSlipAudio) { timeSlipAudio.pause(); timeSlipAudio.currentTime = 0; }
         if (shonboriAudio) { shonboriAudio.pause(); shonboriAudio.currentTime = 0; }
+        if (shatterAudio) { shatterAudio.pause(); shatterAudio.currentTime = 0; }
     }
 
     function activateOtokoMode() {
@@ -699,7 +701,7 @@ function updateUI(data) {
         }
 
         // Play Shatter Sound
-        const shatterAudio = new Audio('/static/kinotake/pari-n.mp3');
+        shatterAudio = new Audio('/static/kinotake/pari-n.mp3');
         shatterAudio.play().catch(e => console.log("Shatter audio blocked", e));
 
         // Resume Main BGM after short delay
@@ -1184,15 +1186,20 @@ function updateUI(data) {
             const splashImg = document.getElementById('cert-splash-img');
             if (splashImg) { splashImg.src = ''; splashImg.style.display = 'none'; }
 
-            // 全BGMを止めてから勝利音を鳴らす
+            // 共通BGM・無関係な音を止める（各モードの曲は継続）
             if (bgm) bgm.pause();
-            if (vimAudio) { vimAudio.pause(); vimAudio.currentTime = 0; }
-            if (otokoAudio) { otokoAudio.pause(); otokoAudio.currentTime = 0; }
-            if (kagyohaAudio) { kagyohaAudio.pause(); kagyohaAudio.currentTime = 0; }
             if (shonboriAudio) { shonboriAudio.pause(); shonboriAudio.currentTime = 0; }
-            const audio = new Audio('/static/kinotake/kuria.mp3');
-            audio.volume = 0.5;
-            audio.play().catch(e => console.log("Audio play blocked", e));
+            if (certificateMode !== 'vim') { if (shatterAudio) { shatterAudio.pause(); shatterAudio.currentTime = 0; } }
+            // 現在のモード以外の音のみ止める
+            if (certificateMode !== 'vim') { if (vimAudio) { vimAudio.pause(); vimAudio.currentTime = 0; } }
+            if (certificateMode !== 'otoko') { if (otokoAudio) { otokoAudio.pause(); otokoAudio.currentTime = 0; } }
+            if (certificateMode !== 'kagyoha') { if (kagyohaAudio) { kagyohaAudio.pause(); kagyohaAudio.currentTime = 0; } }
+            // kuria.mp3 は帝王モードのみ再生
+            if (certificateMode === 'teiou') {
+                const audio = new Audio('/static/kinotake/kuria.mp3');
+                audio.volume = 0.5;
+                audio.play().catch(e => console.log("Audio play blocked", e));
+            }
 
             if (certificateMode === 'otoko') {
                 sendVote('otoko', 0, 'otoko_cert', name);
