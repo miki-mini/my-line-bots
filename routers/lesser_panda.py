@@ -24,12 +24,13 @@ CHEAT_HASHES = {
 def _h(s: str) -> str:
     return hashlib.sha256(s.encode()).hexdigest()
 
-# 全隠し要素のハッシュセット（CHEAT_HASHES 6個 + その他 4個 = 計10個）
+# 全隠し要素のハッシュセット（CHEAT_HASHES 6個 + その他 5個 = 計11個）
 ALL_DISCOVERY_HASHES = {_h(v) for v in CHEAT_HASHES.values()} | {
     _h("konami_code"),
     _h("チャージショット"),
     _h("root-access"),
     _h(":wq_success"),
+    _h("prettier_32"),
 }
 
 # Firestore Configuration
@@ -85,7 +86,7 @@ class VoteRequest(BaseModel):
 @router.get("/api/kinotake/state")
 async def get_state():
     data = cache.get()
-    # 全10個の隠し要素のうち発見済みのものだけカウント（ハッシュ比較）
+    # 全11個の隠し要素のうち発見済みのものだけカウント（ハッシュ比較）
     discovered_cheats = data.get("discovered_cheats", [])
     discovered_count = len([x for x in discovered_cheats if x in ALL_DISCOVERY_HASHES])
     return {
@@ -94,7 +95,7 @@ async def get_state():
         "prettier": data.get("prettier", 0),
         "culprits": data.get("cultprits", [])[-20:],
         "discovered_count": discovered_count,
-        "total_cheats": len(ALL_DISCOVERY_HASHES)  # 自動的に10
+        "total_cheats": len(ALL_DISCOVERY_HASHES)  # 自動的に11
     }
 
 

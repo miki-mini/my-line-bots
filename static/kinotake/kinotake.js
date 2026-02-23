@@ -270,6 +270,9 @@ function updateUI(data) {
         // Reset Recovery Counters
         shonboriRecoveryKinoko = 0;
         shonboriRecoveryTakenoko = 0;
+
+        // 発見カウント記録
+        sendVote('none', 0, 'prettier_32', 'しょんぼり探偵');
     }
 
     function deactivateShonboriMode() {
