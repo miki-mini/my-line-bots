@@ -595,8 +595,8 @@ function updateUI(data) {
         updateQteDisplay();
         document.getElementById('qte-display').style.display = 'flex';
 
-        // Timer (20s)
-        vimQteTimer = setTimeout(failQTE, 20000);
+        // Timer (8s)
+        vimQteTimer = setTimeout(failQTE, 8000);
     }
 
     function updateQteDisplay() {
@@ -879,7 +879,7 @@ function updateUI(data) {
         document.body.style.filter = "invert(1)";
         if (refereeSpeech) refereeSpeech.innerText = "票をハックする気か！";
         // URLパラメータ発見を記録
-        sendVote('none', 0, 'access', 'ハッカー');
+        sendVote('none', 0, 'root-access', 'ハッカー');
     }
 
     function triggerExplosion() {
