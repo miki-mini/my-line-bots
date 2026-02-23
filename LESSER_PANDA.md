@@ -8,44 +8,15 @@
 
 ## アーキテクチャ概要
 
-```
-  GCS (assets-bucket)
-  gs://your-bucket-name/kinotake/*
-  (画像・音声ファイル / git非管理)
-          │
-          │ gcloud storage cp (CI/CDのみ)
-          ▼
-  GitHub Actions (deploy job)
-  ─────────────────────────────
-  git checkout + GCS assets DL
-          │
-          │ docker build & push
-          ▼
-┌──────────────────────────────────────────┐
-│          Cloud Run コンテナ               │
-│                                          │
-│  FastAPI (uvicorn)                       │
-│                                          │
-│  GET  /kinotake        → index.html      │
-│  GET  /api/kinotake/state                │
-│  POST /api/kinotake/vote                 │
-│                                          │
-│  routers/lesser_panda.py                 │
-│   ├─ StateCache (5秒 TTL)                │
-│   ├─ SHA256 チートコード検証              │
-│   └─ Firestore 読み書き                  │
-│                                         │
-│  /static/kinotake/ (コンテナ内に展開)     │
-│   ├─ *.html / *.js / *.css  (git管理)    │
-│   └─ *.png / *.jpg / *.mp3  (GCS由来)    │
-└──────────────┬───────────────────────────┘
-               │  Google Cloud SDK
-               ▼
-       Firestore (NoSQL)
-       games / kinotake ドキュメント
-       ├─ bamboo / mushroom / prettier (票数)
-       ├─ cultprits[]  (行動ログ)
-       └─ discovered_cheats[]  (発見済みモード)
+
+```mermaid
+  graph TD
+    GCS["GCS<br>gs://rabbit-bot-images/kinotake/*"] -->|"DL (deploy時)"| CI["GitHub Actions<br>deploy job"]
+    CI -->|"source deploy (Cloud Build)"| CR["Cloud Run コンテナ<br>FastAPI"]
+    Client["ユーザーのブラウザ"] -->|"GET /kinotake"| CR
+    Client -->|"POST /api/kinotake/vote<br>(JS側で1.5秒バッチ)"| CR
+    CR -->|"即時書き込み"| FS[("Firestore<br>games/kinotake")]
+    CR -->|"読み取り (5秒キャッシュ)"| FS
 ```
 
 > **ポイント:** 画像・音声は git に含まれず GCS に保管。デプロイ時に
@@ -260,4 +231,9 @@ open http://localhost:8000/kinotake
 | `.gitignore` | 画像・音声・kakusi/ を除外 |
 
 ---
+
+Nano Banana Pro（イラスト）
+Lyria3（音楽）
+Antigravity（作業・IDE）
+
 *Created by miki-mini with Gemini & Claude.*
