@@ -595,8 +595,8 @@ function updateUI(data) {
         updateQteDisplay();
         document.getElementById('qte-display').style.display = 'flex';
 
-        // Timer (8s)
-        vimQteTimer = setTimeout(failQTE, 8000);
+        // Timer (7.5s)
+        vimQteTimer = setTimeout(failQTE, 7500);
     }
 
     function updateQteDisplay() {

@@ -157,6 +157,8 @@ async def vote(request: VoteRequest):
         discovery_key = request.cheat_code
         if "BA" in discovery_key or "ba" in discovery_key:
              discovery_key = "konami_code"
+        elif discovery_key == "404_mode":
+             discovery_key = "NOT_FOUND_MODE"  # 4連打トリガーをCHEAT_HASHESと同じキーに統一
 
         if request.helper_name != "手入力ハッカー":
             updates["discovered_cheats"] = firestore.ArrayUnion([_h(discovery_key)])
