@@ -28,6 +28,7 @@ Python と Google Gemini API を活用した、多機能なLINEボットたち�
 | <img src="images/fish.jpg" width="40"> | **カラフルお魚のお部屋水族館🐠**<br>(Fish Room Aquarium)<br>![WebApp](https://img.shields.io/badge/WEBアプリ！-blue) | **バーチャル水族館**<br>手で魚と触れ合える癒やしの空間。サメやタコも登場します。 | [🔍 HTML](../static/fish.html)<br>[📜 説明書](fish.md)<br>[📘 Zenn](https://zenn.dev/miki_mini/articles/214983f7aedad5) |
 | <img src="images/retriever.jpg" width="40"> | **見守りレトリバー🐕**<br>(Watchdog Retriever)<br>![WebApp](https://img.shields.io/badge/WEBアプリ！-brown) | **動物年齢翻訳 & 記念フォト**<br>ペットの年齢を人間年齢に換算し、健康アドバイスも。ヘビやカピバラ含む30種以上対応。 | [🔍 HTML](../static/retriever.html)<br>[📜 説明書](retriever.md)<br>[📘 Zenn](https://zenn.dev/miki_mini/articles/816320cdacc065) |
 | <img src="images/wolf.jpg" width="40"> | **独り言シャドーイング Wolf🐺**<br>(Wolf Shadowing)<br>![WebApp](https://img.shields.io/badge/WEBアプリ！-darkblue) | **英語学習 & 遠吠え**<br>日本語の独り言をCoolな英語に変換し、AIと一緒に遠吠えシャドーイング。 | [🔍 HTML](../static/wolf.html)<br>[📜 説明書](wolf.md)<br> |
+| <span style="font-size: 30px">🐼</span> | **きのたけ聖戦 レッサーパンダ🐼**<br>(Kinotae Seisen)<br>![WebApp](https://img.shields.io/badge/WEBアプリ！-red) | **コミュニティ投票ゲーム**<br>たけのこ派 vs きのこ派の票を競わせる改行バトル。 | [🔍 HTML](/kinotake)<br>[📜 説明書](../LESSER_PANDA.md)<br> |
 
 ## 🛠 全体で使用している技術
 
