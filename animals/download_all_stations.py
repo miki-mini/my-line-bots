@@ -152,7 +152,7 @@ def main():
     print(f"\n🔍 確認: '吉祥寺' -> {len(kichijoji)}件")
 
     # 5. 保存
-    output_path = "station_data.py"
+    output_path = os.path.join(os.path.dirname(__file__), "station_data.py")
     with open(output_path, "w", encoding="utf-8") as f:
         f.write('"""\n')
         f.write('station_data.py - 駅データ一覧（ODPT API + 手動補完）\n')

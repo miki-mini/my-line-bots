@@ -20,7 +20,7 @@ import datetime
 
 # 駅データをインポート
 try:
-    from station_data import STATIONS
+    from animals.station_data import STATIONS
 except ImportError:
     STATIONS = []
 
