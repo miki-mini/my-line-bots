@@ -48,3 +48,7 @@ static/kinotake/kakusi/
 static/kinotake/*.png
 static/kinotake/*.jpg
 static/kinotake/*.mp3
+
+# --- Auto-generated Directories ---
+logs/
+generated_images/
