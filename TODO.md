@@ -4,7 +4,7 @@
 You are Claude, an expert AI software engineer. Your task is to implement the "Dracula Survival App" (ドラキュラ生存アプリ) perfectly according to this specification. Ensure the code is flawless, beautiful, and immediately usable.
 
 ## App Concept
-A gamified life-logging web app targeting people who hate the sun (or have severe sun allergies). The user roleplays as a "Dracula" who must track their sun exposure, equip protective UV gear, avoid garlic, and earn ranks by staying safely in the shadows.
+A gamified life-logging web app targeting people who hate the sun (or have severe sun allergies). The user roleplays as a "Sugar Glider Dracula" (モモンガドラキュラ) who must track their sun exposure, equip protective UV gear, avoid garlic, and earn ranks by staying safely in the shadows.
 
 ---
 
@@ -44,7 +44,7 @@ Users can equip items in specific character slots. Active items reduce UV damage
 
 ### 5. Rank & Title Progression
 A localized leveling system based on the user's total Dracula Stamps:
-- **0 - 9 pts**: `Just a Bat` (ただのコウモリ) - Cannot speak human language. Instantly vanishes in sunlight.
+- **0 - 9 pts**: `Just a Sugar Glider` (ただのフクロモモンガ) - Cannot speak human language. Instantly vanishes in sunlight.
 - **10 - 24 pts**: `Baby Dracula` (赤ちゃんドラキュラ) - Fangs just starting to grow. Needs "sunscreen" milk.
 - **25 - 39 pts**: `Dark Knight` (闇の騎士) - Mid-tier. Accustomed to wielding the physical shield (Parasol).
 - **40 - 49 pts**: `Vampire Aristocrat` (吸血貴族/エリート) - Avoids garlic traps and sips tomato juice with elegance.
